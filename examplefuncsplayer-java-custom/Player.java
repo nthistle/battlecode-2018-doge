@@ -34,6 +34,9 @@ public class Player {
             System.out.println("Current round: "+gc.round());
             // VecUnit is a class that you can think of as similar to ArrayList<Unit>, but immutable.
             VecUnit units = gc.myUnits();
+            
+            boolean amBuildingFactory = false;
+            
             for (int i = 0; i < units.size(); i++) {
                 Unit unit = units.get(i);
                 
@@ -62,6 +65,7 @@ public class Player {
                     for(int j = 0; j < nearby.size(); j ++) {
                         Unit nearbyUnit = nearby.get(j);
                         if(unit.unitType()==UnitType.Worker && gc.canBuild(unit.id(), nearbyUnit.id())) {
+                            amBuildingFactory = true;
                             System.out.println("Built a factory!");
                             gc.build(unit.id(), nearbyUnit.id());
                             continue;
@@ -80,7 +84,7 @@ public class Player {
                 if(gc.karbonite() > 50 && gc.canBlueprint(unit.id(), UnitType.Factory, d)) {
                     System.out.println("Blueprinting factory!");
                     gc.blueprint(unit.id(), UnitType.Factory, d);
-                } else if(gc.isMoveReady(unit.id()) && gc.canMove(unit.id(), d)) {
+                } else if(!amBuildingFactory && gc.isMoveReady(unit.id()) && gc.canMove(unit.id(), d)) {
                     //System.out.println("Moved!");
                     gc.moveRobot(unit.id(), d);
                 }
