@@ -29,6 +29,8 @@ public class Player {
 
         // Direction is a normal java enum.
         Direction[] directions = Direction.values();
+        
+        System.out.println("NEWER VERSION!!!!");
 
         while (true) {
             System.out.println("Current round: "+gc.round());
@@ -50,11 +52,19 @@ public class Player {
                             if(gc.canUnload(unit.id(), d)) {
                                 gc.unload(unit.id(), d);
                                 System.out.println("Unloaded a Knight!");
-                            } else if(gc.canProduceRobot(unit.id(), UnitType.Knight)) {
-                                gc.produceRobot(unit.id(), UnitType.Knight);
-                                System.out.println("Produced a Knight!");
                             }
                         } catch(Exception e) {e.printStackTrace();}
+                    }
+                    if(r.nextBoolean()) {
+                        if(gc.canProduceRobot(unit.id(), UnitType.Knight)) {
+                            gc.produceRobot(unit.id(), UnitType.Knight);
+                            System.out.println("Produced a Knight!");
+                        }
+                    } else {
+                        if(gc.canProduceRobot(unit.id(), UnitType.Ranger)) {
+                            gc.produceRobot(unit.id(), UnitType.Ranger);
+                            System.out.println("Produced a Ranger!");
+                        }
                     }
                 }
                 
@@ -81,7 +91,7 @@ public class Player {
                 // pick a random direction
                 d = getRandDirection(directions, r);
                 
-                if(gc.karbonite() > 50 && gc.canBlueprint(unit.id(), UnitType.Factory, d)) {
+                if(gc.karbonite() > 60 && gc.canBlueprint(unit.id(), UnitType.Factory, d)) {
                     System.out.println("Blueprinting factory!");
                     gc.blueprint(unit.id(), UnitType.Factory, d);
                 } else if(!amBuildingFactory && gc.isMoveReady(unit.id()) && gc.canMove(unit.id(), d)) {
