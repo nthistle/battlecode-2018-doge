@@ -39,7 +39,13 @@ public class Player {
             
             boolean amBuildingFactory = false;
             
+            if(gc.round() > 550) {
+                gc.nextTurn();
+                continue; // stop prematurely 
+            }
+            
             for (int i = 0; i < units.size(); i++) {
+            
                 Unit unit = units.get(i);
                 
                 Direction d;
@@ -71,7 +77,13 @@ public class Player {
                 // first, let's look for nearby blueprints to work on
                 Location loc = unit.location();
                 if(loc.isOnMap()) {
-                    VecUnit nearby = gc.senseNearbyUnits(loc.mapLocation(), 2L);
+                    VecUnit nearby;
+                    if(unit.unitType()==UnitType.Ranger)
+                        nearby = gc.senseNearbyUnits(loc.mapLocation(), 50L);
+                    else
+                    //if(unit.unitType()==UnitType.Worker || unit.unitType()==UnitType.Knight)
+                        nearby = gc.senseNearbyUnits(loc.mapLocation(), 2L);
+                    
                     for(int j = 0; j < nearby.size(); j ++) {
                         Unit nearbyUnit = nearby.get(j);
                         if(unit.unitType()==UnitType.Worker && gc.canBuild(unit.id(), nearbyUnit.id())) {
