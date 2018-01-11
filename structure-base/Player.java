@@ -28,16 +28,16 @@ public class Player {
                     UnitHandler newHandler = null;
                     
                     switch(unit.type()) {
-                        case UnitType.Factory:
+                        case Factory:
                           newHandler = new FactoryHandler(gc, unit.id(), rand);
                           break;
-                        case UnitType.Knight:
+                        case Knight:
                           newHandler = new KnightHandler(gc, unit.id(), rand);
                           break;
-                        case UnitType.Ranger:
+                        case Ranger:
                           newHandler = new RangerHandler(gc, unit.id(), rand);
                           break;
-                        case UnitType.Worker:
+                        case Worker:
                           newHandler = new WorkerHandler(gc, unit.id(), rand);
                           break;
                         default:
