@@ -1,5 +1,3 @@
-// import the API.
-// See xxx for the javadocs.
 import bc.*;
 import java.util.Random;
 import java.util.HashMap;
@@ -17,12 +15,12 @@ public class Player {
         HashMap<Integer,UnitHandler> myHandlers = new HashMap<Integer,UnitHandler>();
 
         while (true) {
+        
             System.out.println("Round #"+gc.round());
             
             VecUnit units = gc.myUnits();
             
             for(int i = 0; i < units.size(); i ++) {
-            
                 Unit unit = units.get(i);
                 
                 if(!myHandler.containsKey(unit.id())) {
@@ -45,6 +43,7 @@ public class Player {
                         default:
                           break;
                     }
+                    
                     myHandler.put(unit.id(), newHandler);
                 }
                 myHandler.get(unit.id()).takeTurn();
