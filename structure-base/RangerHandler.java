@@ -6,8 +6,8 @@ public class RangerHandler {
     private GameController gc;
     private Random rng;
 
-    public RangerHandler(GameController gc, Random rng) {
-        super(gc, rng);
+    public RangerHandler(GameController gc, int id, Random rng) {
+        super(gc, id, rng);
     }
     
     public void takeTurn() {
