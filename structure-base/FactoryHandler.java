@@ -1,7 +1,7 @@
 import bc.*;
 import java.util.Random;
 
-public class FactoryHandler {
+public class FactoryHandler extends UnitHandler {
 
     public FactoryHandler(GameController gc, int id, Random rng) {
         super(gc, id, rng);

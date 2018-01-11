@@ -1,7 +1,7 @@
 import bc.*;
 import java.util.Random;
 
-public class RangerHandler {
+public class RangerHandler extends UnitHandler {
 
     private Team enemy;
 
@@ -31,7 +31,7 @@ public class RangerHandler {
             
             VecUnit nearby;
             Unit nearestEnemy;
-            int nearestDist;
+            long nearestDist;
             
             nearby = gc.senseNearbyUnitsByTeam(unit.location().mapLocation(), 50, this.enemy); // immediate range
             nearestEnemy = null;
@@ -59,7 +59,7 @@ public class RangerHandler {
         VecUnit nearby;
         Unit nearestEnemy;
         Unit nearestAlly;
-        int nearestDist;
+        long nearestDist;
         
         nearby = gc.senseNearbyUnitsByTeam(unit.location().mapLocation(), 18, this.enemy); // immediate range
         nearestEnemy = null;
@@ -115,7 +115,7 @@ public class RangerHandler {
         for(int i = 0; i < 5; i ++) {
             Direction moveDir = Utils.getRandomDirection(Direction.values(), this.rng);
             if(gc.canMove(this.id, moveDir)) {
-                gc.move(this.id, moveDir);
+                gc.moveRobot(this.id, moveDir);
                 break;
             }
         }

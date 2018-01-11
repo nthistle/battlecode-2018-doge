@@ -15,21 +15,21 @@ public class Utils
     // lazy way
     public static Direction[] getAdjacentDirs(Direction dir) {
         switch(dir) {
-          case Direction.North:
-            return new Direction[] {Direction.Northwest, Direction.Northeaest};
-          case Direction.Northeast:
+          case North:
+            return new Direction[] {Direction.Northwest, Direction.Northeast};
+          case Northeast:
             return new Direction[] {Direction.North, Direction.East};
-          case Direction.East:
+          case East:
             return new Direction[] {Direction.Northeast, Direction.Southeast};
-          case Direction.Southeast:
+          case Southeast:
             return new Direction[] {Direction.East, Direction.South};
-          case Direction.South:
+          case South:
             return new Direction[] {Direction.Southeast, Direction.Southwest};
-          case Direction.Southwest:
+          case Southwest:
             return new Direction[] {Direction.South, Direction.West};
-          case Direction.West:
+          case West:
             return new Direction[] {Direction.Southwest, Direction.Northwest};
-          case Direction.Northwest:
+          case Northwest:
             return new Direction[] {Direction.West, Direction.North};
           default:
             break;

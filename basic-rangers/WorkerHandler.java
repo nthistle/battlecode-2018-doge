@@ -1,7 +1,7 @@
 import bc.*;
 import java.util.Random;
 
-public class WorkerHandler {
+public class WorkerHandler extends UnitHandler {
 
     private int curFactoryCooldown = 0;
     private static final int FACTORY_COOLDOWN = 50;
@@ -32,7 +32,7 @@ public class WorkerHandler {
             for(int i = 0; i < 5; i ++) {
                 Direction moveDir = Utils.getRandomDirection(Direction.values(), this.rng);
                 if(gc.canMove(this.id, moveDir)) {
-                    gc.move(this.id, moveDir);
+                    gc.moveRobot(this.id, moveDir);
                     break;
                 }
             }

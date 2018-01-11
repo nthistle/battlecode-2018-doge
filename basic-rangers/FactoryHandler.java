@@ -1,13 +1,18 @@
 import bc.*;
 import java.util.Random;
 
-public class FactoryHandler {
+public class FactoryHandler extends UnitHandler {
 
     public FactoryHandler(GameController gc, int id, Random rng) {
         super(gc, id, rng);
     }
     
     public void takeTurn() {
+        this.takeTurn(gc.unit(this.id));
+    }
+    
+    @Override
+    public void takeTurn(Unit unit) {
         VecUnitID garrison = unit.structureGarrison();
         if(garrison.size() > 0) {
             for(int i = 0; i < 5; i ++) {
