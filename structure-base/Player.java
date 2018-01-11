@@ -12,7 +12,7 @@ public class Player {
         GameController gc = new GameController();
         Team myTeam = gc.team();
         
-        HashMap<Integer,UnitHandler> myHandlers = new HashMap<Integer,UnitHandler>();
+        HashMap<Integer,UnitHandler> myHandler = new HashMap<Integer,UnitHandler>();
 
         while (true) {
         
@@ -27,7 +27,7 @@ public class Player {
                 
                     UnitHandler newHandler = null;
                     
-                    switch(unit.type()) {
+                    switch(unit.unitType()) {
                         case Factory:
                           newHandler = new FactoryHandler(gc, unit.id(), rand);
                           break;
