@@ -72,6 +72,7 @@ public class RangerHandler extends UnitHandler {
             }
         }
         if(nearestEnemy != null) {
+            System.out.println("Moving away from enemy who is "+nearestDist+" away");
             Utils.tryMoveWiggle(this.gc, this.id, nearestEnemy.location().mapLocation().directionTo(myLocation));
             return;
         }
@@ -82,6 +83,7 @@ public class RangerHandler extends UnitHandler {
         nearestAlly = null;
         nearestDist = Integer.MAX_VALUE;
         for(int i = 0; i < nearby.size(); i ++) {
+            if(nearby.get(i).id() == this.id) continue;
             if(nearestAlly == null || (myLocation.distanceSquaredTo(
                     nearby.get(i).location().mapLocation()) < nearestDist)) {
                 nearestAlly = nearby.get(i);
@@ -89,6 +91,7 @@ public class RangerHandler extends UnitHandler {
             }
         }
         if(nearestAlly != null) {
+            System.out.println("Moving away from ally who is "+nearestDist+" away");
             Utils.tryMoveWiggle(this.gc, this.id, nearestAlly.location().mapLocation().directionTo(myLocation));
             return;
         }
@@ -106,6 +109,7 @@ public class RangerHandler extends UnitHandler {
             }
         }
         if(nearestEnemy != null) {
+            System.out.println("Moving towards enemy who is "+nearestDist+" away");
             Utils.tryMoveWiggle(this.gc, this.id, myLocation.directionTo(nearestEnemy.location().mapLocation()));
             return;
         }
