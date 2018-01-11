@@ -28,14 +28,14 @@ public class Player {
             for(int i = 0; i < units.size(); i ++) {
                 Unit unit = units.get(i);
                 if(unit.type()==UnitType.Factory)
-                    myHandler.get(unit.id()).takeTurn();
+                    myHandler.get(unit.id()).takeTurn(unit);
             }
             
             // now everything else can move
             for(int i = 0; i < units.size(); i ++) {
                 Unit unit = units.get(i);
                 if(unit.type()!=UnitType.Factory)
-                    myHandler.get(unit.id()).takeTurn();
+                    myHandler.get(unit.id()).takeTurn(unit);
             }
             
             gc.nextTurn();
