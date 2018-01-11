@@ -26,16 +26,20 @@ public class Player {
             
             // all factories should move first, so we unload then move
             for(int i = 0; i < units.size(); i ++) {
-                Unit unit = units.get(i);
-                if(unit.unitType()==UnitType.Factory)
-                    myHandler.get(unit.id()).takeTurn(unit);
+                try {
+                    Unit unit = units.get(i);
+                    if(unit.unitType()==UnitType.Factory)
+                        myHandler.get(unit.id()).takeTurn(unit);
+                } catch(Exception e) {}
             }
             
             // now everything else can move
             for(int i = 0; i < units.size(); i ++) {
-                Unit unit = units.get(i);
-                if(unit.unitType()!=UnitType.Factory)
-                    myHandler.get(unit.id()).takeTurn(unit);
+                try {
+                    Unit unit = units.get(i);
+                    if(unit.unitType()!=UnitType.Factory)
+                        myHandler.get(unit.id()).takeTurn(unit);
+                } catch(Exception e) {}
             }
             
             gc.nextTurn();
