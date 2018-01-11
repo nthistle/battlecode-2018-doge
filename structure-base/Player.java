@@ -46,7 +46,7 @@ public class Player {
                     
                     myHandler.put(unit.id(), newHandler);
                 }
-                myHandler.get(unit.id()).takeTurn();
+                myHandler.get(unit.id()).takeTurn(unit);
             }
             gc.nextTurn();
         }
