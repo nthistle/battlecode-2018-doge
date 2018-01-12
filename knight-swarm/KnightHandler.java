@@ -17,7 +17,8 @@ public class KnightHandler extends UnitHandler {
     
     @Override
     public void takeTurn(Unit unit) {
-        hasMoved = false;
+        if(unit.location().isInGarrison()) return;
+        if(this.hasMoved) unit = gc.unit(this.id); // location doesn't update otherwise
         // this is the non-swarm logic
         
         if(gc.isAttackReady(this.id)) {
@@ -31,7 +32,7 @@ public class KnightHandler extends UnitHandler {
                     lowestHealth = lowestEnemy.health();
                 }
             }
-            if(lowestEnemy != null) {
+            if(lowestEnemy != null && gc.canAttack(this.id, lowestEnemy.id())) {
                 gc.attack(this.id, lowestEnemy.id());
             }
         }
@@ -42,7 +43,11 @@ public class KnightHandler extends UnitHandler {
         this.hasMoved = newHasMoved;
     }
     
+    // TODO put return codes here for more specificity
+    // false -> probably can move, but wasn't able to this turn
+    // turn -> any other case
     public boolean attemptSwarm(Unit unit, MapLocation mapLoc) {
+        if(unit.location().isInGarrison()) return true;
         if(this.hasMoved || !gc.isMoveReady(this.id))
             return true; // move was already successful
         int retcode = Utils.tryMoveWiggle(this.gc, this.id, unit.location().mapLocation().directionTo(mapLoc));
