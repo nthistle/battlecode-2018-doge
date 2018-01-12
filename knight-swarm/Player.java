@@ -106,9 +106,9 @@ public class Player {
             
             for(int i = 0; i < units.size(); i ++) {
                 Unit unit = units.get(i);
-                if(unit.unitType()!=UnitType.Factory)
-                    myHandler.get(unit.id()).takeTurn(unit);
-            }
+                if(unit.unitType()==UnitType.Knight)
+                    ((KnightHandler)myHandler.get(unit.id())).setHasMoved(false);
+            }   
             
             // now we do swarm stuff
             
@@ -129,6 +129,12 @@ public class Player {
                         ((KnightHandler)myHandler.get(units.get(j).id())).attemptSwarm(units.get(j), currentTarget);
                     }
                 }
+            }
+            
+            for(int i = 0; i < units.size(); i ++) {
+                Unit unit = units.get(i);
+                if(unit.unitType()!=UnitType.Factory)
+                    myHandler.get(unit.id()).takeTurn(unit);
             }
             
             if(anyFactoryFailed) {

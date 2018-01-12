@@ -18,7 +18,7 @@ public class KnightHandler extends UnitHandler {
     @Override
     public void takeTurn(Unit unit) {
         if(unit.location().isInGarrison()) return;
-        hasMoved = false;
+        if(this.hasMoved) unit = gc.unit(this.id); // location doesn't update otherwise
         // this is the non-swarm logic
         
         if(gc.isAttackReady(this.id)) {
@@ -32,7 +32,7 @@ public class KnightHandler extends UnitHandler {
                     lowestHealth = lowestEnemy.health();
                 }
             }
-            if(lowestEnemy != null) {
+            if(lowestEnemy != null && gc.canAttack(this.id, lowestEnemy.id())) {
                 gc.attack(this.id, lowestEnemy.id());
             }
         }
