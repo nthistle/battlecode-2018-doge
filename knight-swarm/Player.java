@@ -98,25 +98,14 @@ public class Player {
                 }
             }
             
-            HashSet<Integer> garrisonedIDs = new HashSet<Integer>();
-            
             for(int i = 0; i < units.size(); i ++) {
                 Unit unit = units.get(i);
                 if(unit.unitType()!=UnitType.Factory) continue;
                 myHandler.get(unit.id()).takeTurn(unit);
-                VecUnitID inGarrison = unit.structureGarrison();
-                for(int j = 0; j < inGarrison.size(); j ++) {
-                    int gunit = inGarrison.get(j);
-                    garrisonedIDs.add(gunit);
-                    if(myHandler.containsKey(gunit) && myHandler.get(gunit) instanceof KnightHandler)
-                        ((KnightHandler)myHandler.get(gunit)).setHasMoved(true);
-                }
             }
             
             for(int i = 0; i < units.size(); i ++) {
                 Unit unit = units.get(i);
-                if(garrisonedIDs.contains(unit.id()))
-                    continue;
                 if(unit.unitType()!=UnitType.Factory)
                     myHandler.get(unit.id()).takeTurn(unit);
             }
