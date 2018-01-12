@@ -1,5 +1,4 @@
 import bc.*;
-import sun.misc.GC;
 
 import java.util.Random;
 

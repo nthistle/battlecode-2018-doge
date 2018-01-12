@@ -4,7 +4,7 @@ import java.util.Random;
 public class WorkerHandler extends UnitHandler {
 
 	private int curFactoryCooldown = 0;
-	private static final int FACTORY_COOLDOWN = 50;
+	private static final int FACTORY_COOLDOWN = 10;
 	
     public WorkerHandler(GameController gc, int id, Random rng) {
         super(gc, id, rng);

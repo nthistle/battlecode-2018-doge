@@ -1,6 +1,5 @@
 import bc.*;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class FactoryHandler extends UnitHandler {
 
@@ -12,12 +11,12 @@ public class FactoryHandler extends UnitHandler {
     	this.takeTurn(gc.unit(this.id));
     }
     
-    public void takeTurn() {
+    public void takeTurn(Unit unit) {
     	int troopType = rng.nextInt();
-    	if(troopType > 0.1 && gc.canProduceRobot(this.id, UnitType.Ranger)) {
-    		gc.produceRobot(this.id, UnitType.Ranger);
+    	if(troopType > 0.1 && gc.canProduceRobot(this.id, UnitType.Knight)) {
+    		gc.produceRobot(this.id, UnitType.Knight);
     	}
-    	else if(gc.canProduceRobot(this.id, UnitType.Worker)) {
+    	else if(troopType <= 	0.1 && gc.canProduceRobot(this.id, UnitType.Worker)) {
     		gc.produceRobot(this.id, UnitType.Worker);
     	}
         VecUnitID garrison = unit.structureGarrison();
@@ -26,8 +25,8 @@ public class FactoryHandler extends UnitHandler {
         		//if empty adjacent space, unload
         		boolean placed = false;
         		for(Direction c : Direction.values()) {
-        			if(gc.canUnload(this.id, unloadDir)) {
-        				gc.unload(this.id, unloadDir);
+        			if(gc.canUnload(this.id, c)) {
+        				gc.unload(this.id, c);
         				placed = true;
         				break;
         			}
@@ -35,14 +34,15 @@ public class FactoryHandler extends UnitHandler {
         		if(placed) continue;
         		MapLocation myLocation = unit.location().mapLocation(); 
         		VecUnit adjacent = gc.senseNearbyUnitsByTeam(myLocation, 2, gc.team());
-        		for(int i = 0; i < adjacent.size(); i++) {
-        			MapLocation itsLocation = nearby.get(i).location().mapLocation();
+        		for(int j = 0; j < adjacent.size(); j++) {
+        			MapLocation itsLocation = adjacent.get(j).location().mapLocation();
+        			Direction itsDirection = myLocation.directionTo(adjacent.get(j).location().mapLocation());
         			Set<String> visited = new HashSet<String>();
         			visited.add(gc.unit(this.id).toJson());
         			MovementHandler move = new MovementHandler(this.gc, gc.senseUnitAtLocation(itsLocation).id(), this.rng, visited);
         			placed = move.recurMove();
         			if(placed) {
-        				gc.unload(this.id, myLocation.directionTo(nearby.get(i).location().mapLocation());
+        				gc.unload(this.id, itsDirection);
         				break;
         			}
         		}
