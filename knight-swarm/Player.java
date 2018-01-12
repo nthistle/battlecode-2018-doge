@@ -16,6 +16,10 @@ public class Player {
         Random rand = new Random();
         
         GameController gc = new GameController();
+        
+        gc.queueResearch(UnitType.Knight);
+        gc.queueResearch(UnitType.Knight);
+        
         Team myTeam = gc.team();
         Team enemy = Utils.getOtherTeam(myTeam);
         
