@@ -12,12 +12,15 @@ public class FactoryHandler extends UnitHandler {
     }
     
     public void takeTurn(Unit unit) {
-    	int troopType = rng.nextInt();
-    	if(troopType > 0.1 && gc.canProduceRobot(this.id, UnitType.Knight)) {
+    	double troopType = rng.nextDouble();
+    	if(troopType <= 0.2 && gc.canProduceRobot(this.id, UnitType.Worker)) {
+    		gc.produceRobot(this.id, UnitType.Worker);
+    	}
+    	else if(troopType <= 0.7 && gc.canProduceRobot(this.id, UnitType.Knight)) {
     		gc.produceRobot(this.id, UnitType.Knight);
     	}
-    	else if(troopType <= 	0.1 && gc.canProduceRobot(this.id, UnitType.Worker)) {
-    		gc.produceRobot(this.id, UnitType.Worker);
+    	else if(troopType > 0.7 && gc.canProduceRobot(this.id, UnitType.Ranger)) {
+    		gc.produceRobot(this.id, UnitType.Ranger);
     	}
         VecUnitID garrison = unit.structureGarrison();
         if(garrison.size() > 0) {
