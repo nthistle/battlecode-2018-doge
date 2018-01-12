@@ -8,6 +8,7 @@ import java.util.HashSet;
 public class Player {
 
     private static final int KNIGHT_SWARM_THRESH = 20;//12; // once we have 12 knights, swarm
+    private static final int KNIGHT_SWARM_STOP_THRESH = 6;
     private static final int TARGET_SWITCH_THRESH = 75;
     
     public static void main(String[] args) {
@@ -45,6 +46,8 @@ public class Player {
         int timeOnTarget = 0;
         MapLocation currentTarget = swarmTargets[rand.nextInt(numTargets)];
         
+        boolean executeSwarm = false;
+        
         while (true) {
         
             System.out.println("Round #"+gc.round());
@@ -55,7 +58,7 @@ public class Player {
             for(int i = 0; i < units.size(); i ++) {
                 if(units.get(i).unitType()==UnitType.Knight) numKnights ++;
             }
-            boolean executeSwarm = (numKnights > KNIGHT_SWARM_THRESH);
+            executeSwarm = (numKnights > KNIGHT_SWARM_THRESH) || (executeSwarm && numKnights > KNIGHT_SWARM_STOP_THRESH);
             
             if(executeSwarm) { // pick new target
                 if(timeOnTarget == 0 || timeOnTarget > TARGET_SWITCH_THRESH) {
