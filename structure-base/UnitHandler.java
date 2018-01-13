@@ -3,12 +3,12 @@ import java.util.Random;
 
 public abstract class UnitHandler {
     
-    protected final Player parent;
+    protected final PlanetController parent;
     protected final GameController gc;
     protected final Random rng;
     protected final int id;
 
-    public UnitHandler(Player parent, GameController gc, int id, Random rng) {
+    public UnitHandler(PlanetController parent, GameController gc, int id, Random rng) {
         this.parent = parent;
         this.gc = gc;
         this.id = id;
