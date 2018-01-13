@@ -4,51 +4,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Player {
+
+    private static final String playerName = "Structure Base"
+    private static final int seed = -1; // -1 for no seed
     
     public static void main(String[] args) {
     
-        Random rand = new Random();
+        Random rand;
+        if(seed == -1) rand = new Random();
+        else rand = new Random(seed);
         
         GameController gc = new GameController();
-        Team myTeam = gc.team();
         
-        HashMap<Integer,UnitHandler> myHandler = new HashMap<Integer,UnitHandler>();
-
-        while (true) {
-        
-            System.out.println("Round #"+gc.round());
-            
-            VecUnit units = gc.myUnits();
-            
-            for(int i = 0; i < units.size(); i ++) {
-                Unit unit = units.get(i);
-                
-                if(!myHandler.containsKey(unit.id())) {
-                
-                    UnitHandler newHandler = null;
-                    
-                    switch(unit.unitType()) {
-                        case Factory:
-                          newHandler = new FactoryHandler(this, gc, unit.id(), rand);
-                          break;
-                        case Knight:
-                          newHandler = new KnightHandler(this, gc, unit.id(), rand);
-                          break;
-                        case Ranger:
-                          newHandler = new RangerHandler(this, gc, unit.id(), rand);
-                          break;
-                        case Worker:
-                          newHandler = new WorkerHandler(this, gc, unit.id(), rand);
-                          break;
-                        default:
-                          break;
-                    }
-                    
-                    myHandler.put(unit.id(), newHandler);
-                }
-                myHandler.get(unit.id()).takeTurn(unit);
-            }
-            gc.nextTurn();
+        if(gc.planet() == Planet.Earth) {
+            new EarthController(gc, rand).control();
+        } else if(gc.planet() == Planet.Mars) {
+            new MarsController(gc, rand).control();
         }
     }
 }

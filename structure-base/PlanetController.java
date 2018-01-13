@@ -11,9 +11,11 @@ import bc.*;
 public abstract class PlanetController
 {
     protected final GameController gc;
+    protected final Random rng;
 
-    public PlanetController(GameController gc) {
+    public PlanetController(GameController gc, Random rng) {
         this.gc = gc;
+        this.rng = rng;
     }
     
     /**
