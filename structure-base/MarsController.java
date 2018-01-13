@@ -1,4 +1,5 @@
 import bc.*;
+import java.util.Random;
 
 public class MarsController extends PlanetController
 {
@@ -7,6 +8,11 @@ public class MarsController extends PlanetController
     }
     
     public void control() {
-        // empty
+    
+        System.out.println("Mars Controller initiated");
+        
+        while (true) {
+            gc.nextTurn();
+        }
     }
 }

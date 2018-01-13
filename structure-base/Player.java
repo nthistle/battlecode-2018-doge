@@ -8,16 +8,22 @@ public class Player {
     
     public static void main(String[] args) {
     
+        System.out.println(playerName + " initiated");
+    
         Random rand;
         if(seed == -1) rand = new Random();
         else rand = new Random(seed);
         
         GameController gc = new GameController();
         
+        PlanetController pc = null;
         if(gc.planet() == Planet.Earth) {
-            new EarthController(gc, rand).control();
+            pc = new EarthController(gc, rand);
         } else if(gc.planet() == Planet.Mars) {
-            new MarsController(gc, rand).control();
+            pc = new MarsController(gc, rand);
         }
+        
+        System.out.println("Running PlayerController...");
+        pc.control();
     }
 }
