@@ -1,11 +1,9 @@
 import bc.*;
 import java.util.Random;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Player {
 
-    private static final String playerName = "Structure Base"
+    private static final String playerName = "Structure Base";
     private static final int seed = -1; // -1 for no seed
     
     public static void main(String[] args) {
