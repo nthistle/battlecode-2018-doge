@@ -15,4 +15,8 @@ public class MarsController extends PlanetController
             gc.nextTurn();
         }
     }
+    
+    public Planet getPlanet() {
+        return Planet.Mars;
+    }
 }

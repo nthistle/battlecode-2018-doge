@@ -24,4 +24,10 @@ public abstract class PlanetController
      * It will be called once.
      */
     public abstract void control();
+    
+    /**
+     * Returns the planet that this controller is responsible
+     * for controlling
+     */
+    public abstract Planet getPlanet();
 }

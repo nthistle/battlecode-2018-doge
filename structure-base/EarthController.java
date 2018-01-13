@@ -52,4 +52,8 @@ public class EarthController extends PlanetController
             gc.nextTurn();
         }
     }
+    
+    public Planet getPlanet() {
+        return Planet.Earth;
+    }
 }
