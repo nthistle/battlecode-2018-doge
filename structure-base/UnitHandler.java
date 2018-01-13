@@ -2,12 +2,14 @@ import bc.*;
 import java.util.Random;
 
 public abstract class UnitHandler {
-
+    
+    protected final Player parent;
     protected final GameController gc;
     protected final Random rng;
     protected final int id;
 
-    public UnitHandler(GameController gc, int id, Random rng) {
+    public UnitHandler(Player parent, GameController gc, int id, Random rng) {
+        this.parent = parent;
         this.gc = gc;
         this.id = id;
         this.rng = rng;
