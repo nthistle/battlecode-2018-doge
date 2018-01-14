@@ -70,4 +70,13 @@ public class Utils
         }
         return 0;
     }
+
+    public static boolean compareMapLocation(MapLocation a, MapLocation b) {
+        return a.getPlanet() == b.getPlanet() && a.getX() == b.getX() && a.getY() == b.getY();
+    }
+
+    public static boolean canMoveWiggle(GameController gc, int unitId, Direction dir) {
+        Direction[] neighboring = getAdjacentDirs(dir);
+        return gc.canMove(unitID, dir) || gc.canMove(unitId, neighboring[0]) || gc.canMove(unitId, neighboring[1]);
+    }
 }
