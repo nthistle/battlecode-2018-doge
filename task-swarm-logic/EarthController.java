@@ -5,6 +5,7 @@ import java.util.Random;
 
 public class EarthController extends PlanetController
 {
+
     public EarthController(GameController gc, Random rng) {
         super(gc, rng);
     }
@@ -47,7 +48,21 @@ public class EarthController extends PlanetController
                     
                     myHandler.put(unit.id(), newHandler);
                 }
-                myHandler.get(unit.id()).takeTurn(unit);
+                boolean isPartOfSwarm = false;
+                for(int i = 0; i < this.swarms.size(); i++) {
+                    if(this.swarms.get(i).getUnits().contains(unit.id())) {
+                        isPartOfSwarm = true;
+                        break;
+                    }
+                }
+                if(!isPartOfSwarm)
+                    myHandler.get(unit.id()).takeTurn(unit);
+            }
+            for(int i = 0; i < this.swarms.size(); i++) {
+                if(this.swarms.get(i).getUnits().contains(unit.id())) {
+                    isPartOfSwarm = true;
+                    break;
+                }
             }
             gc.nextTurn();
         }
