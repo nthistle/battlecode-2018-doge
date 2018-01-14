@@ -1,2 +1,7 @@
 *.bc18
-WindowsRelease
+*.bc18t
+install_viewer.py
+viewer_latest
+viewer_currentInstall.json
+bc18-tinyview
+mapmaker

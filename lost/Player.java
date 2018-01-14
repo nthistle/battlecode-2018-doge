@@ -3,7 +3,8 @@
 import bc.*;
 
 public class Player {
-    public static void main(String[] args) {
+    public static void main(String[] args) {        
+
         // MapLocation is a data structure you'll use a lot.
         MapLocation loc = new MapLocation(Planet.Earth, 10, 20);
         System.out.println("loc: "+loc+", one step to the Northwest: "+loc.add(Direction.Northwest));
