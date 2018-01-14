@@ -2,7 +2,7 @@
 
 Team Doge's repository for Battlecode 2018
 
-##TODO List
+### TODO List
 - [ ] unified overall basic pathfinding system; probably the propagate-backwards method I described which gives us a route from any square on board to single target square
 - [ ] rockets to get us to mars
 - [ ] decide on general gameplan/strategy for sprint tournament (subject to change, pending sprint tourney results and scrimmage results)
