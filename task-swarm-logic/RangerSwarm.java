@@ -34,7 +34,7 @@ public class RangerSwarm extends Swarm {
 	public void moveToLeader() {
 		//checking if any of the swarm members can see an attacker. If attacker is found, it prioritizes attackers based on closest attacker
 		boolean needToAttack = false;
-		MapLocation attackingLocation;
+		MapLocation attackingLocation = null;
 		TreeMap<Long, MapLocation> enemies = new TreeMap<Long, MapLocation>();
 		for(int i = 0; i < this.unitIDs.size(); i++) {
 			Unit unit = gc.unit(this.unitIDs.get(i));
@@ -47,7 +47,9 @@ public class RangerSwarm extends Swarm {
 				}
 			}
 		}
-		attackingLocation = enemies.get(enemies.firstKey());
+		if(enemies.keySet().size() > 0) {
+			attackingLocation = enemies.get(enemies.firstKey());
+		}
 		if(needToAttack) {
 			swarmAttack(attackingLocation);
 		} else {

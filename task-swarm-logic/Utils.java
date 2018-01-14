@@ -55,6 +55,9 @@ public class Utils
     // 2 if counter-clockwise neighbor succeeded,
     // 3 if clockwise neighbor succeeded
     public static int tryMoveWiggle(GameController gc, int unitId, Direction dir) {
+        if(!gc.isMoveReady(unitId)) {
+            return 0;
+        }
         if(gc.canMove(unitId, dir)) {
             gc.moveRobot(unitId, dir);
             return 1;
