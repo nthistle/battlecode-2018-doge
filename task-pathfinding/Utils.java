@@ -24,6 +24,21 @@ public class Utils
             Direction.Northeast
         };
     }
+
+    public static Direction reverseDirection(Direction dir) {
+        switch(dir) {
+            case North: return Direction.South;
+            case Northwest: return Direction.Southeast;
+            case West: return Direction.East;
+            case Southwest: return Direction.Northeast;
+            case South: return Direction.North;
+            case Southeast: return Direction.Northwest;
+            case East: return Direction.West;
+            case Northeast: return Direction.Southwest;
+            default: break;
+        }
+        return Direction.Center;
+    }
     
     // lazy way
     public static Direction[] getAdjacentDirs(Direction dir) {
@@ -69,5 +84,14 @@ public class Utils
             return 3;
         }
         return 0;
+    }
+
+    public static boolean compareMapLocation(MapLocation a, MapLocation b) {
+        return a.getPlanet() == b.getPlanet() && a.getX() == b.getX() && a.getY() == b.getY();
+    }
+
+    public static boolean canMoveWiggle(GameController gc, int unitId, Direction dir) {
+        Direction[] neighboring = getAdjacentDirs(dir);
+        return gc.canMove(unitID, dir) || gc.canMove(unitId, neighboring[0]) || gc.canMove(unitId, neighboring[1]);
     }
 }
