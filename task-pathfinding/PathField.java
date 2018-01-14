@@ -14,7 +14,7 @@ public class PathField
 	public PathField(PlanetMap basemap, MapLocation target) {
 		this.basemap = basemap;
 		this.target = target;
-		this.field = new PathPoint[basemap.getWidth()][basemap.getHeight()]
+		this.field = new PathPoint[basemap.getWidth()][basemap.getHeight()];
 	}
 
 	public boolean isPointSet(int x, int y) {
@@ -27,7 +27,7 @@ public class PathField
 
 	// uses internal class
 	public PathPoint getPoint(int x, int y) {
-		return field[x][y]
+		return field[x][y];
 	}
 
 	public Direction getDirectionAtPoint(int x, int y) {
