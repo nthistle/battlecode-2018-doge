@@ -24,21 +24,6 @@ public class Utils
             Direction.Northeast
         };
     }
-
-    public static Direction reverseDirection(Direction dir) {
-        switch(dir) {
-            case North: return Direction.South;
-            case Northwest: return Direction.Southeast;
-            case West: return Direction.East;
-            case Southwest: return Direction.Northeast;
-            case South: return Direction.North;
-            case Southeast: return Direction.Northwest;
-            case East: return Direction.West;
-            case Northeast: return Direction.Southwest;
-            default: break;
-        }
-        return Direction.Center;
-    }
     
     // lazy way
     public static Direction[] getAdjacentDirs(Direction dir) {
@@ -70,6 +55,9 @@ public class Utils
     // 2 if counter-clockwise neighbor succeeded,
     // 3 if clockwise neighbor succeeded
     public static int tryMoveWiggle(GameController gc, int unitId, Direction dir) {
+        if(!gc.isMoveReady(unitId)) {
+            return 0;
+        }
         if(gc.canMove(unitId, dir)) {
             gc.moveRobot(unitId, dir);
             return 1;

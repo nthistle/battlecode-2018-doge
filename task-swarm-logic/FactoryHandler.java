@@ -19,24 +19,30 @@ public class FactoryHandler extends UnitHandler {
     
     @Override
     public void takeTurn(Unit unit) {
-        if(this.rangersCreated < 8) {
-        	if(gc.canProduceRobot(this.id, UnitType.Ranger)) {
-            	gc.produceRobot(this.id, UnitType.Ranger);
-        	}
-        	this.rangersCreated++;
-        } else {
-        	((EarthController) parent).getSwarm().add(this.rangerSwarm);
-        	this.rangerSwarm.setSwarmLeader(new MapLocation(Planet.Earth, 10, 10));
-        }
-        VecUnitID garrison = unit.structureGarrison();
-        if(garrison.size() > 0) {
-            for(int i = 0; i < 8; i ++) {
-                Direction unloadDir = Utils.getRandomDirection(Direction.values(), this.rng);
-                if(gc.canUnload(this.id, unloadDir)) {
-                    gc.unload(this.id, unloadDir);
-                    rangerSwarm.addUnit(gc.senseUnitAtLocation(unit.location().mapLocation().add(unloadDir)).id());
-                }
-            }
-        }
+    	if(unit.structureIsBuilt() != 0) {
+	    	//System.out.println("Rangers created: " + this.rangersCreated);
+	        if(this.rangersCreated < 8) {
+	        	if(gc.canProduceRobot(this.id, UnitType.Ranger)) {
+	        		System.out.println("Ranger produced");
+	            	gc.produceRobot(this.id, UnitType.Ranger);
+	            	this.rangersCreated++;
+	        	}
+	        	
+	        } else {
+	        	((EarthController) parent).getSwarm().add(this.rangerSwarm);
+	        	this.rangerSwarm.setSwarmLeader(new MapLocation(Planet.Earth, 10, 10));
+	        }
+	        VecUnitID garrison = unit.structureGarrison();
+	        //System.out.println("Garrison size: " + garrison.size());
+	        if(garrison.size() > 0) {
+	            for(int i = 0; i < 8; i ++) {
+	                Direction unloadDir = Utils.getRandomDirection(Direction.values(), this.rng);
+	                if(gc.canUnload(this.id, unloadDir)) {
+	                    gc.unload(this.id, unloadDir);
+	                    rangerSwarm.addUnit(gc.senseUnitAtLocation(unit.location().mapLocation().add(unloadDir)).id());
+	                }
+	            }
+	        }
+    	}
     }
 }
