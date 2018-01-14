@@ -168,7 +168,7 @@ public class RocketHandler extends UnitHandler {
     }
    
     
-    private static class MovementHandler extends UnitHandler {
+    private class MovementHandler extends UnitHandler {
     	public Set<Integer> visited;
     	public MovementHandler(PlanetController parent, GameController gc, int id, Random rng, Set<String> visited) {
             super(parent, gc, id, rng);
