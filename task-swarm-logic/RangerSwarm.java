@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class RangerSwarm extends Swarm {
 
-	public int swarmMovementHeat = 0; 
+	public int swarmMovementHeat = 10; 
 	public final int SWARM_MOVEMENT_COOLDOWN = 20;
 
 	public RangerSwarm() {
@@ -18,8 +18,15 @@ public class RangerSwarm extends Swarm {
 				this.swarmIsMoving = false;
 				swarmAttack(this.swarmTarget);
 			} else {
-				
+				swarmMovementHeat -= 10;
+				if(swarmMovementHeat < 10) {
+					swarmMovementHeat += SWARM_MOVEMENT_COOLDOWN;
+					//update swarmLeader location
+				}
+				moveToLeader();
 			}
+		} else {
+			moveToLeader();
 		}
 	}
 
