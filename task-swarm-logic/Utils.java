@@ -11,6 +11,19 @@ public class Utils
         if(thisTeam==Team.Blue) return Team.Red;
         return Team.Blue;
     }
+
+    public static Direction[] directions() {
+        return new Direction[] {
+            Direction.North,
+            Direction.Northwest,
+            Direction.West,
+            Direction.Southwest,
+            Direction.South,
+            Direction.Southeast,
+            Direction.East,
+            Direction.Northeast
+        };
+    }
     
     // lazy way
     public static Direction[] getAdjacentDirs(Direction dir) {
