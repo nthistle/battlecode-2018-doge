@@ -61,7 +61,8 @@ public class EarthController extends PlanetController
                     myHandler.get(unit.id()).takeTurn(unit);
             }
             for(int i = 0; i < this.getSwarm().size(); i++) {
-                this.getSwarm().get(i).takeTurn();
+                if(this.getSwarm().get(i).getUnits().size() > 0)
+                    this.getSwarm().get(i).takeTurn();
             }
             gc.nextTurn();
         }
