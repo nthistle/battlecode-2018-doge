@@ -20,7 +20,7 @@ public class RocketHandler extends UnitHandler {
     
     @Override
     public void takeTurn(Unit unit) {
-    	return;
+    	this.load();
     }
     
     /**
@@ -198,9 +198,5 @@ public class RocketHandler extends UnitHandler {
     		return false;
     	}
     }
-    
-    
-    
-    
     
 }

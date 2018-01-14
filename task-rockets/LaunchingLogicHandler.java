@@ -1,12 +1,15 @@
 import bc.*;
+
+import java.util.Collections;
 import java.util.Random;
 import java.util.Set;
 
-public class LaunchingLogicHandler extends UnitHandler implements Comparator<ArrayList<MapLocation>> {
+public class LaunchingLogicHandler extends UnitHandler  {
 	private List<LinkedList<MapLocation>> zoneMap; 
 	private MapLocation landingPoint;
 	private List<MapLocation> usedLandingPoints;
 	private long launchingTime;
+	private[][] int values;
 	public LaunchingLogicHandler(PlanetController parent, GameController gc, int id, Random rng) {
 		this.parent = parent;
         this.gc = gc;
@@ -27,7 +30,16 @@ public class LaunchingLogicHandler extends UnitHandler implements Comparator<Arr
 		
 	}
 	
-	public getZones() {
+	private void calculateOptimalLandingLocation() {
+		Collections.sort(this.zoneMap, this.VecMapLocComp);
+		
+	}
+	
+	private void calculateOptimalLaunchingTime() {
+		
+	}
+	
+	private getZones() {
 		PlanetMap marsMap = gc.startingMap(Planet.Mars);
 		int[][] values = new int[marsMap.getHeight()][marsMap.getWidth()];
 		int[][] label = new int[marsMap.getHeight()][marsMap.getWidth()];
@@ -61,6 +73,7 @@ public class LaunchingLogicHandler extends UnitHandler implements Comparator<Arr
 				}
 			}
 		}
+		this.values = values;
 		return ret;
 	}
 	
@@ -85,7 +98,25 @@ public class LaunchingLogicHandler extends UnitHandler implements Comparator<Arr
 		}
 	}
 	
-	private int compare(ArrayList<MapLocation> a, ArrayList<MapLocation> b) {
-		
+	private static class VecMapLocComp implements Comparator<ArrayList<MapLocation>> {
+		private int compare(ArrayList<MapLocation> a, ArrayList<MapLocation> b) { //select the objectively better zone
+			
+			int totA = 0; totB = 0;
+			for(MapLocation loc : a) {
+				totA += this.values[loc.getY()][loc.getX()];
+			}
+			for(MapLocation loc : b) {
+				totB += this.values[loc.getY()][loc.getX()];
+			}
+			return (0.01 * totB + b.size()) - (0.01 * totA + a.size()); //adjust the coeffs to see 
+		}
 	}
+	
+	private static class MapLocComp implements Comparator<MapLocation> {
+		private int compare(MapLocation a, MapLocation b) {
+			return this.values[a.getY()][a.getX()] - this.values[b.getY()][b.getX()];
+		}
+	}
+	
+	
 }
