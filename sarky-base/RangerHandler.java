@@ -77,25 +77,6 @@ public class RangerHandler extends UnitHandler {
             return;
         }
         
-        // no close enemies, any close allies?
-
-        nearby = gc.senseNearbyUnitsByTeam(unit.location().mapLocation(), 8, gc.team()); // immediate range
-        nearestAlly = null;
-        nearestDist = Integer.MAX_VALUE;
-        for(int i = 0; i < nearby.size(); i ++) {
-            if(nearby.get(i).id() == this.id) continue;
-            if(nearestAlly == null || (myLocation.distanceSquaredTo(
-                    nearby.get(i).location().mapLocation()) < nearestDist)) {
-                nearestAlly = nearby.get(i);
-                nearestDist = myLocation.distanceSquaredTo(nearby.get(i).location().mapLocation());
-            }
-        }
-        if(nearestAlly != null) {
-            System.out.println("Moving away from ally who is "+nearestDist+" away");
-            Utils.tryMoveWiggle(this.gc, this.id, nearestAlly.location().mapLocation().directionTo(myLocation));
-            return;
-        }
-        
         // no close enemies and no close allies, how about far enemies?
         
         nearby = gc.senseNearbyUnitsByTeam(unit.location().mapLocation(), 70, this.enemy); // immediate range
