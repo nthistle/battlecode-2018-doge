@@ -18,9 +18,9 @@ public class Player {
         
         PlanetController pc = null;
         if(gc.planet() == Planet.Earth) {
-            pc = new EarthController(gc, rand);
+            pc = new EarthController(gc, rand, new ArrayList<Swarm>);
         } else if(gc.planet() == Planet.Mars) {
-            pc = new MarsController(gc, rand);
+            pc = new MarsController(gc, rand, new ArrayList<Swarm>);
         }
         
         System.out.println("Running PlayerController...");

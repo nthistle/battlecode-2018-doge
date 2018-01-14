@@ -16,7 +16,7 @@ public class RangerHandler extends UnitHandler {
         super(gc, id, rng);
         this.enemy = Utils.getOtherTeam(gc.team());
     }
-    
+
     public void takeTurn() {
         this.takeTurn(gc.unit(this.id));
     }
