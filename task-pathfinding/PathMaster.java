@@ -10,38 +10,54 @@ public class PathMaster
 		this.basemap = basemap;
 	}
 
-	public void generatePathField(MapLocation target) {
+	public PathField generatePathField(MapLocation target) {
 		// Does BFS, assigning directions back at each location
 		Queue<BFSLocation> queue = new LinkedList<BFSLocation>();
-		queue.add(BFSLocation.fromMapLocation(target));
+		BFSLocation cur = fromMapLocation(target);
+		queue.add(cur);
 
-		BFSLocation cur;
+		PathField pf = new PathField(this.basemap, target);
+		//pf.setPoint(cur.x, cur.y, cur.dir, 0);
+
 		while(queue.size() > 0) {
 			cur = queue.poll();
-			// mark on the map
+			if(pf.isPointSet(cur.x, cur.y))
+				continue;
+			pf.setPoint(cur.x, cur.y, cur.dir, cur.dist);
+			for(Direction dir : Utils.directions()) {
+				BFSLocation possLoc = cur.add(dir);
+				if(!pf.isPointSet(possLoc.x, possLoc.y)) {
+					queue.add(possLoc);
+				}
+			}
 		}
+		return pf;
+	}
 
+	private BFSLocation fromMapLocation(MapLocation ml) {
+		return fromMapLocation(ml, Direction.Center, 0);
+	}
 
+	private BFSLocation fromMapLocation(MapLocation ml, Direction dir, int dist) {
+		return new BFSLocation(ml.getX(), ml.getY(), dir, dist);
 	}
 
 	private class BFSLocation
 	{
 		public final int x;
 		public final int y;
+		public final Direction dir;
 		public final int dist;
 
-		public BFSLocation(int x, int y, int dist) {
+		public BFSLocation(int x, int y, Direction dir, int dist) {
 			this.x = x;
 			this.y = y;
+			this.dir = dir;
 			this.dist = dist;
 		}
 
-		public static BFSLocation fromMapLocation(MapLocation ml) {
-			return fromMapLocation(ml, 0);
-		}
-
-		public static BFSLocation fromMapLocation(MapLocation ml, int dist) {
-			return new BFSLocation(ml.getX(), ml.getY(), dist);
+		public BFSLocation add(Direction dir) {
+			return fromMapLocation(new MapLocation(Planet.Earth, this.x, this.y).add(dir), Utils.reverseDirection(dir), this.dist+1);
 		}
 	}
 

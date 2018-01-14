@@ -29,13 +29,17 @@ public abstract class Swarm
         return this.unitIDs;
     }
 
+    public Path getPath() {
+        return this.path;
+    }
+
     public boolean isSwarm() {
         return this.unitIDs.size() >= this.MIN_SWARM_SIZE;
     }
 
     public boolean isTogether() {
         for(int i = 0; i < unitIDs.size(); i++) {
-            if(!Utils.canMoveWiggle(this.gc, unitIDs.get(i), unitIDs.get(i).location().mapLocation().directionTo(swarmLeader))) {
+            if(!Utils.canMoveWiggle(this.gc, unitIDs.get(i), gc.unit(unitIDs.get(i)).location().mapLocation().directionTo(swarmLeader))) {
                 return false;
             }
         }
@@ -48,6 +52,10 @@ public abstract class Swarm
 
     public void setSwarmTarget(MapLocation target) {
         this.swarmTarget = target;
+    }
+
+    public void setPath(Path path) {
+        this.path = path;
     }
 
     public abstract void doTurn();
