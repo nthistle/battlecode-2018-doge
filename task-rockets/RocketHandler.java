@@ -1,6 +1,5 @@
 import bc.*;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class RocketHandler extends UnitHandler {
 	private Swarm crew;
@@ -62,7 +61,7 @@ public class RocketHandler extends UnitHandler {
     	else return false;
     }
     
-    pubilc MapLocation getDestination() {
+    public MapLocation getDestination() {
     	return this.dest;
     }
     
@@ -75,10 +74,10 @@ public class RocketHandler extends UnitHandler {
      */
     public boolean isLoaded() {
     	if(this.crew == null) return false;
-    	VecUnitID garrison = unit.structureGarrison();
+    	VecUnitID garrison = gc.unit(this.id).structureGarrison();
     	if(garrison.size() != this.crew.getUnits().size()) return false;
     	for(int i = 0; i < garrison.size(); i++) {
-    		if(this.crew.getUnits().contains(garrsion.get(i).id())) continue;
+    		if(this.crew.getUnits().contains(garrison.get(i))) continue;
     		else return false;
     	}
     	return true;
@@ -136,6 +135,7 @@ public class RocketHandler extends UnitHandler {
      */
     public boolean unload() {
     	boolean ret = true;
+    	VecUnitID garrison = gc.unit(this.id).structureGarrison();
     	if(garrison.size() <= 0) return true;
     	else {
     		for(int i = 0; i < garrison.size(); i++) {
@@ -147,14 +147,14 @@ public class RocketHandler extends UnitHandler {
         			}
         		}
     			if(placed) continue;
-    			MapLocation myLocation = unit.location().mapLocation(); 
+    			MapLocation myLocation = gc.unit(id).location().mapLocation(); 
         		VecUnit adjacent = gc.senseNearbyUnitsByTeam(myLocation, 2, gc.team());
         		for(int j = 0; j < adjacent.size(); j++) {
         			MapLocation itsLocation = adjacent.get(j).location().mapLocation();
         			Direction itsDirection = myLocation.directionTo(adjacent.get(j).location().mapLocation());
-        			Set<String> visited = new HashSet<String>();
-        			visited.add(gc.unit(this.id).toJson());
-        			MovementHandler move = new MovementHandler(this.gc, gc.senseUnitAtLocation(itsLocation).id(), this.rng, visited);
+        			Set<Integer> visited = new HashSet<Integer>();
+        			visited.add(this.id);
+        			MovementHandler move = new MovementHandler(this.parent, this.gc, gc.senseUnitAtLocation(itsLocation).id(), this.rng, visited);
         			placed = move.recurMove();
         			if(placed) {
         				gc.unload(this.id, itsDirection);
@@ -170,7 +170,7 @@ public class RocketHandler extends UnitHandler {
     
     private class MovementHandler extends UnitHandler {
     	public Set<Integer> visited;
-    	public MovementHandler(PlanetController parent, GameController gc, int id, Random rng, Set<String> visited) {
+    	public MovementHandler(PlanetController parent, GameController gc, int id, Random rng, Set<Integer> visited) {
             super(parent, gc, id, rng);
             this.visited = visited;
     	}
@@ -181,7 +181,7 @@ public class RocketHandler extends UnitHandler {
     	
     	public boolean recurMove() {
     		visited.add(this.id);
-    		for(Direciton c : Direction.values()) {
+    		for(Direction c : Direction.values()) {
     			if(gc.canMove(this.id, c)) {
     				gc.moveRobot(this.id, c);
     				return true;
@@ -190,9 +190,9 @@ public class RocketHandler extends UnitHandler {
     		MapLocation myLocation = gc.unit(this.id).location().mapLocation(); 
     		VecUnit adjacent = gc.senseNearbyUnitsByTeam(myLocation, 2, gc.team());
     		for(int i = 0; i < adjacent.size(); i++) {
-    			if(visited.contains(adjacent.get(i).toJson())) continue;
+    			if(visited.contains(adjacent.get(i).id())) continue;
     			MapLocation itsLocation = adjacent.get(i).location().mapLocation();
-    			MovementHandler move = new MovementHandler(this.gc, gc.senseUnitAtLocation(itsLocation).id(), this.rng, this.visited);
+    			MovementHandler move = new MovementHandler(this.parent, this.gc, gc.senseUnitAtLocation(itsLocation).id(), this.rng, this.visited);
     			if(move.recurMove()) return true;
     		}
     		return false;
