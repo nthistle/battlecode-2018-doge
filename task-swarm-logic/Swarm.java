@@ -3,6 +3,10 @@ import java.util.Random;
 import java.util.List;
 import java.util.ArrayList;
 
+/*
+ * @author Aneesh Kotnana
+ */
+
 public abstract class Swarm
 {
     protected final GameController gc;
@@ -13,7 +17,8 @@ public abstract class Swarm
     protected MapLocation swarmLeader; //robots should be following the swarmLeader
     protected boolean swarmIsMoving = false;
 
-    public Swarm() {
+    public Swarm(GameController gc) {
+        this.gc = gc;
         this.unitIDs = new ArrayList<Integer>();
     }
     
@@ -30,7 +35,7 @@ public abstract class Swarm
     }
 
     public Path getPath() {
-        return this.path;
+        return this.currPath;
     }
 
     public boolean isSwarm() {
@@ -55,10 +60,10 @@ public abstract class Swarm
     }
 
     public void setPath(Path path) {
-        this.path = path;
+        this.currPath = path;
     }
 
-    public abstract void doTurn();
+    public abstract void takeTurn();
     
     public abstract void moveToLeader();
 

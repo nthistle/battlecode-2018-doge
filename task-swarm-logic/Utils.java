@@ -77,6 +77,6 @@ public class Utils
 
     public static boolean canMoveWiggle(GameController gc, int unitId, Direction dir) {
         Direction[] neighboring = getAdjacentDirs(dir);
-        return gc.canMove(unitID, dir) || gc.canMove(unitId, neighboring[0]) || gc.canMove(unitId, neighboring[1]);
+        return gc.canMove(unitId, dir) || gc.canMove(unitId, neighboring[0]) || gc.canMove(unitId, neighboring[1]);
     }
 }

@@ -10,8 +10,13 @@ public class WorkerHandler extends UnitHandler {
     public WorkerHandler(PlanetController parent, GameController gc, int id, Random rng) {
         super(parent, gc, id, rng);
     }
-    
+
     public void takeTurn() {
+        this.takeTurn(gc.unit(this.id));
+    }
+    
+    @Override
+    public void takeTurn(Unit unit) {
 		VecUnit nearby = gc.senseNearbyUnits(unit.location().mapLocation(), 2); // immediate range
         for(int i = 0; i < nearby.size(); i ++) {
             if(gc.canBuild(this.id, nearby.get(i).id())) {

@@ -1,3 +1,5 @@
+import bc.*;
+
 public class Path {
 	MapLocation start;
 	MapLocation end;

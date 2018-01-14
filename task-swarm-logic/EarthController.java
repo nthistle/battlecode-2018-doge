@@ -49,20 +49,19 @@ public class EarthController extends PlanetController
                     myHandler.put(unit.id(), newHandler);
                 }
                 boolean isPartOfSwarm = false;
-                for(int i = 0; i < this.swarms.size(); i++) {
-                    if(this.swarms.get(i).getUnits().contains(unit.id())) {
+                for(int j = 0; j < this.getSwarm().size(); j++) {
+                    if(this.getSwarm().get(j).getUnits().contains(unit.id())) {
                         isPartOfSwarm = true;
                         break;
                     }
                 }
+                //temporary because i want to put all rangers into a swarm
+
                 if(!isPartOfSwarm)
                     myHandler.get(unit.id()).takeTurn(unit);
             }
-            for(int i = 0; i < this.swarms.size(); i++) {
-                if(this.swarms.get(i).getUnits().contains(unit.id())) {
-                    isPartOfSwarm = true;
-                    break;
-                }
+            for(int i = 0; i < this.getSwarm().size(); i++) {
+                this.getSwarm().get(i).takeTurn();
             }
             gc.nextTurn();
         }
