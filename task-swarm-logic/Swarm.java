@@ -35,7 +35,7 @@ public abstract class Swarm
 
     public boolean isTogether() {
         for(int i = 0; i < unitIDs.size(); i++) {
-            if(!Utils.canMoveWiggle(this.gc, unitIDs.get(i), unitIDs.get(i).location().mapLocation().directionTo(swarmLeader))) {
+            if(!Utils.canMoveWiggle(this.gc, unitIDs.get(i), gc.unit(unitIDs.get(i)).location().mapLocation().directionTo(swarmLeader))) {
                 return false;
             }
         }
