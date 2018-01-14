@@ -29,6 +29,10 @@ public abstract class Swarm
         return this.unitIDs;
     }
 
+    public Path getPath() {
+        return this.path;
+    }
+
     public boolean isSwarm() {
         return this.unitIDs.size() >= this.MIN_SWARM_SIZE;
     }
@@ -48,6 +52,10 @@ public abstract class Swarm
 
     public void setSwarmTarget(MapLocation target) {
         this.swarmTarget = target;
+    }
+
+    public void setPath(Path path) {
+        this.path = path;
     }
 
     public abstract void doTurn();
