@@ -2,19 +2,20 @@ import bc.*;
 import java.util.Random;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.TreeMap;
 
 public class RangerSwarm extends Swarm {
 
 	public int swarmMovementHeat = 10; 
 	public final int SWARM_MOVEMENT_COOLDOWN = 20;
 
-	public RangerSwarm() {
-		super();
+	public RangerSwarm(GameController gc) {
+		super(gc);
 	}
 
-	public void doTurn() {
+	public void takeTurn() {
 		if(this.swarmIsMoving) {
-			if(Utils.compareMapLocation(this.smarmLeader, this.swarmTarget)) {
+			if(Utils.compareMapLocation(this.swarmLeader, this.swarmTarget)) {
 				this.swarmIsMoving = false;
 				swarmAttack(this.swarmTarget);
 			} else {
@@ -33,7 +34,7 @@ public class RangerSwarm extends Swarm {
 	public void moveToLeader() {
 		//checking if any of the swarm members can see an attacker. If attacker is found, it prioritizes attackers based on closest attacker
 		boolean needToAttack = false;
-		MapLocation attackingLocation;
+		MapLocation attackingLocation = null;
 		TreeMap<Long, MapLocation> enemies = new TreeMap<Long, MapLocation>();
 		for(int i = 0; i < this.unitIDs.size(); i++) {
 			Unit unit = gc.unit(this.unitIDs.get(i));
@@ -46,14 +47,20 @@ public class RangerSwarm extends Swarm {
 				}
 			}
 		}
-		attackingLocation = enemies.get(enemies.firstKey());
+		if(enemies.keySet().size() > 0) {
+			attackingLocation = enemies.get(enemies.firstKey());
+		}
 		if(needToAttack) {
 			swarmAttack(attackingLocation);
 		} else {
 			for(int i = 0; i < this.unitIDs.size(); i++) {
 				Unit unit = gc.unit(this.unitIDs.get(i));
 				MapLocation myLocation = unit.location().mapLocation();
-				Utils.tryMoveWiggle(this.gc, this.unitIDs.get(i), myLocation.location().mapLocation().directionTo(this.swarmLeader));
+				if(!myLocation.isAdjacentTo(this.swarmLeader)) {
+					Utils.tryMoveRotate(this.gc, this.gc.unit(this.unitIDs.get(i)), myLocation.directionTo(this.swarmLeader));
+				} else if(myLocation.getX() > this.swarmLeader.getX() || myLocation.getY() > this.swarmLeader.getY()){
+					//System.out.println("Ranger with ID: " + unit.id() + " has overshot swarmTarget with location: " + myLocation.toString());
+				}
 			}
 		}
 	}
@@ -62,8 +69,8 @@ public class RangerSwarm extends Swarm {
 		if(this.isSwarm() && this.isTogether()) {
 			this.swarmIsMoving = true;
 		}
-		this.setPath(path)
-		this.setSwarmTarget(MapLocation(Planet.EARTH, 0, 0)); //TODO make this get the swarmTarget from the path
+		this.setPath(path);
+		this.setSwarmTarget(new MapLocation(Planet.Earth, 0, 0)); //TODO make this get the swarmTarget from the path
 	}
 
 	public void swarmAttack(MapLocation location) {

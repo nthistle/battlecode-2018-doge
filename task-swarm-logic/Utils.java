@@ -1,5 +1,7 @@
 import bc.*;
 import java.util.Random;
+import java.util.Arrays;
+import java.util.ArrayList;
 
 public class Utils
 {
@@ -55,6 +57,9 @@ public class Utils
     // 2 if counter-clockwise neighbor succeeded,
     // 3 if clockwise neighbor succeeded
     public static int tryMoveWiggle(GameController gc, int unitId, Direction dir) {
+        if(!gc.isMoveReady(unitId) || dir == Direction.Center) {
+            return 0;
+        }
         if(gc.canMove(unitId, dir)) {
             gc.moveRobot(unitId, dir);
             return 1;
@@ -71,12 +76,33 @@ public class Utils
         return 0;
     }
 
+    public static ArrayList<Direction> directionList = new ArrayList<Direction>(Arrays.asList(Direction.North, Direction.Northeast, Direction.East, Direction.Southeast, Direction.South, Direction.Southwest, Direction.West, Direction.Northwest));
+
+    public static int[] smallRotation = new int[] {0, -1, 1};
+    public static int[] bigRotation = new int[] {0, -1, 1, -2, 2};
+
+    public static int tryMoveRotate(GameController gc, Unit unit, Direction direction) {
+        if (!gc.isMoveReady(unit.id())) {
+            return -1;   
+        }
+        int index = directionList.indexOf(direction);
+        for (int i = 0; i < bigRotation.length; i++) {
+            Direction tryDirection = directionList.get((8 + index + bigRotation[i]) % 8);
+            if (gc.canMove(unit.id(), tryDirection)) {
+                gc.moveRobot(unit.id(), tryDirection);
+                return i;
+            }
+        }
+        return -1;
+    }
+
+
     public static boolean compareMapLocation(MapLocation a, MapLocation b) {
         return a.getPlanet() == b.getPlanet() && a.getX() == b.getX() && a.getY() == b.getY();
     }
 
     public static boolean canMoveWiggle(GameController gc, int unitId, Direction dir) {
         Direction[] neighboring = getAdjacentDirs(dir);
-        return gc.canMove(unitID, dir) || gc.canMove(unitId, neighboring[0]) || gc.canMove(unitId, neighboring[1]);
+        return gc.canMove(unitId, dir) || gc.canMove(unitId, neighboring[0]) || gc.canMove(unitId, neighboring[1]);
     }
 }

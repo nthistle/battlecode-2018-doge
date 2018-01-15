@@ -9,10 +9,9 @@ public abstract class PlanetController
     protected final Random rng;
     protected List<Swarm> swarms;
 
-    public PlanetController(GameController gc, Random rng, List<Swarm> swarms) {
+    public PlanetController(GameController gc, Random rng) {
         this.gc = gc;
         this.rng = rng;
-        this.swarms = swarms;
     }
     
     /**
@@ -26,4 +25,12 @@ public abstract class PlanetController
      * for controlling
      */
     public abstract Planet getPlanet();
+
+    public List<Swarm> getSwarm() {
+        return this.swarms;
+    }
+
+    public void setSwarm(ArrayList<Swarm> swarm) {
+        this.swarms = swarm;
+    }
 }
