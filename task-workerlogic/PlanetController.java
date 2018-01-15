@@ -1,5 +1,6 @@
 import bc.*;
 import java.util.Random;
+import java.util.HashMap;
 
 /**
  * Controls all actions just as Player would, but on a specific planet
@@ -30,4 +31,6 @@ public abstract class PlanetController
      * for controlling
      */
     public abstract Planet getPlanet();
+    public abstract int getRobotCount(UnitType type);
+    public abstract void incrementRobotCount(UnitType type);
 }

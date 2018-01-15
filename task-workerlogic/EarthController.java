@@ -19,7 +19,7 @@ public class EarthController extends PlanetController
 
     public void control() {
     
-        System.out.println("Earth Controller iniatied");
+        System.out.println("Earth Controller initiated");
             
         HashMap<Integer,UnitHandler> myHandler = new HashMap<Integer,UnitHandler>();
 
@@ -29,7 +29,7 @@ public class EarthController extends PlanetController
         MapLocation startLocation = gc.myUnits().get(0).location().mapLocation();
         targetLocation = new MapLocation(Planet.Earth, (int)earthMap.getWidth() - startLocation.getX(), (int)earthMap.getHeight() - startLocation.getY());     
 
-        while (true) {
+        while (true) {        
 
             System.out.println("Round #"+gc.round());
 
@@ -72,19 +72,30 @@ public class EarthController extends PlanetController
                     myHandler.put(unit.id(), newHandler);
                 }
 
-                if (!robotCount.containsKey(unit.unitType())) {
-                    robotCount.put(unit.unitType(), 1);
-                } else {
-                    robotCount.put(unit.unitType(), robotCount.get(unit.unitType()) + 1);
-                }
+                incrementRobotCount(unit.unitType());
+            }
 
+            for (int i = 0; i < units.size(); i++) {                
+                Unit unit = units.get(i);
                 myHandler.get(unit.id()).takeTurn(unit);
             }
+
             gc.nextTurn();
         }
     }
     
     public Planet getPlanet() {
         return Planet.Earth;
+    }
+
+    public int getRobotCount(UnitType type) {
+        if (!robotCount.containsKey(type)) {
+            return 0;
+        }
+        return robotCount.get(type);
+    }
+
+    public void incrementRobotCount(UnitType type) {
+        robotCount.put(type, getRobotCount(type) + 1);
     }
 }
