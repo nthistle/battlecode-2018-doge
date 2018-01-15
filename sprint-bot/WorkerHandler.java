@@ -21,7 +21,7 @@ public class WorkerHandler extends UnitHandler {
     public void takeTurn(Unit unit) {        
 
         if (!unit.location().isOnMap()) {
-            continue;
+            return;
         }
 
         boolean stationary = false;        
