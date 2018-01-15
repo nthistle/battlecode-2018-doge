@@ -13,6 +13,7 @@ public class PathMaster
 	public PathField getPathField(MapLocation target) {
 		// if it's cached, return the cached pathfield
 		// if it's not, call generate and cache it
+		return null; // filler
 	}
 
 	public PathField generatePathField(MapLocation target) {

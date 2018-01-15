@@ -29,6 +29,10 @@ public class PathField
         return (x>=0)&&(y>=0)&&(x<basemap.getWidth())&&(y<basemap.getHeight());
     }
 
+    public boolean isPointValid(MapLocation ml) {
+        return isPointValid(ml.getX(), ml.getY());
+    }
+
     /**
      * Checks if this PathField has an entry for (x,y). You should try this before calling
      * getDirectionAtPoint and getDistanceAtPoint
@@ -47,12 +51,20 @@ public class PathField
         return field[x][y] != null;
     }
 
+    public boolean isPointSet(MapLocation ml) {
+        return isPointSet(ml.getX(), ml.getY());
+    }
+
     /**
      * Returns the direction to move at this point to follow the shortest path to this
      * PathField's target
      */
     public Direction getDirectionAtPoint(int x, int y) {
         return getPoint(x,y).dir;
+    }
+
+    public Direction getDirectionAtPoint(MapLocation ml) {
+        return getDirectionAtPoint(ml.getX(), ml.getY());
     }
 
     /**
@@ -63,10 +75,18 @@ public class PathField
         return getPoint(x,y).dist;
     }
 
+    public int getDistanceAtPoint(MapLocation ml) {
+        return getDistanceAtPoint(ml.getX(), ml.getY());
+    }
+
 
     // uses internal class
     public PathPoint getPoint(int x, int y) {
         return field[x][y];
+    }
+
+    public PathPoint getPoint(MapLocation ml) {
+        return getPoint(ml.getX(), ml.getY());
     }
 
     /**
