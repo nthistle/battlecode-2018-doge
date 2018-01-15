@@ -7,87 +7,87 @@ import bc.*;
  */
 public class PathField
 {
-	protected PlanetMap basemap;
-	protected MapLocation target;
-	protected PathPoint[][] field;
+    protected PlanetMap basemap;
+    protected MapLocation target;
+    protected PathPoint[][] field;
 
-	public PathField(PlanetMap basemap, MapLocation target) {
-		this.basemap = basemap;
-		this.target = target;
-		this.field = new PathPoint[(int)basemap.getWidth()][(int)basemap.getHeight()];
-	}
+    public PathField(PlanetMap basemap, MapLocation target) {
+        this.basemap = basemap;
+        this.target = target;
+        this.field = new PathPoint[(int)basemap.getWidth()][(int)basemap.getHeight()];
+    }
 
-	/*
-	 *   START PUBLIC-FACING METHODS THAT YOU SHOULD BE USING
-	 */
-
-
-	/**
-	 * Checks if (x,y) is on the map, essentially (x,y positive, less than width,height)
-	 */
-	public boolean isPointValid(int x, int y) {
-		return (x>=0)&&(y>=0)&&(x<basemap.getWidth())&&(y<basemap.getHeight());
-	}
-
-	/**
-	 * Checks if this PathField has an entry for (x,y). You should try this before calling
-	 * getDirectionAtPoint and getDistanceAtPoint
-	 *
-	 * Cases where it does:
-	 *  - x,y is valid (on the map) AND is passable terrain AND is connected via passable
-	 *    terrain to the target location
-	 *
-	 * Cases where it doesn't
-	 *  - x,y is not valid (not on the map)
-	 *  - x,y does not contain passable terrain
-	 *  - x,y is not connected via passable terrain to target (more common on mars, where
-	 *     we tend to have disjointed "islands", because of reverse floodfilling)
-	 */
-	public boolean isPointSet(int x, int y) {
-		return field[x][y] != null;
-	}
-
-	/**
-	 * Returns the direction to move at this point to follow the shortest path to this
-	 * PathField's target
-	 */
-	public Direction getDirectionAtPoint(int x, int y) {
-		return getPoint(x,y).dir;
-	}
-
-	/**
-	 * Assuming you follow the directions provided by this pathfield, the number of steps
-	 * you must take to reach this PathField's target
-	 */
-	public int getDistanceAtPoint(int x, int y) {
-		return getPoint(x,y).dist;
-	}
+    /*
+     *   START PUBLIC-FACING METHODS THAT YOU SHOULD BE USING
+     */
 
 
-	// uses internal class
-	public PathPoint getPoint(int x, int y) {
-		return field[x][y];
-	}
+    /**
+     * Checks if (x,y) is on the map, essentially (x,y positive, less than width,height)
+     */
+    public boolean isPointValid(int x, int y) {
+        return (x>=0)&&(y>=0)&&(x<basemap.getWidth())&&(y<basemap.getHeight());
+    }
 
-	/**
-	 *  END PUBLIC FACING METHODS
-	 */
+    /**
+     * Checks if this PathField has an entry for (x,y). You should try this before calling
+     * getDirectionAtPoint and getDistanceAtPoint
+     *
+     * Cases where it does:
+     *  - x,y is valid (on the map) AND is passable terrain AND is connected via passable
+     *    terrain to the target location
+     *
+     * Cases where it doesn't
+     *  - x,y is not valid (not on the map)
+     *  - x,y does not contain passable terrain
+     *  - x,y is not connected via passable terrain to target (more common on mars, where
+     *     we tend to have disjointed "islands", because of reverse floodfilling)
+     */
+    public boolean isPointSet(int x, int y) {
+        return field[x][y] != null;
+    }
 
-	public void setPoint(int x, int y, Direction dir, int dist) {
-		field[x][y] = new PathPoint(dir, dist);
-	}
+    /**
+     * Returns the direction to move at this point to follow the shortest path to this
+     * PathField's target
+     */
+    public Direction getDirectionAtPoint(int x, int y) {
+        return getPoint(x,y).dir;
+    }
 
-	public class PathPoint
-	{
-		public final Direction dir;
-		public final int dist;
+    /**
+     * Assuming you follow the directions provided by this pathfield, the number of steps
+     * you must take to reach this PathField's target
+     */
+    public int getDistanceAtPoint(int x, int y) {
+        return getPoint(x,y).dist;
+    }
 
-		public PathPoint(Direction dir, int dist) {
-			this.dir = dir;
-			this.dist = dist;
-		}
 
-		public Direction getDirection() { return this.dir; }
-		public int getDistance() { return this.dist; }
-	}
+    // uses internal class
+    public PathPoint getPoint(int x, int y) {
+        return field[x][y];
+    }
+
+    /**
+     *  END PUBLIC FACING METHODS
+     */
+
+    public void setPoint(int x, int y, Direction dir, int dist) {
+        field[x][y] = new PathPoint(dir, dist);
+    }
+
+    public class PathPoint
+    {
+        public final Direction dir;
+        public final int dist;
+
+        public PathPoint(Direction dir, int dist) {
+            this.dir = dir;
+            this.dist = dist;
+        }
+
+        public Direction getDirection() { return this.dir; }
+        public int getDistance() { return this.dist; }
+    }
 }
