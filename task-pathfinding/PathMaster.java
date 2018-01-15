@@ -10,6 +10,11 @@ public class PathMaster
 		this.basemap = basemap;
 	}
 
+	public PathField getPathField(MapLocation target) {
+		// if it's cached, return the cached pathfield
+		// if it's not, call generate and cache it
+	}
+
 	public PathField generatePathField(MapLocation target) {
 		// Does BFS, assigning directions back at each location
 		Queue<BFSLocation> queue = new LinkedList<BFSLocation>();
