@@ -21,6 +21,12 @@ public class EarthController extends PlanetController
             System.out.println("Round #"+gc.round());
             
             VecUnit units = gc.myUnits();
+
+            if(gc.round() == 100)
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 10, 10));
+
+            if(gc.round() == 101)
+                this.createSwarm(new RangerSwarm(gc), 12, new MapLocation(Planet.Earth, 5, 20));
             
             for(int i = 0; i < units.size(); i ++) {
                 Unit unit = units.get(i);

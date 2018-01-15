@@ -11,6 +11,7 @@ public abstract class Swarm
 {
     protected final GameController gc;
     protected List<Integer> unitIDs;
+    protected int goalSize;
     protected final int MIN_SWARM_SIZE = 8;
     protected MapLocation swarmTarget; //the final target of the path
     protected Path currPath; //temporary
@@ -20,6 +21,15 @@ public abstract class Swarm
     public Swarm(GameController gc) {
         this.gc = gc;
         this.unitIDs = new ArrayList<Integer>();
+        this.goalSize = 0; //should this be in the constructor
+    }
+
+    public void setGoalSize(int a) {
+        this.goalSize = a;
+    }
+
+    public int getGoalSize() { 
+        return this.goalSize;
     }
     
     public void addUnit(int unitID) {

@@ -2,12 +2,15 @@ import bc.*;
 import java.util.Random;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public abstract class PlanetController
 {
     protected final GameController gc;
     protected final Random rng;
     protected List<Swarm> swarms;
+    protected Queue<Swarm> swarmRequest = new LinkedList<>();
 
     public PlanetController(GameController gc, Random rng) {
         this.gc = gc;
@@ -28,6 +31,16 @@ public abstract class PlanetController
 
     public List<Swarm> getSwarm() {
         return this.swarms;
+    }
+
+    public void createSwarm(Swarm type, int num, MapLocation lead) {
+        type.setGoalSize(num);
+        type.setSwarmLeader(lead);
+        this.swarmRequest.add(type);
+    }
+
+    public Queue<Swarm> getSwarmRequest() {
+        return this.swarmRequest;
     }
 
     public void setSwarm(ArrayList<Swarm> swarm) {
