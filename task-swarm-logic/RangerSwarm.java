@@ -56,11 +56,14 @@ public class RangerSwarm extends Swarm {
 			for(int i = 0; i < this.unitIDs.size(); i++) {
 				Unit unit = gc.unit(this.unitIDs.get(i));
 				MapLocation myLocation = unit.location().mapLocation();
+				Utils.tryMoveRotate(this.gc, this.gc.unit(this.unitIDs.get(i)), myLocation.directionTo(this.swarmLeader));
+				/*
 				if(!myLocation.isAdjacentTo(this.swarmLeader)) {
 					Utils.tryMoveRotate(this.gc, this.gc.unit(this.unitIDs.get(i)), myLocation.directionTo(this.swarmLeader));
 				} else if(myLocation.getX() > this.swarmLeader.getX() || myLocation.getY() > this.swarmLeader.getY()){
 					//System.out.println("Ranger with ID: " + unit.id() + " has overshot swarmTarget with location: " + myLocation.toString());
 				}
+				*/
 			}
 		}
 	}
