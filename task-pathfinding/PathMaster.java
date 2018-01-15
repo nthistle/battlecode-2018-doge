@@ -26,12 +26,16 @@ public class PathMaster
 			pf.setPoint(cur.x, cur.y, cur.dir, cur.dist);
 			for(Direction dir : Utils.directions()) {
 				BFSLocation possLoc = cur.add(dir);
-				if(!pf.isPointSet(possLoc.x, possLoc.y)) {
+				if(pf.isPointValid(possLoc.x, possLoc.y) && !pf.isPointSet(possLoc.x, possLoc.y) && checkPassable(cur.x, cur.y)) {
 					queue.add(possLoc);
 				}
 			}
 		}
 		return pf;
+	}
+
+	private boolean checkPassable(int x, int y) {
+		return this.basemap.isPassableTerrainAt(new MapLocation(basemap.getPlanet(), x, y)) != 0;
 	}
 
 	private BFSLocation fromMapLocation(MapLocation ml) {

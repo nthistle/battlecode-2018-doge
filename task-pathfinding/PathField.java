@@ -17,6 +17,10 @@ public class PathField
 		this.field = new PathPoint[(int)basemap.getWidth()][(int)basemap.getHeight()];
 	}
 
+	public boolean isPointValid(int x, int y) {
+		return (x>=0)&&(y>=0)&&(x<basemap.getWidth())&&(y<basemap.getHeight());
+	}
+
 	public boolean isPointSet(int x, int y) {
 		return field[x][y] != null;
 	}
