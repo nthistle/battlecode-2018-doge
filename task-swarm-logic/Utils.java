@@ -8,6 +8,19 @@ public class Utils
     public static Direction getRandomDirection(Direction[] dirs, Random rng) {
         return dirs[rng.nextInt(dirs.length)];
     }
+
+    public static Direction[] shuffleDirectionArray(Direction[] array, Random random) {
+        Direction temp;
+        int index;
+        for (int i = array.length - 1; i > 0; i--)
+        {
+            index = random.nextInt(i + 1);
+            temp = array[index];
+            array[index] = array[i];
+            array[i] = temp;
+        }
+        return array;
+    }
     
     public static Team getOtherTeam(Team thisTeam) {
         if(thisTeam==Team.Blue) return Team.Red;
