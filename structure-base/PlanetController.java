@@ -32,4 +32,12 @@ public abstract class PlanetController
      * for controlling
      */
     public abstract Planet getPlanet();
+
+    /**
+     * Gets a reference to this PC's PathMaster (avoids redundant BFS pathing
+     * by caching previously requested PathFields)
+     */
+    public PathMaster getPathMaster() {
+        return this.pm;
+    }
 }
