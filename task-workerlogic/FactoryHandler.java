@@ -24,7 +24,7 @@ public class FactoryHandler extends UnitHandler {
         }                    
         if (gc.canProduceRobot(unit.id(), UnitType.Knight)) {
             // gc.produceRobot(unit.id(), UnitType.Knight);
-            System.out.println("Produced a Knight!");
+            // System.out.println("Produced a Knight!");
         }                            
     }
 }

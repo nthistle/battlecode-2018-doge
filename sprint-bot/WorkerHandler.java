@@ -6,59 +6,102 @@ import java.util.HashSet;
 
 public class WorkerHandler extends UnitHandler {
 
+    private MapLocation targetLocation = null;    
     private MapLocation previous = null;
 
     public WorkerHandler(PlanetController parent, GameController gc, int id, Random rng) {
         super(parent, gc, id, rng);
     }
-
+    
     public void takeTurn() {
         takeTurn(gc.unit(this.id));
     }        
     
     @Override
-    public void takeTurn(Unit unit) {
+    public void takeTurn(Unit unit) {        
 
-        boolean building = false;
+        if (!unit.location().isOnMap()) {
+            continue;
+        }
+
+        boolean stationary = false;        
 
         MapLocation location = unit.location().mapLocation();
 
-        VecUnit nearby = gc.senseNearbyUnits(location, unit.visionRange());
+        VecUnit nearbyFriendly = gc.senseNearbyUnitsByTeam(location, unit.visionRange(), gc.team());
+        VecUnit nearbyEnemies = gc.senseNearbyUnitsByTeam(location, unit.visionRange(), Utils.getOtherTeam(gc.team()));
 
-        for (int j = 0; j < nearby.size(); j++) {
-            Unit nearbyUnit = nearby.get(j);
-            if (gc.canBuild(unit.id(), nearbyUnit.id())) {                
-                System.out.println("Built a factory!");
-                building = true;
-                gc.build(unit.id(), nearbyUnit.id());                
-                break;
-            }
+        if (nearbyEnemies.size() >= (int)(nearbyFriendly.size() * 1.5)) {
+            Unit nearestEnemy = null;
+            int nearestDistanceEnemy = Integer.MAX_VALUE;
+            for (int j = 0; j < nearbyEnemies.size(); j++) {
+                Unit nearbyUnit = nearbyEnemies.get(j);                                
+                int distance = (int)location.distanceSquaredTo(nearbyUnit.location().mapLocation());
+                if (distance < nearestDistanceEnemy || (distance == nearestDistanceEnemy && rng.nextBoolean())) {
+                    nearestEnemy = nearbyUnit;
+                    nearestDistanceEnemy = distance;
+                }                
+            }            
+            if (!stationary && nearestEnemy != null && Utils.tryMoveRotate(gc, unit, location.directionTo(location.subtract(location.directionTo(nearestEnemy.location().mapLocation())))) != -1) {
+                stationary = true;
+            }            
         }
 
-        if (((EarthController)parent).robotCount.containsKey(UnitType.Factory) && ((EarthController)parent).robotCount.get(UnitType.Factory) > ((EarthController)parent).robotCount.get(UnitType.Worker) * 4) {
+        if (parent.getRobotCount(UnitType.Factory) == 1 && (parent.getRobotCount(UnitType.Worker) == 1 || (parent.getRobotCount(UnitType.Factory) <= parent.getRobotCount(UnitType.Worker) && gc.senseNearbyUnitsByType(location, unit.visionRange(), UnitType.Worker).size() <= 1))) {
+            // System.out.println("Early game replication");
             for (Direction d : Utils.directionList) {
                 if (gc.canReplicate(unit.id(), d)) {
                     gc.replicate(unit.id(), d);
+                    System.out.println(gc.units().get(gc.units().size() - 1));
+                    parent.incrementRobotCount(UnitType.Worker);
+                    break;
                 }
             }
         }
 
-        if (!building && gc.karbonite() >= 100) {
-            Direction buildDirection = findBuildDirection(unit);
-            if (buildDirection != null && gc.canBlueprint(unit.id(), UnitType.Factory, buildDirection)) {
-                System.out.println("Blueprinting factory!");
-                gc.blueprint(unit.id(), UnitType.Factory, buildDirection);
-                building = true;
+        VecUnit nearbyFactories = gc.senseNearbyUnitsByType(location, unit.visionRange(), UnitType.Factory);
+        Unit nearestFactory = null;
+        int nearestDistanceFactory = Integer.MAX_VALUE;
+        for (int j = 0; j < nearbyFactories.size(); j++) {
+            Unit nearbyUnit = nearbyFactories.get(j);
+            if (nearbyUnit.structureIsBuilt() == 1) {
+                continue;
+            }
+            if (gc.canBuild(unit.id(), nearbyUnit.id())) {                
+                // System.out.println("Building factory!");                
+                gc.build(unit.id(), nearbyUnit.id());   
+                stationary = true;             
+                break;
+            }
+            if (nearbyUnit.team() == gc.team()) {
+                int distance = (int)location.distanceSquaredTo(nearbyUnit.location().mapLocation());
+                if (distance < nearestDistanceFactory || (distance == nearestDistanceFactory && rng.nextBoolean())) {
+                    nearestFactory = nearbyUnit;
+                    nearestDistanceFactory = distance;
+                }
             }
         }
 
-        if (building) {
+        if (!stationary && nearestFactory != null && Utils.tryMoveRotate(gc, unit, location.directionTo(nearestFactory.location().mapLocation())) != -1) {
+            stationary = true;
+        }
+
+        if (!stationary && gc.karbonite() >= 100) {
+            Direction buildDirection = findBuildDirection(unit);
+            if (buildDirection != null && gc.canBlueprint(unit.id(), UnitType.Factory, buildDirection)) {
+                // System.out.println("Blueprinting factory!");
+                gc.blueprint(unit.id(), UnitType.Factory, buildDirection);
+                parent.incrementRobotCount(UnitType.Factory);
+                stationary = true;
+            }
+        }
+
+        if (stationary) {
             return;
         }
 
         Direction moveDirection = findMoveDirection(unit);
-        if (moveDirection != null && gc.isMoveReady(unit.id()) && gc.canMove(unit.id(), moveDirection)) {
-            gc.moveRobot(unit.id(), moveDirection);   
+        if (moveDirection != null && Utils.tryMoveRotate(gc, unit, moveDirection) != -1) {
             previous = location;
         }                
     }

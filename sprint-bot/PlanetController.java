@@ -40,4 +40,7 @@ public abstract class PlanetController
     public PathMaster getPathMaster() {
         return this.pm;
     }
+
+    public abstract int getRobotCount(UnitType type);
+    public abstract void incrementRobotCount(UnitType type);
 }
