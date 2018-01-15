@@ -56,4 +56,19 @@ public class EarthController extends PlanetController
     public Planet getPlanet() {
         return Planet.Earth;
     }
+
+    public MapLocation getTarget() {
+
+        PlanetMap startingMap = gc.startingMap(gc.planet());
+        VecUnit startingUnits = startingMap.getInitial_units();
+
+        Team enemy = Utils.getOtherTeam(gc.team());
+        
+        for(int i = 0; i < startingUnits.size(); i ++) {
+            if(startingUnits.get(i).team()==enemy) {
+                return startingUnits.get(i).location().mapLocation();
+            }
+        }
+        return null;
+    }
 }
