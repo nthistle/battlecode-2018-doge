@@ -1,7 +1,6 @@
 import bc.*;
 import java.util.Random;
 import java.util.HashMap;
-import java.util.Random;
 
 public class EarthController extends PlanetController
 {

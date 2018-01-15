@@ -19,4 +19,12 @@ public class MarsController extends PlanetController
     public Planet getPlanet() {
         return Planet.Mars;
     }
+
+    public int getRobotCount(UnitType type) {
+        return 0;
+    }
+
+    public void incrementRobotCount(UnitType type) {
+        return;
+    }
 }
