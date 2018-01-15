@@ -5,8 +5,8 @@ import java.util.Random;
 
 public class EarthController extends PlanetController
 {
-    public EarthController(GameController gc, Random rng) {
-        super(gc, rng);
+    public EarthController(GameController gc, PathMaster pm, Random rng) {
+        super(gc, pm, rng);
     }
     
     public void control() {
@@ -30,19 +30,19 @@ public class EarthController extends PlanetController
                     
                     switch(unit.unitType()) {
                         case Factory:
-                          newHandler = new FactoryHandler(this, gc, unit.id(), rng);
-                          break;
+                            newHandler = new FactoryHandler(this, gc, unit.id(), rng);
+                            break;
                         case Knight:
-                          newHandler = new KnightHandler(this, gc, unit.id(), rng);
-                          break;
+                            newHandler = new KnightHandler(this, gc, unit.id(), rng);
+                            break;
                         case Ranger:
-                          newHandler = new RangerHandler(this, gc, unit.id(), rng);
-                          break;
+                            newHandler = new RangerHandler(this, gc, unit.id(), rng);
+                            break;
                         case Worker:
-                          newHandler = new WorkerHandler(this, gc, unit.id(), rng);
-                          break;
+                            newHandler = new WorkerHandler(this, gc, unit.id(), rng);
+                            break;
                         default:
-                          break;
+                            break;
                     }
                     
                     myHandler.put(unit.id(), newHandler);
