@@ -13,11 +13,10 @@ public class EarthController extends PlanetController
     public PlanetMap earthMap;
 
     public Team enemyTeam;
-    public MapLocation targetLocation;
-    public MapLocation threatLocation;
 
-    public HashMap<UnitType, Integer> robotCount;
-    
+    public HashMap<UnitType, Integer> robotCount;    
+    public HashMap<String, Long> moneyCount;
+
     public void control() {
     
         System.out.println("Earth Controller iniatied");
@@ -28,14 +27,18 @@ public class EarthController extends PlanetController
 
         earthMap = gc.startingMap(Planet.Earth);
 
-        /* EVANS USELESS STUFF
-        MapLocation startLocation = gc.myUnits().get(0).location().mapLocation();
-        targetLocation = new MapLocation(Planet.Earth, (int)earthMap.getWidth() - startLocation.getX(), (int)earthMap.getHeight() - startLocation.getY());     
-        */
+        moneyCount = new HashMap<String, Long>();
+        for (int i = 0; i < earthMap.getHeight(); i++) {
+            for (int j = 0; j < earthMap.getWidth(); j++) {
+                MapLocation tempLocation = new MapLocation(Planet.Earth, j, i);
+                moneyCount.put(tempLocation.toJson(), gc.karboniteAt(tempLocation));
+            }
+        }
+
         while (true) {
         
             System.out.println("Round #"+gc.round());
-
+            System.out.println("Time used: " + gc.getTimeLeftMs());
 
             //SWARM STUFF
             //TODO figure out a better starting swarmLeader position than 5,5
@@ -108,12 +111,6 @@ public class EarthController extends PlanetController
 
                 incrementRobotCount(unit.unitType());                
             }
-
-            /*
-            for (int i = 0; i < units.size(); i++) {                
-                Unit unit = units.get(i);
-                myHandler.get(unit.id()).takeTurn(unit);
-            }*/
 
             //SWARM STUFF
             for (int i = 0; i < units.size(); i++) {    

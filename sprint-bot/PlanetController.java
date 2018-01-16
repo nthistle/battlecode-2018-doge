@@ -30,6 +30,8 @@ public abstract class PlanetController
      * for controlling
      */
     public abstract Planet getPlanet();
+    public abstract int getRobotCount(UnitType type);
+    public abstract void incrementRobotCount(UnitType type);
 
     public List<Swarm> getSwarm() {
         return this.swarms;
