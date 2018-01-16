@@ -9,6 +9,8 @@ public class Utils
         return dirs[rng.nextInt(dirs.length)];
     }
 
+
+
     public static Direction[] shuffleDirectionArray(Direction[] array, Random random) {
         Direction temp;
         int index;
@@ -38,6 +40,21 @@ public class Utils
             Direction.East,
             Direction.Northeast
         };
+    }
+
+    public static Direction reverseDirection(Direction dir) {
+        switch(dir) {
+            case North: return Direction.South;
+            case Northwest: return Direction.Southeast;
+            case West: return Direction.East;
+            case Southwest: return Direction.Northeast;
+            case South: return Direction.North;
+            case Southeast: return Direction.Northwest;
+            case East: return Direction.West;
+            case Northeast: return Direction.Southwest;
+            default: break;
+        }
+        return Direction.Center;
     }
     
     // lazy way
@@ -114,8 +131,19 @@ public class Utils
         return a.getPlanet() == b.getPlanet() && a.getX() == b.getX() && a.getY() == b.getY();
     }
 
-    public static boolean canMoveWiggle(GameController gc, int unitId, Direction dir) {
+    public static int canMoveWiggle(GameController gc, int unitId, Direction dir) {
+        if(gc.canMove(unitId, dir)) {
+            return 1;
+        }
         Direction[] neighboring = getAdjacentDirs(dir);
-        return gc.canMove(unitId, dir) || gc.canMove(unitId, neighboring[0]) || gc.canMove(unitId, neighboring[1]);
+        if(neighboring == null)
+            return 0;
+        if(gc.canMove(unitId, neighboring[0])) {
+            return 2;
+        }
+        if(gc.canMove(unitId, neighboring[1])) {
+            return 3;
+        }
+        return 0;
     }
 }

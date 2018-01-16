@@ -14,16 +14,23 @@ public class RangerSwarm extends Swarm {
 	}
 
 	public void takeTurn() {
+		this.moveToTarget();
 		if(this.swarmIsMoving) {
-			if(Utils.compareMapLocation(this.swarmLeader, this.swarmTarget)) {
-				this.swarmIsMoving = false;
-				swarmAttack(this.swarmTarget);
-			} else {
-				swarmMovementHeat -= 10;
-				if(swarmMovementHeat < 10) {
-					swarmMovementHeat += SWARM_MOVEMENT_COOLDOWN;
-					//TODO update swarmLeader location
+			if(this.swarmTarget != null) {
+				if(Utils.compareMapLocation(this.swarmLeader, this.swarmTarget)) {
+					this.swarmIsMoving = false;
+					swarmAttack(this.swarmTarget);
+				} else {
+					swarmMovementHeat -= 10;
+					if(swarmMovementHeat < 10) {
+						swarmMovementHeat += SWARM_MOVEMENT_COOLDOWN;
+						Direction dirToMoveIn = this.currPath.getDirectionAtPoint(this.swarmLeader.getX(), this.swarmLeader.getY());
+						System.out.println("We want to move in direction: " + dirToMoveIn);
+						this.setSwarmLeader(this.swarmLeader.add(dirToMoveIn));
+					}
+					moveToLeader();
 				}
+			} else {
 				moveToLeader();
 			}
 		} else {
@@ -53,30 +60,33 @@ public class RangerSwarm extends Swarm {
 		if(needToAttack) {
 			swarmAttack(attackingLocation);
 		} else {
-			for(int i = 0; i < this.unitIDs.size(); i++) {
-				Unit unit = gc.unit(this.unitIDs.get(i));
-				MapLocation myLocation = unit.location().mapLocation();
-				Utils.tryMoveRotate(this.gc, this.gc.unit(this.unitIDs.get(i)), myLocation.directionTo(this.swarmLeader));
-				/*
-				if(!myLocation.isAdjacentTo(this.swarmLeader)) {
-					Utils.tryMoveRotate(this.gc, this.gc.unit(this.unitIDs.get(i)), myLocation.directionTo(this.swarmLeader));
-				} else if(myLocation.getX() > this.swarmLeader.getX() || myLocation.getY() > this.swarmLeader.getY()){
-					//System.out.println("Ranger with ID: " + unit.id() + " has overshot swarmTarget with location: " + myLocation.toString());
+			for(int j = 0; j < 5; j++) {
+				for(int i = 0; i < this.unitIDs.size(); i++) {
+					Unit unit = gc.unit(this.unitIDs.get(i));
+					MapLocation myLocation = unit.location().mapLocation();
+					Utils.tryMoveWiggle(this.gc, (this.unitIDs.get(i)), myLocation.directionTo(this.swarmLeader));
 				}
-				*/
 			}
 		}
 	}
 
-	public void moveToTarget(Path path) {
+	public void moveToTarget() {
 		if(this.isSwarm() && this.isTogether()) {
 			this.swarmIsMoving = true;
+			System.out.println("swarm is moving now");
+		} else if(!this.isTogether()){
+			System.out.println("swarm is not yet together");
+		} else if(this.isTogether()) {
+			System.out.println("swarm is now together");
 		}
-		this.setPath(path);
-		this.setSwarmTarget(new MapLocation(Planet.Earth, 0, 0)); //TODO make this get the swarmTarget from the path
 	}
 
 	public void swarmAttack(MapLocation location) {
-		System.out.println("Whole swarm attacks this location: " + location.toString());
+	/*
+		boolean enemySeen = false;
+		for(int i = 0; i < this.unitIDs.size(); i++) {
+			if
+		}
+	*/
 	}
 }

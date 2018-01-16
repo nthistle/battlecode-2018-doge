@@ -8,6 +8,7 @@ import java.util.Queue;
 public abstract class PlanetController
 {
     protected final GameController gc;
+    protected final PathMaster pm;
     protected final Random rng;
     protected List<Swarm> swarms;
     protected Queue<Swarm> swarmRequest = new LinkedList<>();
@@ -15,6 +16,7 @@ public abstract class PlanetController
     public PlanetController(GameController gc, Random rng) {
         this.gc = gc;
         this.rng = rng;
+        pm = new PathMaster(this.gc.startingMap(this.gc.planet()));
     }
     
     /**
@@ -33,9 +35,10 @@ public abstract class PlanetController
         return this.swarms;
     }
 
-    public void createSwarm(Swarm type, int num, MapLocation lead) {
+    public void createSwarm(Swarm type, int num, MapLocation lead, MapLocation target) {
         type.setGoalSize(num);
         type.setSwarmLeader(lead);
+        type.setPath(pm.generatePathField(target));
         this.swarmRequest.add(type);
     }
 

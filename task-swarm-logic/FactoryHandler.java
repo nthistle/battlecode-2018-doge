@@ -14,6 +14,7 @@ public class FactoryHandler extends UnitHandler {
     @Override
     public void takeTurn(Unit unit) {
 
+        /*
         int shouldProduce = this.rng.nextInt(150);
         if(shouldProduce == 0) {
             if(gc.canProduceRobot(this.id, UnitType.Ranger)) {
@@ -24,6 +25,7 @@ public class FactoryHandler extends UnitHandler {
                 gc.produceRobot(this.id, UnitType.Knight);
             }
         }
+        */
 
         if(unit.structureIsBuilt() != 0) {
             VecUnitID garrison = unit.structureGarrison();
