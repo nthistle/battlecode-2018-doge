@@ -22,17 +22,29 @@ public class RangerSwarm extends Swarm {
 				if(Utils.compareMapLocation(this.swarmLeader, this.swarmTarget)) {
 					this.swarmIsMoving = false;
 					swarmAttack(this.swarmTarget);
+					this.swarmTarget = null;
 				} else {
 					swarmMovementHeat -= 10;
 					if(swarmMovementHeat < 10) {
 						swarmMovementHeat += SWARM_MOVEMENT_COOLDOWN;
-						Direction dirToMoveIn = this.currPath.getDirectionAtPoint(this.swarmLeader.getX(), this.swarmLeader.getY());
-						System.out.println("We want to move in direction: " + dirToMoveIn);
-						this.setSwarmLeader(this.swarmLeader.add(dirToMoveIn));
+						if(this.currPath.isPointSet(this.swarmLeader.getX(), this.swarmLeader.getY())) {
+							Direction dirToMoveIn = this.currPath.getDirectionAtPoint(this.swarmLeader.getX(), this.swarmLeader.getY());
+							System.out.println("We want to move in direction: " + dirToMoveIn);
+							this.setSwarmLeader(this.swarmLeader.add(dirToMoveIn));
+						}
 					}
 					moveToLeader();
 				}
 			} else {
+				swarmMovementHeat -= 10;
+				if(swarmMovementHeat < 10) {
+					swarmMovementHeat += SWARM_MOVEMENT_COOLDOWN;
+					Direction d = Utils.getRandomDirection(Direction.values(), new Random());
+					while(!(gc.isOccupiable(this.swarmLeader.add(d)) == 0))
+						d = Utils.getRandomDirection(Direction.values(), new Random());
+					System.out.println("Random walk in direction: " + d);
+					this.setSwarmLeader(this.swarmLeader.add(d));
+				}
 				moveToLeader();
 			}
 		} else {

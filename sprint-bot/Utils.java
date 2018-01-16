@@ -56,6 +56,11 @@ public class Utils
         return Direction.Center;
     }
     
+
+    public static long distanceSquaredTo(MapLocation a, MapLocation b) {
+        return ((long)Math.pow((a.getX() - b.getX()), 2)) + ((long)Math.pow((a.getY() - b.getY()), 2));
+    }
+
     // lazy way
     public static Direction[] getAdjacentDirs(Direction dir) {
         switch(dir) {

@@ -11,6 +11,7 @@ public abstract class PlanetController
     protected final PathMaster pm;
     protected final Random rng;
     protected List<Swarm> swarms;
+    protected Queue<Swarm> swarmCreationRequest = new LinkedList<>();
     protected Queue<Swarm> swarmRequest = new LinkedList<>();
 
     public PlanetController(GameController gc, PathMaster pm, Random rng) {
@@ -41,7 +42,13 @@ public abstract class PlanetController
         type.setGoalSize(num);
         type.setSwarmLeader(lead);
         type.setPath(pm.generatePathField(target));
-        this.swarmRequest.add(type);
+        this.swarmCreationRequest.add(type);
+    }
+
+    public abstract void requestSwarm(int num, MapLocation target, UnitType a);
+
+    public Queue<Swarm> getSwarmCreationRequest() {
+        return this.swarmCreationRequest;
     }
 
     public Queue<Swarm> getSwarmRequest() {

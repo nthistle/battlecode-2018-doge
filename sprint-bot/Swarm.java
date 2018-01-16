@@ -20,6 +20,7 @@ public abstract class Swarm
     protected PathField currPath; //temporary
     protected MapLocation swarmLeader; //robots should be following the swarmLeader
     protected boolean swarmIsMoving = false;
+    protected int goalFactory;
 
     public Swarm(GameController gc) {
         this.gc = gc;
@@ -33,6 +34,14 @@ public abstract class Swarm
 
     public int getGoalSize() { 
         return this.goalSize;
+    }
+
+    public int getGoalFactory() {
+        return this.goalFactory;
+    }
+
+    public void setGoalFactory(int a) {
+        this.goalFactory = a;
     }
     
     public void addUnit(int unitID) {
