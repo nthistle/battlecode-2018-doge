@@ -122,7 +122,7 @@ public class WorkerHandler extends UnitHandler {
             System.out.println("Harvesting");
             gc.harvest(unit.id(), bestDirection);
             String key = location.add(bestDirection).toJson();
-            moneyCount.put(key, moneyCount.get(key - unit.workerHarvestAmount()));
+            moneyCount.put(key, moneyCount.get(key) - unit.workerHarvestAmount());
         }
 
         if (!stationary) {
