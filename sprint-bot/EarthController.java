@@ -1,6 +1,8 @@
 import bc.*;
 import java.util.Random;
 import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EarthController extends PlanetController
 {
@@ -51,16 +53,16 @@ public class EarthController extends PlanetController
                     }
                 }
                 target = enemyStartingPositions.get(this.rng.nextInt(enemyStartingPositions.size())).location().mapLocation();
-                this.createSwarm(new RangerSwarm(gc), 12, new MapLocation(Planet.Earth, 5, 5), target);
-                this.createSwarm(new RangerSwarm(gc), 12, new MapLocation(Planet.Earth, 5, 5), target);
-                this.createSwarm(new RangerSwarm(gc), 12, new MapLocation(Planet.Earth, 5, 5), target);
-                this.createSwarm(new RangerSwarm(gc), 12, new MapLocation(Planet.Earth, 5, 5), target);
-                this.createSwarm(new RangerSwarm(gc), 12, new MapLocation(Planet.Earth, 5, 5), target);
-                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 5, 5), target);
-                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 5, 5), target);
-                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 5, 5), target);
-                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 5, 5), target);
-                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 5, 5), target);
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 0, 0), target);
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 0, 0), target);
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 0, 0), target);
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 0, 0), target);
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 0, 0), target);
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 0, 0), target);
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 0, 0), target);
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 0, 0), target);
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 0, 0), target);
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 0, 0), target);
             }
             //END SWARM STUFF
 
@@ -75,7 +77,7 @@ public class EarthController extends PlanetController
 
             robotCount = new HashMap<UnitType, Integer>(); 
             
-            VecUnit units = gc.myUnits();
+            units = gc.myUnits();
             
             for(int i = 0; i < units.size(); i ++) {
                 Unit unit = units.get(i);
@@ -114,7 +116,8 @@ public class EarthController extends PlanetController
             }*/
 
             //SWARM STUFF
-            for (int i = 0; i < units.size(); i++) {                
+            for (int i = 0; i < units.size(); i++) {    
+                Unit unit = units.get(i);     
                 boolean isPartOfSwarm = false;
                 for(int j = 0; j < this.getSwarm().size(); j++) {
                     if(this.getSwarm().get(j).getUnits().contains(unit.id())) {

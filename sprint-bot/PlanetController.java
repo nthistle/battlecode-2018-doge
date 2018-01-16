@@ -13,10 +13,10 @@ public abstract class PlanetController
     protected List<Swarm> swarms;
     protected Queue<Swarm> swarmRequest = new LinkedList<>();
 
-    public PlanetController(GameController gc, Random rng) {
+    public PlanetController(GameController gc, PathMaster pm, Random rng) {
         this.gc = gc;
         this.rng = rng;
-        pm = new PathMaster(this.gc.startingMap(this.gc.planet()));
+        this.pm = pm;
     }
     
     /**

@@ -46,6 +46,7 @@ public class FactoryHandler extends UnitHandler {
                                 if(justUnloaded.unitType() == UnitType.Ranger) {
                                     processedSwarm.addUnit(justUnloaded.id());
                                     if(processedSwarm.isSwarm()) {
+                                        processedSwarm.setSwarmLeader(gc.unit(processedSwarm.getUnits().get(0)).location().mapLocation());
                                         parent.getSwarm().add(processedSwarm);
                                         System.out.println("Swarm has enough robots in it");
                                     }
