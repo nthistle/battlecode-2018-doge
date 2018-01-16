@@ -16,6 +16,8 @@ public class EarthController extends PlanetController
 
     public HashMap<UnitType, Integer> robotCount;
     
+    public HashMap<String, Long> moneyCount;
+
     public void control() {
     
         System.out.println("Earth Controller iniatied");
@@ -27,6 +29,14 @@ public class EarthController extends PlanetController
         earthMap = gc.startingMap(Planet.Earth);
         MapLocation startLocation = gc.myUnits().get(0).location().mapLocation();
         targetLocation = new MapLocation(Planet.Earth, (int)earthMap.getWidth() - startLocation.getX(), (int)earthMap.getHeight() - startLocation.getY());     
+
+        moneyCount = new HashMap<String, Long>();
+        for (int i = 0; i < earthMap.getHeight(); i++) {
+            for (int j = 0; j < earthMap.getWidth(); j++) {
+                MapLocation tempLocation = new MapLocation(Planet.Earth, j, i);
+                moneyCount.put(tempLocation.toJson(), gc.karboniteAt(tempLocation));
+            }
+        }
 
         while (true) {
         
