@@ -27,4 +27,9 @@ public class MarsController extends PlanetController
     public void incrementRobotCount(UnitType type) {
         return;
     }
+
+    @Override
+    public void requestSwarm(int goalSize, MapLocation target, UnitType a) {
+        return;
+    }
 }

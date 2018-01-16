@@ -3,11 +3,12 @@ import java.util.Random;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.HashMap;
 
 public class WorkerHandler extends UnitHandler {
 
     private MapLocation targetLocation = null;    
-    private MapLocation previous = null;
+    private MapLocation previous = null;    
 
     public WorkerHandler(PlanetController parent, GameController gc, int id, Random rng) {
         super(parent, gc, id, rng);
@@ -20,15 +21,31 @@ public class WorkerHandler extends UnitHandler {
     @Override
     public void takeTurn(Unit unit) {        
 
-        if (!unit.location().isOnMap()) {
+        if (!unit.location().isOnMap()) {            
             return;
         }
 
+        if (unit.location().isOnPlanet(Planet.Mars)) {
+            
+            return;
+        }
+
+        PlanetMap map = ((EarthController)parent).earthMap;
+        HashMap<String, Long> moneyCount = ((EarthController)parent).moneyCount;
+
         boolean stationary = false;        
 
-        MapLocation location = unit.location().mapLocation();
+        MapLocation location = unit.location().mapLocation();        
 
         VecUnit nearbyFriendly = gc.senseNearbyUnitsByTeam(location, unit.visionRange(), gc.team());
+
+        int nearbyWorkers = 0;
+        for (int i = 0; i < nearbyFriendly.size(); i++) {
+            if (nearbyFriendly.get(i).unitType() == UnitType.Worker) {
+                nearbyWorkers++;
+            }
+        }
+
         VecUnit nearbyEnemies = gc.senseNearbyUnitsByTeam(location, unit.visionRange(), Utils.getOtherTeam(gc.team()));
 
         if (nearbyEnemies.size() >= (int)(nearbyFriendly.size() * 1.5)) {
@@ -84,9 +101,10 @@ public class WorkerHandler extends UnitHandler {
 
         if (!stationary && nearestFactory != null && Utils.tryMoveRotate(gc, unit, location.directionTo(nearestFactory.location().mapLocation())) != -1) {
             stationary = true;
+            previous = location;
         }
 
-        if (!stationary && gc.karbonite() >= 100) {
+        if (!stationary && ((gc.karbonite() >= 100 && gc.round() <= 500) || gc.karbonite() >= 175)) {
             Direction buildDirection = findBuildDirection(unit);
             if (buildDirection != null && gc.canBlueprint(unit.id(), UnitType.Factory, buildDirection)) {
                 // System.out.println("Blueprinting factory!");
@@ -94,6 +112,29 @@ public class WorkerHandler extends UnitHandler {
                 parent.incrementRobotCount(UnitType.Factory);
                 stationary = true;
             }
+        }
+
+        Direction bestDirection = null;
+        long most = 0;
+        for (Direction d : Direction.values()) {                         
+            MapLocation tryLocation = location.add(d);
+            if (!map.onMap(tryLocation) || map.isPassableTerrainAt(tryLocation) == 0) {
+                continue;
+            }
+            if (gc.canHarvest(unit.id(), d) && (bestDirection == null || gc.karboniteAt(tryLocation) > most)) {
+                bestDirection = d;
+                most = gc.karboniteAt(tryLocation);
+            }
+        }
+        if (bestDirection != null) {
+            System.out.println("Harvesting");
+            gc.harvest(unit.id(), bestDirection);
+            String key = location.add(bestDirection).toJson();
+            moneyCount.put(key, moneyCount.get(key) - unit.workerHarvestAmount());
+        }
+
+        if (!stationary) {
+            
         }
 
         if (stationary) {

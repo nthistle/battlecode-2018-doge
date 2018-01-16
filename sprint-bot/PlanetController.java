@@ -1,24 +1,23 @@
 import bc.*;
 import java.util.Random;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue; 
 
-/**
- * Controls all actions just as Player would, but on a specific planet
- * Essentially Player defers control to an instance of this, so that
- * we can separate logic by planet, and so we can pass this as a parent
- * to units, for coordinating unit collabarative actions.
- * @author Neil Thistlethwaite
- * @version 1.0
- */
 public abstract class PlanetController
 {
     protected final GameController gc;
     protected final PathMaster pm;
     protected final Random rng;
+    protected List<Swarm> swarms;
+    protected Queue<Swarm> swarmCreationRequest = new LinkedList<>();
+    protected Queue<Swarm> swarmRequest = new LinkedList<>();
 
     public PlanetController(GameController gc, PathMaster pm, Random rng) {
         this.gc = gc;
-        this.pm = pm;
         this.rng = rng;
+        this.pm = pm;
     }
     
     /**
@@ -32,15 +31,31 @@ public abstract class PlanetController
      * for controlling
      */
     public abstract Planet getPlanet();
-
-    /**
-     * Gets a reference to this PC's PathMaster (avoids redundant BFS pathing
-     * by caching previously requested PathFields)
-     */
-    public PathMaster getPathMaster() {
-        return this.pm;
-    }
-
     public abstract int getRobotCount(UnitType type);
     public abstract void incrementRobotCount(UnitType type);
+
+    public List<Swarm> getSwarm() {
+        return this.swarms;
+    }
+
+    public void createSwarm(Swarm type, int num, MapLocation lead, MapLocation target) {
+        type.setGoalSize(num);
+        type.setSwarmLeader(lead);
+        type.setPath(pm.generatePathField(target));
+        this.swarmCreationRequest.add(type);
+    }
+
+    public abstract void requestSwarm(int num, MapLocation target, UnitType a);
+
+    public Queue<Swarm> getSwarmCreationRequest() {
+        return this.swarmCreationRequest;
+    }
+
+    public Queue<Swarm> getSwarmRequest() {
+        return this.swarmRequest;
+    }
+
+    public void setSwarm(ArrayList<Swarm> swarm) {
+        this.swarms = swarm;
+    }
 }
