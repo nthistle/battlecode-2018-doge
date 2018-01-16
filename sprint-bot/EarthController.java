@@ -31,7 +31,7 @@ public class EarthController extends PlanetController
         for (int i = 0; i < earthMap.getHeight(); i++) {
             for (int j = 0; j < earthMap.getWidth(); j++) {
                 MapLocation tempLocation = new MapLocation(Planet.Earth, j, i);
-                moneyCount.put(tempLocation.toJson(), gc.karboniteAt(tempLocation));
+                moneyCount.put(tempLocation.toJson(), earthMap.initialKarboniteAt(tempLocation));
             }
         }
 

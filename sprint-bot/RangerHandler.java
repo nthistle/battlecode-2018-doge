@@ -16,6 +16,9 @@ public class RangerHandler extends UnitHandler {
     
     @Override    
     public void takeTurn(Unit unit) {
+        if (!unit.location().isOnMap()) {
+            return;
+        }
         if(gc.isMoveReady(this.id))
             this.doMovement(unit);
             
