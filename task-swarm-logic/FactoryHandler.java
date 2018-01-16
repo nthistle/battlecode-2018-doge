@@ -14,6 +14,7 @@ public class FactoryHandler extends UnitHandler {
     @Override
     public void takeTurn(Unit unit) {
 
+        /*
         int shouldProduce = this.rng.nextInt(150);
         if(shouldProduce == 0) {
             if(gc.canProduceRobot(this.id, UnitType.Ranger)) {
@@ -24,6 +25,7 @@ public class FactoryHandler extends UnitHandler {
                 gc.produceRobot(this.id, UnitType.Knight);
             }
         }
+        */
 
         if(unit.structureIsBuilt() != 0) {
             VecUnitID garrison = unit.structureGarrison();
@@ -57,27 +59,32 @@ public class FactoryHandler extends UnitHandler {
                 Direction[] dirs = Utils.shuffleDirectionArray(Direction.values(), this.rng);
                 for(int i = 0; i < dirs.length; i++) {
                     Direction dir = dirs[this.rng.nextInt(dirs.length)];
-                    if(gc.startingMap(gc.planet()).onMap(unit.location().mapLocation().add(dir)) && Utils.tryMoveWiggle(gc, gc.senseUnitAtLocation(unit.location().mapLocation().add(dir)).id(), dir) != 0) {
-                        System.out.println("Forcefully moved away");
-                        if(gc.canUnload(this.id, dir)) {
-                            gc.unload(this.id, dir);
-                            Unit justUnloaded = gc.senseUnitAtLocation(unit.location().mapLocation().add(dir));
-                            if(parent.getSwarmRequest().size() > 0) {
-                                Swarm processedSwarm = parent.getSwarmRequest().peek();
-                                if(processedSwarm instanceof RangerSwarm) {
-                                    if(justUnloaded.unitType() == UnitType.Ranger) {
-                                        processedSwarm.addUnit(justUnloaded.id());
-                                        if(processedSwarm.isSwarm()) {
-                                            parent.getSwarm().add(processedSwarm);
-                                            System.out.println("Swarm has enough robots in it");
+                    //TODO instead of try catch, just check if there is a unit on that location before sensing a unit on that logation
+                    try {
+                        if(gc.startingMap(gc.planet()).onMap(unit.location().mapLocation().add(dir)) && Utils.tryMoveWiggle(gc, gc.senseUnitAtLocation(unit.location().mapLocation().add(dir)).id(), dir) != 0) {
+                            System.out.println("Forcefully moved away");
+                            if(gc.canUnload(this.id, dir)) {
+                                gc.unload(this.id, dir);
+                                Unit justUnloaded = gc.senseUnitAtLocation(unit.location().mapLocation().add(dir));
+                                if(parent.getSwarmRequest().size() > 0) {
+                                    Swarm processedSwarm = parent.getSwarmRequest().peek();
+                                    if(processedSwarm instanceof RangerSwarm) {
+                                        if(justUnloaded.unitType() == UnitType.Ranger) {
+                                            processedSwarm.addUnit(justUnloaded.id());
+                                            if(processedSwarm.isSwarm()) {
+                                                parent.getSwarm().add(processedSwarm);
+                                                System.out.println("Swarm has enough robots in it");
+                                            }
+                                            System.out.println("Ranger unloaded for swarm");
                                         }
-                                        System.out.println("Ranger unloaded for swarm");
                                     }
                                 }
+                                break;
                             }
-                            break;
-                        }
 
+                        }
+                    } catch (RuntimeException e) {
+                        continue;
                     }
                 }
             }

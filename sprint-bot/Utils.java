@@ -15,6 +15,19 @@ public class Utils
         return Team.Blue;
     }
 
+    public static Direction[] shuffleDirectionArray(Direction[] array, Random random) {
+        Direction temp;
+        int index;
+        for (int i = array.length - 1; i > 0; i--)
+        {
+            index = random.nextInt(i + 1);
+            temp = array[index];
+            array[index] = array[i];
+            array[i] = temp;
+        }
+        return array;
+    }
+
     public static Direction[] directions() {
         return new Direction[] {
             Direction.North,
@@ -73,7 +86,7 @@ public class Utils
     // 2 if counter-clockwise neighbor succeeded,
     // 3 if clockwise neighbor succeeded
     public static int tryMoveWiggle(GameController gc, int unitId, Direction dir) {
-        if(!gc.isMoveReady(unitId)) {
+        if(!gc.isMoveReady(unitId) || dir == Direction.Center) {
             return 0;
         }
         if(gc.canMove(unitId, dir)) {
@@ -96,9 +109,20 @@ public class Utils
         return a.getPlanet() == b.getPlanet() && a.getX() == b.getX() && a.getY() == b.getY();
     }
 
-    public static boolean canMoveWiggle(GameController gc, int unitId, Direction dir) {
+    public static int canMoveWiggle(GameController gc, int unitId, Direction dir) {
+        if(gc.canMove(unitId, dir)) {
+            return 1;
+        }
         Direction[] neighboring = getAdjacentDirs(dir);
-        return gc.canMove(unitId, dir) || gc.canMove(unitId, neighboring[0]) || gc.canMove(unitId, neighboring[1]);
+        if(neighboring == null)
+            return 0;
+        if(gc.canMove(unitId, neighboring[0])) {
+            return 2;
+        }
+        if(gc.canMove(unitId, neighboring[1])) {
+            return 3;
+        }
+        return 0;
     }
     
     public static ArrayList<Direction> directionList = new ArrayList<Direction>(Arrays.asList(Direction.North, Direction.Northeast, Direction.East, Direction.Southeast, Direction.South, Direction.Southwest, Direction.West, Direction.Northwest));
