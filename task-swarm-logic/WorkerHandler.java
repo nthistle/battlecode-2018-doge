@@ -41,7 +41,7 @@ public class WorkerHandler extends UnitHandler {
         
         for(int i = 0; i < 5; i ++) {
             Direction bpDir = Utils.getRandomDirection(Direction.values(), this.rng);
-            if(this.factoriesCreated < 1 && gc.canBlueprint(this.id, UnitType.Factory, bpDir)) {
+            if(this.factoriesCreated < 2 && gc.canBlueprint(this.id, UnitType.Factory, bpDir)) {
                 gc.blueprint(this.id, UnitType.Factory, bpDir);
                 this.curFactoryCooldown = FACTORY_COOLDOWN;
                 this.factoriesCreated++;

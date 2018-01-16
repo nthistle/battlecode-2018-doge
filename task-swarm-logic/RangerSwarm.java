@@ -3,6 +3,7 @@ import java.util.Random;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.TreeMap;
+import java.util.Iterator;
 
 public class RangerSwarm extends Swarm {
 
@@ -14,6 +15,7 @@ public class RangerSwarm extends Swarm {
 	}
 
 	public void takeTurn() {
+		removeAllDeadMembers();
 		this.moveToTarget();
 		if(this.swarmIsMoving) {
 			if(this.swarmTarget != null) {
@@ -50,7 +52,9 @@ public class RangerSwarm extends Swarm {
 			if(nearby.size() > 0) {
 				needToAttack = true;
 				for(int x = 0; x < nearby.size(); x++) {
-					enemies.put(myLocation.distanceSquaredTo(nearby.get(i).location().mapLocation()), nearby.get(i).location().mapLocation());
+					//for rangers we want the lowest health, not nearest enemy
+					//enemies.put(myLocation.distanceSquaredTo(nearby.get(i).location().mapLocation()), nearby.get(i).location().mapLocation());
+					enemies.put(nearby.get(x).health(), nearby.get(x).location().mapLocation());
 				}
 			}
 		}
@@ -70,23 +74,132 @@ public class RangerSwarm extends Swarm {
 		}
 	}
 
+	public void removeAllDeadMembers() {
+		Iterator<Integer> it = this.unitIDs.iterator();
+		while(it.hasNext()) {
+			int id = it.next();
+			/*
+			//TODO fix this shit
+			boolean inUnits = false;
+			VecUnit allUnits = this.gc.myUnits();
+			for(int i = 0; i < allUnits.size(); i++) {
+				if(id == allUnits.get(i).id()) {
+					inUnits = true;
+					break;
+				}	
+			}
+			if(!inUnits)
+				it.remove();
+			*/
+			try {
+				gc.unit(id);
+			} catch(RuntimeException e) {
+				it.remove();
+			}
+		}
+	}
+
 	public void moveToTarget() {
 		if(this.isSwarm() && this.isTogether()) {
 			this.swarmIsMoving = true;
-			System.out.println("swarm is moving now");
+			//System.out.println("swarm is moving now");
 		} else if(!this.isTogether()){
-			System.out.println("swarm is not yet together");
+			//System.out.println("swarm is not yet together");
 		} else if(this.isTogether()) {
-			System.out.println("swarm is now together");
+			//System.out.println("swarm is now together");
 		}
 	}
 
 	public void swarmAttack(MapLocation location) {
-	/*
 		boolean enemySeen = false;
 		for(int i = 0; i < this.unitIDs.size(); i++) {
-			if
+			int myUnit = this.unitIDs.get(i);
+			if(gc.isAttackReady(myUnit)) {
+				if(gc.unit(myUnit).location().mapLocation().distanceSquaredTo(location) <= gc.unit(myUnit).visionRange()) {
+					Unit unit = null;
+					try {
+						unit = gc.senseUnitAtLocation(location);
+					} catch (Exception e) {
+						continue;
+					}
+					if(unit != null) {
+						enemySeen = true;
+						if(gc.canAttack(myUnit, unit.id()) && gc.unit(myUnit).attackHeat() < 10) {
+		                	gc.attack(myUnit, unit.id());
+		            	} else {
+		            		//possibly do pathfinding to location while avoiding team units
+		            		Utils.tryMoveRotate(this.gc, gc.unit(myUnit), gc.unit(myUnit).location().mapLocation().directionTo(location));
+		            		if(gc.canAttack(myUnit, unit.id()) && gc.unit(myUnit).attackHeat() < 10) {
+		                		gc.attack(myUnit, unit.id());
+		                	}
+		            	}
+					} else {
+						Utils.tryMoveRotate(this.gc, gc.unit(myUnit), gc.unit(myUnit).location().mapLocation().directionTo(location));
+						unit = null;
+						try {
+							unit = gc.senseUnitAtLocation(location);
+						} catch (Exception e) {
+							continue;
+						}
+						if(unit != null) {
+							enemySeen = true;
+							if(gc.canAttack(myUnit, unit.id()) && gc.unit(myUnit).attackHeat() < 10) {
+			                	gc.attack(myUnit, unit.id());
+			            	} else {
+			            		//possibly do pathfinding to location while avoiding team units
+			            		Utils.tryMoveRotate(this.gc, gc.unit(myUnit), gc.unit(myUnit).location().mapLocation().directionTo(location));
+			            		if(gc.canAttack(myUnit, unit.id()) && gc.unit(myUnit).attackHeat() < 10) {
+			                		gc.attack(myUnit, unit.id());
+			                	}
+			            	}
+						}
+					}	
+				} else {
+					Utils.tryMoveRotate(this.gc, gc.unit(myUnit), gc.unit(myUnit).location().mapLocation().directionTo(location));
+					Unit unit = null;
+					try {
+						unit = gc.senseUnitAtLocation(location);
+					} catch (Exception e) {
+						continue;
+					}
+					if(unit != null) {
+						enemySeen = true;
+						if(gc.canAttack(myUnit, unit.id()) && gc.unit(myUnit).attackHeat() < 10) {
+		                	gc.attack(myUnit, unit.id());
+		            	} else {
+		            		//possibly do pathfinding to location while avoiding team units
+		            		Utils.tryMoveRotate(this.gc, gc.unit(myUnit), gc.unit(myUnit).location().mapLocation().directionTo(location));
+		            		if(gc.canAttack(myUnit, unit.id()) && gc.unit(myUnit).attackHeat() < 10) {
+		                		gc.attack(myUnit, unit.id());
+		                	}
+		            	}
+					}
+				}
+			} else {
+				Utils.tryMoveRotate(this.gc, gc.unit(myUnit), location.directionTo(gc.unit(myUnit).location().mapLocation()));
+				Unit unit = null;
+				try {
+					unit = gc.senseUnitAtLocation(location);
+				} catch (Exception e) {
+					continue;
+				}
+				if(unit != null) {
+					enemySeen = true;
+					if(gc.canAttack(myUnit, unit.id()) && gc.unit(myUnit).attackHeat() < 10) {
+	                	gc.attack(myUnit, unit.id());
+	            	} else {
+	            		//possibly do pathfinding to location while avoiding team units
+	            		Utils.tryMoveRotate(this.gc, gc.unit(myUnit), gc.unit(myUnit).location().mapLocation().directionTo(location));
+	            		if(gc.canAttack(myUnit, unit.id()) && gc.unit(myUnit).attackHeat() < 10) {
+	                		gc.attack(myUnit, unit.id());
+	                	}
+	            	}
+				}
+			}
 		}
-	*/
+		if(!enemySeen) {
+			this.swarmTarget = null;
+			moveToLeader();
+		}
 	}
 }
