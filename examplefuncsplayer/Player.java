@@ -38,11 +38,12 @@ public class Player {
             VecUnit units = gc.myUnits();
             
             boolean amBuildingFactory = false;
-            
+            /*
             if(gc.round() > 550) {
                 gc.nextTurn();
                 continue; // stop prematurely 
             }
+            */
             
             for (int i = 0; i < units.size(); i++) {
             

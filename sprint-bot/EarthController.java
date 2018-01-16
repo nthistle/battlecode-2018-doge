@@ -35,6 +35,15 @@ public class EarthController extends PlanetController
             }
         }
 
+        VecUnit original = gc.startingMap(Planet.Earth).getInitial_units();
+        MapLocation target = null;
+        List<Unit> enemyStartingPositions = new ArrayList<>();
+        for(int i = 0; i < original.size(); i++) {
+            if(original.get(i).team() != gc.team()) {
+                enemyStartingPositions.add(original.get(i));
+            }
+        }
+
         while (true) {
         
             System.out.println("Round #"+gc.round());
@@ -46,25 +55,9 @@ public class EarthController extends PlanetController
             //TODO figure out a better way to queue up swarms
             VecUnit units = gc.myUnits();
 
-            if(gc.round() == 1) {
-                VecUnit original = gc.startingMap(Planet.Earth).getInitial_units();
-                MapLocation target = null;
-                List<Unit> enemyStartingPositions = new ArrayList<>();
-                for(int i = 0; i < original.size(); i++) {
-                    if(original.get(i).team() != gc.team()) {
-                        enemyStartingPositions.add(original.get(i));
-                    }
-                }
+            if(gc.round() >= 1 && gc.round() % 10 == 0) {
+                
                 target = enemyStartingPositions.get(this.rng.nextInt(enemyStartingPositions.size())).location().mapLocation();
-                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 0, 0), target);
-                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 0, 0), target);
-                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 0, 0), target);
-                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 0, 0), target);
-                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 0, 0), target);
-                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 0, 0), target);
-                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 0, 0), target);
-                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 0, 0), target);
-                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 0, 0), target);
                 this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 0, 0), target);
             }
             //END SWARM STUFF

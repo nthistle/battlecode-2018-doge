@@ -22,17 +22,29 @@ public class RangerSwarm extends Swarm {
 				if(Utils.compareMapLocation(this.swarmLeader, this.swarmTarget)) {
 					this.swarmIsMoving = false;
 					swarmAttack(this.swarmTarget);
+					this.swarmTarget = null;
 				} else {
 					swarmMovementHeat -= 10;
 					if(swarmMovementHeat < 10) {
 						swarmMovementHeat += SWARM_MOVEMENT_COOLDOWN;
-						Direction dirToMoveIn = this.currPath.getDirectionAtPoint(this.swarmLeader.getX(), this.swarmLeader.getY());
-						System.out.println("We want to move in direction: " + dirToMoveIn);
-						this.setSwarmLeader(this.swarmLeader.add(dirToMoveIn));
+						if(this.currPath.isPointSet(this.swarmLeader.getX(), this.swarmLeader.getY())) {
+							Direction dirToMoveIn = this.currPath.getDirectionAtPoint(this.swarmLeader.getX(), this.swarmLeader.getY());
+							System.out.println("We want to move in direction: " + dirToMoveIn);
+							this.setSwarmLeader(this.swarmLeader.add(dirToMoveIn));
+						}
 					}
 					moveToLeader();
 				}
 			} else {
+				swarmMovementHeat -= 10;
+				if(swarmMovementHeat < 10) {
+					swarmMovementHeat += SWARM_MOVEMENT_COOLDOWN;
+					Direction d = Utils.getRandomDirection(Direction.values(), new Random());
+					while(!(gc.isOccupiable(this.swarmLeader.add(d)) == 0))
+						d = Utils.getRandomDirection(Direction.values(), new Random());
+					System.out.println("Random walk in direction: " + d);
+					this.setSwarmLeader(this.swarmLeader.add(d));
+				}
 				moveToLeader();
 			}
 		} else {
@@ -110,96 +122,91 @@ public class RangerSwarm extends Swarm {
 		}
 	}
 
+	private void doSwarmIndividualAttack(int unitID, MapLocation location) {
+		Unit myUnit = gc.unit(unitID);
+		Unit unit = null;
+		try {
+			unit = gc.senseUnitAtLocation(location);
+		} catch (Exception e) {
+			int a = 1;
+		}
+		if(unit != null) {
+			if(gc.canAttack(unitID, unit.id()) && myUnit.attackHeat() < 10) {
+            	gc.attack(unitID, unit.id());
+        	} else {
+        		//possibly do pathfinding to location while avoiding team units
+        		Utils.tryMoveRotate(this.gc, myUnit, myUnit.location().mapLocation().directionTo(location));
+        		if(gc.canAttack(unitID, unit.id()) && myUnit.attackHeat() < 10) {
+            		gc.attack(unitID, unit.id());
+            	}
+        	}
+		} else {
+			int attackingID = getNearbyEnemies(unitID);
+			if(attackingID == 0)
+				return;
+			if(gc.canAttack(unitID, attackingID) && myUnit.attackHeat() < 10) {
+            	gc.attack(unitID, attackingID);
+        	} else {
+        		//possibly do pathfinding to location while avoiding team units
+        		Utils.tryMoveRotate(this.gc, myUnit, myUnit.location().mapLocation().directionTo(location));
+        		try {
+					unit = gc.senseUnitAtLocation(location);
+				} catch (Exception e) {
+					int a = 1;
+				}
+				if(unit != null) {
+					if(gc.canAttack(unitID, unit.id()) && myUnit.attackHeat() < 10) {
+		            	gc.attack(unitID, unit.id());
+		        	}
+		        }
+
+        	}
+		}
+	}
+
+	private int getNearbyEnemies(int unitID) {
+		TreeMap<Long, Integer> enemies = new TreeMap<Long, Integer>();
+		for(int i = 0; i < this.unitIDs.size(); i++) {
+			Unit unit = gc.unit(this.unitIDs.get(i));
+			MapLocation myLocation = unit.location().mapLocation();
+			VecUnit nearby = gc.senseNearbyUnitsByTeam(myLocation, unit.attackRange(), Utils.getOtherTeam(gc.team()));
+			if(nearby.size() > 0) {
+				for(int x = 0; x < nearby.size(); x++) {
+					//for rangers we want the lowest health, not nearest enemy
+					//enemies.put(myLocation.distanceSquaredTo(nearby.get(i).location().mapLocation()), nearby.get(i).location().mapLocation());
+					enemies.put(nearby.get(x).health(), nearby.get(x).id());
+				}
+			}
+		}
+		if(enemies.keySet().size() > 0) {
+			return enemies.get(enemies.firstKey());
+		}
+		return 0;
+	}
+
 	public void swarmAttack(MapLocation location) {
 		boolean enemySeen = false;
 		for(int i = 0; i < this.unitIDs.size(); i++) {
 			int myUnit = this.unitIDs.get(i);
 			if(gc.isAttackReady(myUnit)) {
-				if(gc.unit(myUnit).location().mapLocation().distanceSquaredTo(location) <= gc.unit(myUnit).visionRange()) {
-					Unit unit = null;
-					try {
-						unit = gc.senseUnitAtLocation(location);
-					} catch (Exception e) {
-						continue;
-					}
-					if(unit != null) {
-						enemySeen = true;
-						if(gc.canAttack(myUnit, unit.id()) && gc.unit(myUnit).attackHeat() < 10) {
-		                	gc.attack(myUnit, unit.id());
-		            	} else {
-		            		//possibly do pathfinding to location while avoiding team units
-		            		Utils.tryMoveRotate(this.gc, gc.unit(myUnit), gc.unit(myUnit).location().mapLocation().directionTo(location));
-		            		if(gc.canAttack(myUnit, unit.id()) && gc.unit(myUnit).attackHeat() < 10) {
-		                		gc.attack(myUnit, unit.id());
-		                	}
-		            	}
-					} else {
-						Utils.tryMoveRotate(this.gc, gc.unit(myUnit), gc.unit(myUnit).location().mapLocation().directionTo(location));
-						unit = null;
-						try {
-							unit = gc.senseUnitAtLocation(location);
-						} catch (Exception e) {
-							continue;
-						}
-						if(unit != null) {
-							enemySeen = true;
-							if(gc.canAttack(myUnit, unit.id()) && gc.unit(myUnit).attackHeat() < 10) {
-			                	gc.attack(myUnit, unit.id());
-			            	} else {
-			            		//possibly do pathfinding to location while avoiding team units
-			            		Utils.tryMoveRotate(this.gc, gc.unit(myUnit), gc.unit(myUnit).location().mapLocation().directionTo(location));
-			            		if(gc.canAttack(myUnit, unit.id()) && gc.unit(myUnit).attackHeat() < 10) {
-			                		gc.attack(myUnit, unit.id());
-			                	}
-			            	}
-						}
-					}	
+				System.out.println(myUnit);
+				System.out.println(location);
+				//if(gc.unit(myUnit).location().mapLocation().distanceSquaredTo(location) <= gc.unit(myUnit).visionRange()) {
+				if(Utils.distanceSquaredTo(gc.unit(myUnit).location().mapLocation(), location) <= gc.unit(myUnit).visionRange()) {
+					doSwarmIndividualAttack(myUnit, location);
 				} else {
 					Utils.tryMoveRotate(this.gc, gc.unit(myUnit), gc.unit(myUnit).location().mapLocation().directionTo(location));
-					Unit unit = null;
-					try {
-						unit = gc.senseUnitAtLocation(location);
-					} catch (Exception e) {
-						continue;
-					}
-					if(unit != null) {
-						enemySeen = true;
-						if(gc.canAttack(myUnit, unit.id()) && gc.unit(myUnit).attackHeat() < 10) {
-		                	gc.attack(myUnit, unit.id());
-		            	} else {
-		            		//possibly do pathfinding to location while avoiding team units
-		            		Utils.tryMoveRotate(this.gc, gc.unit(myUnit), gc.unit(myUnit).location().mapLocation().directionTo(location));
-		            		if(gc.canAttack(myUnit, unit.id()) && gc.unit(myUnit).attackHeat() < 10) {
-		                		gc.attack(myUnit, unit.id());
-		                	}
-		            	}
-					}
+					doSwarmIndividualAttack(myUnit, location);
 				}
 			} else {
+				System.out.println(myUnit);
+				//since we aren't attack ready, let's move away from the enemy for now
 				Utils.tryMoveRotate(this.gc, gc.unit(myUnit), location.directionTo(gc.unit(myUnit).location().mapLocation()));
-				Unit unit = null;
-				try {
-					unit = gc.senseUnitAtLocation(location);
-				} catch (Exception e) {
-					continue;
-				}
-				if(unit != null) {
-					enemySeen = true;
-					if(gc.canAttack(myUnit, unit.id()) && gc.unit(myUnit).attackHeat() < 10) {
-	                	gc.attack(myUnit, unit.id());
-	            	} else {
-	            		//possibly do pathfinding to location while avoiding team units
-	            		Utils.tryMoveRotate(this.gc, gc.unit(myUnit), gc.unit(myUnit).location().mapLocation().directionTo(location));
-	            		if(gc.canAttack(myUnit, unit.id()) && gc.unit(myUnit).attackHeat() < 10) {
-	                		gc.attack(myUnit, unit.id());
-	                	}
-	            	}
-				}
 			}
 		}
+		/*
 		if(!enemySeen) {
-			this.swarmTarget = null;
 			moveToLeader();
-		}
+		}*/
 	}
 }

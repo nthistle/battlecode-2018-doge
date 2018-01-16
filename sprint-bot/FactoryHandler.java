@@ -44,9 +44,10 @@ public class FactoryHandler extends UnitHandler {
                             Swarm processedSwarm = parent.getSwarmRequest().peek();
                             if(processedSwarm instanceof RangerSwarm) {
                                 if(justUnloaded.unitType() == UnitType.Ranger) {
+                                    if(processedSwarm.getUnits().size() == 0)
+                                        processedSwarm.setSwarmLeader(justUnloaded.location().mapLocation());
                                     processedSwarm.addUnit(justUnloaded.id());
                                     if(processedSwarm.isSwarm()) {
-                                        processedSwarm.setSwarmLeader(gc.unit(processedSwarm.getUnits().get(0)).location().mapLocation());
                                         parent.getSwarm().add(processedSwarm);
                                         System.out.println("Swarm has enough robots in it");
                                     }
@@ -65,7 +66,7 @@ public class FactoryHandler extends UnitHandler {
                 for(int i = 0; i < dirs.length; i++) {
                     Direction dir = dirs[this.rng.nextInt(dirs.length)];
                     //TODO instead of try catch, just check if there is a unit on that location before sensing a unit on that logation
-                    try {
+                    if(gc.canUnload(this.id, dir) && gc.hasUnitAtLocation(unit.location().mapLocation().add(dir))) {
                         if(gc.startingMap(gc.planet()).onMap(unit.location().mapLocation().add(dir)) && Utils.tryMoveWiggle(gc, gc.senseUnitAtLocation(unit.location().mapLocation().add(dir)).id(), dir) != 0) {
                             //System.out.println("Forcefully moved away");
                             if(gc.canUnload(this.id, dir)) {
@@ -75,6 +76,8 @@ public class FactoryHandler extends UnitHandler {
                                     Swarm processedSwarm = parent.getSwarmRequest().peek();
                                     if(processedSwarm instanceof RangerSwarm) {
                                         if(justUnloaded.unitType() == UnitType.Ranger) {
+                                            if(processedSwarm.getUnits().size() == 0)
+                                                processedSwarm.setSwarmLeader(justUnloaded.location().mapLocation());
                                             processedSwarm.addUnit(justUnloaded.id());
                                             if(processedSwarm.isSwarm()) {
                                                 parent.getSwarm().add(processedSwarm);
@@ -88,8 +91,6 @@ public class FactoryHandler extends UnitHandler {
                             }
 
                         }
-                    } catch (RuntimeException e) {
-                        continue;
                     }
                 }
             }
@@ -97,14 +98,18 @@ public class FactoryHandler extends UnitHandler {
 
         if(parent.getSwarmRequest().size() > 0) {
             Swarm processedSwarm = parent.getSwarmRequest().peek();
-            if(processedSwarm.getUnits().size() == processedSwarm.getGoalSize()) {
-                parent.getSwarmRequest().remove();
-                System.out.println("Just removed swarm request");
-            } else {
-                if(processedSwarm instanceof RangerSwarm) {
-                    if(gc.canProduceRobot(this.id, UnitType.Ranger)) {
-                        //System.out.println("Ranger produced for swarm");
-                        gc.produceRobot(this.id, UnitType.Ranger);
+            if(processedSwarm.getGoalFactory() == 0)
+                processedSwarm.setGoalFactory(this.id);
+            if(processedSwarm.getGoalFactory() == this.id) {
+                if(processedSwarm.getUnits().size() == processedSwarm.getGoalSize()) {
+                    parent.getSwarmRequest().remove();
+                    System.out.println("Just removed swarm request");
+                } else {
+                    if(processedSwarm instanceof RangerSwarm) {
+                        if(gc.canProduceRobot(this.id, UnitType.Ranger)) {
+                            //System.out.println("Ranger produced for swarm");
+                            gc.produceRobot(this.id, UnitType.Ranger);
+                        }
                     }
                 }
             }

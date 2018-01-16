@@ -3,6 +3,7 @@ import java.util.Random;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.lang.Math;
 
 public class Utils
 {
@@ -143,6 +144,10 @@ public class Utils
             }
         }
         return -1;
+    }
+
+    public static long distanceSquaredTo(MapLocation a, MapLocation b) {
+        return ((long)Math.pow((a.getX() - b.getX()), 2)) + ((long)Math.pow((a.getY() - b.getY()), 2));
     }
 
     public static boolean canOccupy(GameController gc, MapLocation location, PlanetController parent, HashSet<MapLocation> visited) {
