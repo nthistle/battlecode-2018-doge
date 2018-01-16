@@ -1,5 +1,6 @@
 import bc.*;
 import java.util.Random;
+import java.util.ArrayList;
 
 public class Player {
 
@@ -15,17 +16,17 @@ public class Player {
         else rand = new Random(seed);
         
         GameController gc = new GameController();
-
-        PathMaster pm = new PathMaster(gc.startingMap(gc.planet()));
         
         PlanetController pc = null;
         if(gc.planet() == Planet.Earth) {
-            pc = new EarthController(gc, pm, rand);
+            pc = new EarthController(gc, rand);
+            pc.setSwarm(new ArrayList<Swarm>());
         } else if(gc.planet() == Planet.Mars) {
-            pc = new MarsController(gc, pm, rand);
+            pc = new MarsController(gc, rand);
+            pc.setSwarm(new ArrayList<Swarm>());
         }
         
-        System.out.println("Running PlanetController...");
+        System.out.println("Running PlayerController...");
         pc.control();
     }
 }

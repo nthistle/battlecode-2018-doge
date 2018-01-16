@@ -89,6 +89,10 @@ public class PathField
         return getPoint(ml.getX(), ml.getY());
     }
 
+    public MapLocation getTargetLocation() {
+        return this.target;
+    }
+
     /**
      *  END PUBLIC FACING METHODS
      */
