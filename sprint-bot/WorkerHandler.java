@@ -38,6 +38,14 @@ public class WorkerHandler extends UnitHandler {
         MapLocation location = unit.location().mapLocation();        
 
         VecUnit nearbyFriendly = gc.senseNearbyUnitsByTeam(location, unit.visionRange(), gc.team());
+
+        int nearbyWorkers = 0;
+        for (int i = 0; i < nearbyFriendly.size(); i++) {
+            if (nearbyFriendly.get(i).unitType() == UnitType.Worker) {
+                nearbyWorkers++;
+            }
+        }
+
         VecUnit nearbyEnemies = gc.senseNearbyUnitsByTeam(location, unit.visionRange(), Utils.getOtherTeam(gc.team()));
 
         if (nearbyEnemies.size() >= (int)(nearbyFriendly.size() * 1.5)) {
@@ -96,7 +104,7 @@ public class WorkerHandler extends UnitHandler {
             previous = location;
         }
 
-        if (!stationary && gc.karbonite() >= 100) {
+        if (!stationary && ((gc.karbonite() >= 100 && gc.round() <= 500) || gc.karbonite() >= 175)) {
             Direction buildDirection = findBuildDirection(unit);
             if (buildDirection != null && gc.canBlueprint(unit.id(), UnitType.Factory, buildDirection)) {
                 // System.out.println("Blueprinting factory!");
