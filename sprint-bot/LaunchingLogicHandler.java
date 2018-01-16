@@ -86,7 +86,9 @@ public class LaunchingLogicHandler extends UnitHandler  {
 			for(int j = 0; j < marsMap.getWidth(); j++) {
 				for(int di = -1; di <= 1; di++) {
 					for(int dj = -1; dj <= 1; dj++) {
-						if(label[i+di][j+dj] > 0) adjacentSquares[i][j]++;
+						try {
+							if(label[i+di][j+dj] > 0) adjacentSquares[i][j]++;
+						}catch(Exception e) {}
 					}
 				}
 			}
@@ -132,8 +134,8 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	public static class Comparators {
 		public static Comparator<ArrayList<MapLocation>> VecMapLocComp = new Comparator<ArrayList<MapLocation>>() {
 			public int compare(ArrayList<MapLocation> a, ArrayList<MapLocation> b) { //select the objectively better zone
-				int totA = kryptoniteTotals.get(label[(int)a.get(0).getY()][(int)a.get(0).getX()]);
-				int totB = kryptoniteTotals.get(label[(int)b.get(0).getY()][(int)b.get(0).getX()]);
+				int totA = kryptoniteTotals.get(label[(int)a.get(0).getY()][(int)a.get(0).getX()]-1);
+				int totB = kryptoniteTotals.get(label[(int)b.get(0).getY()][(int)b.get(0).getX()]-1);
 				return (totB + 100 * b.size()) - (totA + 100 * a.size());
 			}
 		};
@@ -144,7 +146,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 					if(Utils.compareMapLocation(a, loc)) return 1; 
 					if(Utils.compareMapLocation(b, loc)) return -1;
 				}
-				return (10 * adjacentSquares[b.getY()][b.getX()] - kryptoniteTotals.get(label[a.getY()][a.getX()])) - (10 * adjacentSquares[a.getY()][a.getX()] - kryptoniteTotals.get(label[a.getY()][a.getX()]));
+				return (10 * adjacentSquares[b.getY()][b.getX()] - kryptoniteTotals.get(label[a.getY()][a.getX()]-1)) - (10 * adjacentSquares[a.getY()][a.getX()] - kryptoniteTotals.get(label[a.getY()][a.getX()]-1));
 			}
 		};
 	}
