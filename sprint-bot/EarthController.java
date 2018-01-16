@@ -36,7 +36,7 @@ public class EarthController extends PlanetController
         while (true) {
         
             System.out.println("Round #"+gc.round());
-
+            System.out.println("Time used: " + gc.getTimeLeftMs());
 
             //SWARM STUFF
             //TODO figure out a better starting swarmLeader position than 5,5
