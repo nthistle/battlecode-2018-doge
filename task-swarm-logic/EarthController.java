@@ -1,7 +1,8 @@
 import bc.*;
 import java.util.Random;
 import java.util.HashMap;
-import java.util.Random;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EarthController extends PlanetController
 {
@@ -22,9 +23,29 @@ public class EarthController extends PlanetController
             
             VecUnit units = gc.myUnits();
 
-            if(gc.round() == 100)
-                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 5, 5), new MapLocation(Planet.Earth, 5, 5));
+            if(gc.round() == 1) {
+                VecUnit original = gc.startingMap(Planet.Earth).getInitial_units();
+                MapLocation target = null;
+                List<Unit> enemyStartingPositions = new ArrayList<>();
+                for(int i = 0; i < original.size(); i++) {
+                    if(original.get(i).team() != gc.team()) {
+                        enemyStartingPositions.add(original.get(i));
+                    }
+                }
+                target = enemyStartingPositions.get(this.rng.nextInt(enemyStartingPositions.size())).location().mapLocation();
+                this.createSwarm(new RangerSwarm(gc), 12, new MapLocation(Planet.Earth, 5, 5), target);
+                this.createSwarm(new RangerSwarm(gc), 12, new MapLocation(Planet.Earth, 5, 5), target);
+                this.createSwarm(new RangerSwarm(gc), 12, new MapLocation(Planet.Earth, 5, 5), target);
+                this.createSwarm(new RangerSwarm(gc), 12, new MapLocation(Planet.Earth, 5, 5), target);
+                this.createSwarm(new RangerSwarm(gc), 12, new MapLocation(Planet.Earth, 5, 5), target);
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 5, 5), target);
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 5, 5), target);
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 5, 5), target);
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 5, 5), target);
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 5, 5), target);
+            }
 
+            /*
             if(gc.round() == 300)
                 this.getSwarm().get(0).setPath(pm.generatePathField(new MapLocation(Planet.Earth, 5, 20)));
 
@@ -35,11 +56,12 @@ public class EarthController extends PlanetController
 
             if(gc.round() == 900)
                 this.getSwarm().get(0).setPath(pm.generatePathField(new MapLocation(Planet.Earth, 10, 10)));
-
+            */
             /*
             if(gc.round() == 101)
                 this.createSwarm(new RangerSwarm(gc), 12, new MapLocation(Planet.Earth, 5, 20));
             */
+
 
             for(int i = 0; i < units.size(); i ++) {
                 Unit unit = units.get(i);

@@ -11,11 +11,8 @@ public class EarthController extends PlanetController
     public PlanetMap earthMap;
 
     public Team enemyTeam;
-    public MapLocation targetLocation;
-    public MapLocation threatLocation;
 
-    public HashMap<UnitType, Integer> robotCount;
-    
+    public HashMap<UnitType, Integer> robotCount;    
     public HashMap<String, Long> moneyCount;
 
     public void control() {
@@ -27,8 +24,6 @@ public class EarthController extends PlanetController
         enemyTeam = Utils.getOtherTeam(gc.team());
 
         earthMap = gc.startingMap(Planet.Earth);
-        MapLocation startLocation = gc.myUnits().get(0).location().mapLocation();
-        targetLocation = new MapLocation(Planet.Earth, (int)earthMap.getWidth() - startLocation.getX(), (int)earthMap.getHeight() - startLocation.getY());     
 
         moneyCount = new HashMap<String, Long>();
         for (int i = 0; i < earthMap.getHeight(); i++) {
@@ -41,6 +36,37 @@ public class EarthController extends PlanetController
         while (true) {
         
             System.out.println("Round #"+gc.round());
+
+
+            //SWARM STUFF
+            //TODO figure out a better starting swarmLeader position than 5,5
+            //TODO figure out a better way to get new targets
+            //TODO figure out a better way to queue up swarms
+            VecUnit units = gc.myUnits();
+
+            if(gc.round() == 1) {
+                VecUnit original = gc.startingMap(Planet.Earth).getInitial_units();
+                MapLocation target = null;
+                List<Unit> enemyStartingPositions = new ArrayList<>();
+                for(int i = 0; i < original.size(); i++) {
+                    if(original.get(i).team() != gc.team()) {
+                        enemyStartingPositions.add(original.get(i));
+                    }
+                }
+                target = enemyStartingPositions.get(this.rng.nextInt(enemyStartingPositions.size())).location().mapLocation();
+                this.createSwarm(new RangerSwarm(gc), 12, new MapLocation(Planet.Earth, 5, 5), target);
+                this.createSwarm(new RangerSwarm(gc), 12, new MapLocation(Planet.Earth, 5, 5), target);
+                this.createSwarm(new RangerSwarm(gc), 12, new MapLocation(Planet.Earth, 5, 5), target);
+                this.createSwarm(new RangerSwarm(gc), 12, new MapLocation(Planet.Earth, 5, 5), target);
+                this.createSwarm(new RangerSwarm(gc), 12, new MapLocation(Planet.Earth, 5, 5), target);
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 5, 5), target);
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 5, 5), target);
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 5, 5), target);
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 5, 5), target);
+                this.createSwarm(new RangerSwarm(gc), 8, new MapLocation(Planet.Earth, 5, 5), target);
+            }
+            //END SWARM STUFF
+
 
             ResearchInfo research = gc.researchInfo();
             if (research.getLevel(UnitType.Knight) != 3 && !research.hasNextInQueue()) {
@@ -84,10 +110,25 @@ public class EarthController extends PlanetController
                 incrementRobotCount(unit.unitType());                
             }
 
+            //SWARM STUFF
             for (int i = 0; i < units.size(); i++) {                
-                Unit unit = units.get(i);
-                myHandler.get(unit.id()).takeTurn(unit);
+                boolean isPartOfSwarm = false;
+                for(int j = 0; j < this.getSwarm().size(); j++) {
+                    if(this.getSwarm().get(j).getUnits().contains(unit.id())) {
+                        isPartOfSwarm = true;
+                        break;
+                    }
+                }
+                
+                if(!isPartOfSwarm)
+                    myHandler.get(unit.id()).takeTurn(unit);
             }
+            for(int i = 0; i < this.getSwarm().size(); i++) {
+                if(this.getSwarm().get(i).getUnits().size() > 0)
+                    this.getSwarm().get(i).takeTurn();
+            }
+            //END SWARM STUFF
+            
 
             gc.nextTurn();
         }
