@@ -8,9 +8,13 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	protected static List<MapLocation> usedLandingPoints;
 	protected long launchingTime;
 	protected static int[][] values;
+	protected static int[][] label;
+	protected static int[][] adjacentSquares;
+	protected static List<Integer> kryptoniteTotals;
 	public LaunchingLogicHandler(PlanetController parent, GameController gc, int id, Random rng) {
 		super(parent, gc, id, rng);
         this.zoneMap = this.getZones();
+        System.out.println(label);
         this.usedLandingPoints = new ArrayList<MapLocation>();
 	}
 	
@@ -29,9 +33,12 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	
 	private void calculateOptimalLandingLocation() {
 		Collections.sort(this.zoneMap, Comparators.VecMapLocComp);
-		ArrayList<MapLocation> optimalZone = this.zoneMap.get(0);
-		Collections.sort(optimalZone, Comparators.MapLocComp);
-		this.landingPoint = optimalZone.get(0);
+		for(ArrayList<MapLocation> zone : this.zoneMap) {
+			Collections.sort(zone, Comparators.MapLocComp);
+			for(MapLocation spot : zone) {
+				if(!usedLandingPoints.contains(spot)) this.landingPoint = spot;
+			}
+		}
 	}
 	
 	private void calculateOptimalLaunchingTime() {
@@ -53,8 +60,9 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	
 	private List<ArrayList<MapLocation>> getZones() {
 		PlanetMap marsMap = gc.startingMap(Planet.Mars);
-		int[][] values = new int[(int)marsMap.getHeight()][(int)marsMap.getWidth()];
-		int[][] label = new int[(int)marsMap.getHeight()][(int)marsMap.getWidth()];
+		values = new int[(int)marsMap.getHeight()][(int)marsMap.getWidth()];
+		label = new int[(int)marsMap.getHeight()][(int)marsMap.getWidth()];
+		adjacentSquares = new int[(int)marsMap.getHeight()][(int)marsMap.getWidth()];
 		int zone = 0;
 		AsteroidPattern asPat = gc.asteroidPattern();
 		for(int i = 0; i < 1000; i++) {
@@ -74,18 +82,29 @@ public class LaunchingLogicHandler extends UnitHandler  {
 				}
 			}
 		}
+		for(int i = 0; i < marsMap.getHeight(); i++) {
+			for(int j = 0; j < marsMap.getWidth(); j++) {
+				for(int di = -1; di <= 1; di++) {
+					for(int dj = -1; dj <= 1; dj++) {
+						if(label[i+di][j+dj] > 0) adjacentSquares[i][j]++;
+					}
+				}
+			}
+		}
 		List<ArrayList<MapLocation>> ret = new ArrayList<ArrayList<MapLocation>>(zone);
+		kryptoniteTotals = new ArrayList<Integer>(zone);
 		for(int i = 0; i < zone; i++) {
 			ret.add(new ArrayList<MapLocation>());
+			kryptoniteTotals.add(0);
 		}
 		for(int i = 0; i < marsMap.getHeight(); i++) {
 			for(int j = 0; j < marsMap.getWidth(); j++) {
 				if(label[i][j] > 0) {
 					ret.get(label[i][j] - 1).add(new MapLocation(Planet.Mars, j, i));
+					kryptoniteTotals.set(label[i][j]-1, kryptoniteTotals.get(label[i][j]-1) + values[i][j]);
 				}
 			}
 		}
-		this.values = values;
 		return ret;
 	}
 	
@@ -113,14 +132,9 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	public static class Comparators {
 		public static Comparator<ArrayList<MapLocation>> VecMapLocComp = new Comparator<ArrayList<MapLocation>>() {
 			public int compare(ArrayList<MapLocation> a, ArrayList<MapLocation> b) { //select the objectively better zone
-				int totA = 0, totB = 0;
-				for(MapLocation loc : a) {
-					totA += values[loc.getY()][loc.getX()];
-				}
-				for(MapLocation loc : b) {
-					totB += values[loc.getY()][loc.getX()];
-				}
-				return (totB + 100 * b.size()) - (totA + 109 * a.size()); //adjust the coeffs to see 
+				int totA = kryptoniteTotals.get(label[(int)a.get(0).getY()][(int)a.get(0).getX()]);
+				int totB = kryptoniteTotals.get(label[(int)b.get(0).getY()][(int)b.get(0).getX()]);
+				return (totB + 100 * b.size()) - (totA + 100 * a.size());
 			}
 		};
 		
@@ -130,7 +144,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 					if(Utils.compareMapLocation(a, loc)) return 1; 
 					if(Utils.compareMapLocation(b, loc)) return -1;
 				}
-				return values[a.getY()][a.getX()] - values[b.getY()][b.getX()];
+				return (10 * adjacentSquares[b.getY()][b.getX()] - kryptoniteTotals.get(label[a.getY()][a.getX()])) - (10 * adjacentSquares[a.getY()][a.getX()] - kryptoniteTotals.get(label[a.getY()][a.getX()]));
 			}
 		};
 	}

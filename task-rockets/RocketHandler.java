@@ -4,12 +4,14 @@ import java.util.*;
 public class RocketHandler extends UnitHandler {
 	private Swarm crew;
 	private MapLocation dest;
-    public RocketHandler(PlanetController parent, GameController gc, int id, Random rng) {
+	private LaunchingLogicHandler llh;
+    public RocketHandler(PlanetController parent, GameController gc, int id, Random rng, LaunchingLogicHandler llh) {
         super(parent, gc, id, rng);
         //dummy init data
         //be sure to override when the time is right
         this.crew = null;
         this.dest = gc.unit(this.id).location().mapLocation();
+        this.llh = llh;
         //like i said, really dumb init data
     }
     
@@ -20,6 +22,11 @@ public class RocketHandler extends UnitHandler {
     @Override
     public void takeTurn(Unit unit) {
     	this.load();
+    	this.setDestination(llh.optimalLandingLocation());
+    	if(this.shouldLaunch()) {
+    		this.blastOff();
+    		llh.addUsedMapLocation(this.getDestination());
+    	}
     }
     
     /**
@@ -39,6 +46,7 @@ public class RocketHandler extends UnitHandler {
     		return null; //shouldn't get here. Please. 
     	}
     }
+    
     
     public void setSwarm(Swarm swarm) {
     	this.crew = swarm;
@@ -65,7 +73,10 @@ public class RocketHandler extends UnitHandler {
     	return this.dest;
     }
     
-    
+    public boolean shouldLaunch() {
+    	return this.isLoaded() && this.llh.optimalLaunchingTime() == gc.round() && gc.canLaunchRocket(this.id, this.dest)//good situation
+    			|| gc.unit(this.id).health() < 150 && gc.canLaunchRocket(this.id, this.dest);//bad situation
+    }
     
     /**
      * Checks to see if the rocket is fully stocked with the intended swarm
@@ -90,13 +101,17 @@ public class RocketHandler extends UnitHandler {
      */
     public boolean loadTroop(int unitID) {
     	if(!gc.canLoad(this.id, unitID)) return false;
-    	else gc.load(this.id, unitID);
+    	else {
+    		gc.load(this.id, unitID);
+    		return true;
+    	}
     }
     
     /**
      * loads swarm troops exclusively
      */
     public void load() {
+    	if(this.crew == null) return;
     	MapLocation myLocation = gc.unit(this.id).location().mapLocation();
     	VecUnit adjacent = gc.senseNearbyUnitsByTeam(myLocation, 2, gc.team());
     	for(int i = 0; i < adjacent.size(); i++) {
@@ -125,6 +140,7 @@ public class RocketHandler extends UnitHandler {
     	if(!gc.canUnload(this.id, dir)) return false;
     	else {
     		gc.unload(this.id, dir);
+    		return true;
     	}
     }
     
