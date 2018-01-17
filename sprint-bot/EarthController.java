@@ -3,6 +3,7 @@ import java.util.Random;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 import java.util.TreeMap;
 
 public class EarthController extends PlanetController
@@ -46,6 +47,8 @@ public class EarthController extends PlanetController
             //TODO figure out a better way to get new targets
             //TODO figure out a better way to queue up swarms
             VecUnit units = gc.myUnits();
+
+
             /*
             if(gc.round() >= 1 && gc.round() % 2 == 0) {
                 VecUnit original = gc.startingMap(Planet.Earth).getInitial_units();
@@ -61,7 +64,7 @@ public class EarthController extends PlanetController
             }
             */
 
-            if(gc.round() == 200) {
+            if(gc.round() == 100) {
                 VecUnit original = gc.startingMap(Planet.Earth).getInitial_units();
                 MapLocation target = null;
                 List<Unit> enemyStartingPositions = new ArrayList<>();
@@ -119,7 +122,12 @@ public class EarthController extends PlanetController
                 incrementRobotCount(unit.unitType());                
             }
 
-
+            Iterator<Swarm> it = this.getSwarm().iterator();
+            while(it.hasNext()) {
+                Swarm id = it.next();
+                if(id.getUnits().size() == 0)
+                    it.remove();
+            }
 
             //SWARM STUFF
             for (int i = 0; i < units.size(); i++) {    
