@@ -27,7 +27,7 @@ public class RangerSwarm extends Swarm {
 					if(swarmMovementHeat < 10) {
 						swarmMovementHeat += SWARM_MOVEMENT_COOLDOWN;
 						Direction dirToMoveIn = this.currPath.getDirectionAtPoint(this.swarmLeader.getX(), this.swarmLeader.getY());
-						System.out.println("We want to move in direction: " + dirToMoveIn);
+						System.out.println("At " + this.swarmLeader.getX() + ", " + this.swarmLeader.getY() + " we want to move " + dirToMoveIn);
 						this.setSwarmLeader(this.swarmLeader.add(dirToMoveIn));
 					}
 					moveToLeader();
