@@ -19,15 +19,26 @@ public class EarthController extends PlanetController
     public HashMap<UnitType, Integer> robotCount;    
     public HashMap<String, Long> moneyCount;
 
+    public TargetingMaster tm;
+
     public void control() {
     
         System.out.println("Earth Controller iniatied");
+
+        this.tm = new TargetingMaster(this.gc);
     
         HashMap<Integer,UnitHandler> myHandler = new HashMap<Integer,UnitHandler>();
 
         enemyTeam = Utils.getOtherTeam(gc.team());
 
         earthMap = gc.startingMap(Planet.Earth);
+
+        VecUnit startingUnits = earthMap.getInitial_units();
+        for(int i = 0; i < startingUnits.size(); i ++) {
+            if(startingUnits.get(i).team()==enemyTeam) {
+                tm.addTarget(startingUnits.get(i).location().mapLocation());
+            }
+        }
 
         moneyCount = new HashMap<String, Long>();
         for (int i = 0; i < earthMap.getHeight(); i++) {
@@ -41,6 +52,15 @@ public class EarthController extends PlanetController
         
             System.out.println("Round #"+gc.round());
             System.out.println("Time used: " + gc.getTimeLeftMs());
+
+            VecUnit allUnits = gc.units();
+            for(int i = 0; i < allUnits.size(); i ++) {
+                // this is probably going to clog targetingmaster to high hell but who cares rn
+                Unit uu = allUnits.get(i);
+                if(uu.team() == enemyTeam) {
+                    tm.addTarget(uu.location().mapLocation());
+                }
+            }
 
             //SWARM STUFF
             //TODO figure out a better starting swarmLeader position than 5,5
