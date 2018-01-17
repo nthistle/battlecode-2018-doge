@@ -57,7 +57,7 @@ public class EarthController extends PlanetController
             for(int i = 0; i < allUnits.size(); i ++) {
                 // this is probably going to clog targetingmaster to high hell but who cares rn
                 Unit uu = allUnits.get(i);
-                if(uu.team() == enemyTeam) {
+                if(uu.team() == enemyTeam && !uu.location().isInGarrison() && !uu.location().isInSpace() && uu.location().isOnPlanet(Planet.Earth)) {
                     tm.addTarget(uu.location().mapLocation());
                 }
             }
@@ -86,15 +86,26 @@ public class EarthController extends PlanetController
 
             if(gc.round() >= 60 && (gc.round()-60) % 80 == 0) {
                 VecUnit original = gc.startingMap(Planet.Earth).getInitial_units();
-                MapLocation target = null;
-                List<Unit> enemyStartingPositions = new ArrayList<>();
+                MapLocation myLocation = null;
+                List<Unit> startingPositions = new ArrayList<>();
                 for(int i = 0; i < original.size(); i++) {
-                    if(original.get(i).team() != gc.team()) {
-                        enemyStartingPositions.add(original.get(i));
+                    if(original.get(i).team() == gc.team()) {
+                        startingPositions.add(original.get(i));
                     }
                 }
-                target = enemyStartingPositions.get(this.rng.nextInt(enemyStartingPositions.size())).location().mapLocation();
-                requestSwarm(12, target, UnitType.Ranger);
+                myLocation = startingPositions.get(this.rng.nextInt(startingPositions.size())).location().mapLocation();
+                MapLocation myTarget = null;
+                PathField pathToTarget = null;
+                for(int i = 0; i < tm.getNumTargets(); i ++) {
+                    myTarget = tm.getTarget(i);
+                    pathToTarget = pm.getPathField(myTarget);
+                    if(pathToTarget.isPointSet(myLocation))
+                        break;
+                }
+                if(myTarget != null) {
+                    System.out.println("Requested a new swarm!");
+                    requestSwarm(12, myTarget, UnitType.Ranger);
+                }
             }
 
             //END SWARM STUFF

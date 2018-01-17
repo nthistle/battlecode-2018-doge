@@ -29,7 +29,7 @@ public class RangerSwarm extends Swarm {
 						swarmMovementHeat += SWARM_MOVEMENT_COOLDOWN;
 						if(this.currPath.isPointSet(this.swarmLeader.getX(), this.swarmLeader.getY())) {
 							Direction dirToMoveIn = this.currPath.getDirectionAtPoint(this.swarmLeader.getX(), this.swarmLeader.getY());
-							System.out.println("We want to move in direction: " + dirToMoveIn);
+							//System.out.println("We want to move in direction: " + dirToMoveIn);
 							this.setSwarmLeader(this.swarmLeader.add(dirToMoveIn));
 						} else {
 							this.swarmTarget = null;
@@ -42,10 +42,12 @@ public class RangerSwarm extends Swarm {
 				if(swarmMovementHeat < 10) {
 					swarmMovementHeat += SWARM_MOVEMENT_COOLDOWN;
 					Direction d = Utils.getRandomDirection(Direction.values(), new Random());
-					while(!(gc.isOccupiable(this.swarmLeader.add(d)) == 0))
-						d = Utils.getRandomDirection(Direction.values(), new Random());
-					System.out.println("Random walk in direction: " + d);
-					this.setSwarmLeader(this.swarmLeader.add(d));
+					try {
+						while(!(gc.isOccupiable(this.swarmLeader.add(d)) == 0))
+							d = Utils.getRandomDirection(Direction.values(), new Random());
+						System.out.println("Random walk in direction: " + d);
+						this.setSwarmLeader(this.swarmLeader.add(d));
+					} catch (RuntimeException e) {}
 				}
 				moveToLeader();
 			}
@@ -126,52 +128,58 @@ public class RangerSwarm extends Swarm {
 
 	public boolean moveIndividual(Integer id, MapLocation location) {
 		boolean sawEnemy = false;
-		MapLocation myLocation = gc.unit(id).location().mapLocation();
-		Unit myUnit = gc.unit(id);
-		if(myLocation.distanceSquaredTo(location) <= myUnit.visionRange()) {
-			//the location we want to attack is within the unit's vision, now lets check if there is actually an enemy there
-			boolean enemyVisibleLocation = true;
-			Unit sensedUnit = null;
-			try {
-				sensedUnit = gc.senseUnitAtLocation(location);
-			} catch (RuntimeException e) {
-				enemyVisibleLocation = false;
-				sawEnemy = false;
-			}
-			if(!enemyVisibleLocation) {
-				//looks like the enemy doesn't exist, let's find the enemy closest to the specified location that is visible by the unit
-				TreeMap<Long, Integer> enemies = new TreeMap<Long, Integer>();
-				VecUnit nearbyVisible = gc.senseNearbyUnitsByTeam(myLocation, myUnit.visionRange(), Utils.getOtherTeam(gc.team()));
-				if(nearbyVisible.size() > 0) {
-					for(int x = 0; x < nearbyVisible.size(); x++) {
-						enemies.put(Utils.distanceSquaredTo(nearbyVisible.get(x).location().mapLocation(), myLocation) , nearbyVisible.get(x).id());
+		try {
+			MapLocation myLocation = gc.unit(id).location().mapLocation();
+			Unit myUnit = gc.unit(id);
+			if(myLocation.distanceSquaredTo(location) <= myUnit.visionRange()) {
+				//the location we want to attack is within the unit's vision, now lets check if there is actually an enemy there
+				boolean enemyVisibleLocation = true;
+				Unit sensedUnit = null;
+				try {
+					sensedUnit = gc.senseUnitAtLocation(location);
+				} catch (RuntimeException e) {
+					enemyVisibleLocation = false;
+					sawEnemy = false;
+				}
+				if(!enemyVisibleLocation) {
+					//looks like the enemy doesn't exist, let's find the enemy closest to the specified location that is visible by the unit
+					TreeMap<Long, Integer> enemies = new TreeMap<Long, Integer>();
+					VecUnit nearbyVisible = gc.senseNearbyUnitsByTeam(myLocation, myUnit.visionRange(), Utils.getOtherTeam(gc.team()));
+					if(nearbyVisible.size() > 0) {
+						for(int x = 0; x < nearbyVisible.size(); x++) {
+							enemies.put(Utils.distanceSquaredTo(nearbyVisible.get(x).location().mapLocation(), myLocation) , nearbyVisible.get(x).id());
+						}
+					}
+					if(enemies.keySet().size() > 0) {
+						//lets pick the enemy that's closest to our original target to attack
+						sensedUnit = gc.unit(enemies.get(enemies.firstKey()));
+						location = sensedUnit.location().mapLocation();
+						sawEnemy = true;
+					} else {
+						//unfortunately no enemies were in range, let's move closer to our original target
+						Utils.tryMoveRotate(this.gc, myUnit, myUnit.location().mapLocation().directionTo(location));
+						return false;
 					}
 				}
-				if(enemies.keySet().size() > 0) {
-					//lets pick the enemy that's closest to our original target to attack
-					sensedUnit = gc.unit(enemies.get(enemies.firstKey()));
-					location = sensedUnit.location().mapLocation();
-					sawEnemy = true;
+				//now we have a unit and a location we want to target, lets check if we are within attacking range
+				if(myLocation.distanceSquaredTo(location) <= myUnit.attackRange()) {
+					//we are in luck, lets attack the enemy
+					if(gc.canAttack(id, sensedUnit.id()) && myUnit.attackHeat() < 10) {
+	            		gc.attack(id, sensedUnit.id());
+	            		sawEnemy = true;
+	            	}
 				} else {
-					//unfortunately no enemies were in range, let's move closer to our original target
+					//looks like we need to move closer
 					Utils.tryMoveRotate(this.gc, myUnit, myUnit.location().mapLocation().directionTo(location));
-					return false;
 				}
-			}
-			//now we have a unit and a location we want to target, lets check if we are within attacking range
-			if(myLocation.distanceSquaredTo(location) <= myUnit.attackRange()) {
-				//we are in luck, lets attack the enemy
-				if(gc.canAttack(id, sensedUnit.id()) && myUnit.attackHeat() < 10) {
-            		gc.attack(id, sensedUnit.id());
-            		sawEnemy = true;
-            	}
 			} else {
 				//looks like we need to move closer
 				Utils.tryMoveRotate(this.gc, myUnit, myUnit.location().mapLocation().directionTo(location));
+				return false;
 			}
-		} else {
-			//looks like we need to move closer
-			Utils.tryMoveRotate(this.gc, myUnit, myUnit.location().mapLocation().directionTo(location));
+		} catch (RuntimeException  e) {
+			//TODO figure out why this happens
+			//bricked cause somehow the unit I am trying to move with just disappeared
 			return false;
 		}
 		return sawEnemy;

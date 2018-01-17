@@ -51,12 +51,14 @@ public class FactoryHandler extends UnitHandler {
                                     processedSwarm.addUnit(justUnloaded.id());
                                     if(processedSwarm.isSwarm()) {
                                         if(processedSwarm.swarmTarget != null) {
-                                            TreeMap<Long, MapLocation> uNits = new TreeMap<Long, MapLocation>();
-                                            for(int j = 0; j < processedSwarm.getUnits().size(); j++) {
-                                                Unit unit1 = gc.unit(processedSwarm.getUnits().get(j));
-                                                uNits.put(Utils.distanceSquaredTo(unit1.location().mapLocation(), processedSwarm.swarmTarget), unit.location().mapLocation());
-                                            }
-                                            processedSwarm.setSwarmLeader(uNits.get(uNits.firstKey()));
+                                            try {
+                                                TreeMap<Long, MapLocation> uNits = new TreeMap<Long, MapLocation>();
+                                                for(int j = 0; j < processedSwarm.getUnits().size(); j++) {
+                                                    Unit unit1 = gc.unit(processedSwarm.getUnits().get(j));
+                                                    uNits.put(Utils.distanceSquaredTo(unit1.location().mapLocation(), processedSwarm.swarmTarget), unit.location().mapLocation());
+                                                }
+                                                processedSwarm.setSwarmLeader(uNits.get(uNits.firstKey()));
+                                            } catch (RuntimeException e) {}
                                         } else {
                                             processedSwarm.setSwarmLeader(gc.unit(processedSwarm.getUnits().get(0)).location().mapLocation());
                                             parent.getSwarm().add(processedSwarm);
@@ -103,7 +105,7 @@ public class FactoryHandler extends UnitHandler {
                                                     System.out.println("Swarm has enough robots in it");
                                                 }
                                             }
-                                            System.out.println("Ranger unloaded for swarm");
+                                            //System.out.println("Ranger unloaded for swarm");
                                         }
                                     }
                                 }
