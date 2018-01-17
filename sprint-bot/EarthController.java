@@ -64,7 +64,7 @@ public class EarthController extends PlanetController
             }
             */
 
-            if(gc.round() == 100) {
+            if(gc.round() >= 60 && (gc.round()-60) % 80 == 0) {
                 VecUnit original = gc.startingMap(Planet.Earth).getInitial_units();
                 MapLocation target = null;
                 List<Unit> enemyStartingPositions = new ArrayList<>();

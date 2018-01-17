@@ -155,6 +155,7 @@ public class RangerSwarm extends Swarm {
 				} else {
 					//unfortunately no enemies were in range, let's move closer to our original target
 					Utils.tryMoveRotate(this.gc, myUnit, myUnit.location().mapLocation().directionTo(location));
+					return false;
 				}
 			}
 			//now we have a unit and a location we want to target, lets check if we are within attacking range
