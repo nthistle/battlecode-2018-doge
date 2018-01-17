@@ -98,35 +98,45 @@ public class WorkerHandler extends UnitHandler {
         }
 
         if (!stationary && gc.karbonite() >= 100 && (parent.getRobotCount(UnitType.Factory) == 0 || (parent.getRobotCount(UnitType.Factory) >= 3 && nearbyFactoryCount == 0) || nearbyFactoryCount > 0)) {
-            Direction buildDirection = findBuildDirection(unit);
+            Direction buildDirection = findBuildDirection(unit);            
             if (buildDirection != null && gc.canBlueprint(unit.id(), UnitType.Factory, buildDirection)) {
                 // System.out.println("Blueprinting factory!");
                 gc.blueprint(unit.id(), UnitType.Factory, buildDirection);
                 parent.incrementRobotCount(UnitType.Factory);
-                stationary = true;
+                stationary = true;                
             }
-        }
+        }                
 
         if (!stationary) {
-            // MapLocation nearestMoney = null;
-            // int nearestDistance = Integer.MAX_VALUE;
-            // for (String locationKey : moneyCount.keySet()) {
-            //     MapLocation tryLocation = bc.bcMapLocationFromJson(locationKey);
-            //     PathField path = parent.pm.getPathField(tryLocation);
-            //     if (path.isPointSet(location)) {
-            //         int distance = path.getDistanceAtPoint(location);
-            //         if (distance < nearestDistance) {
-            //             nearestMoney = tryLocation;
-            //             nearestDistance = distance;
-            //         }
-            //     }
-            // }
-            // if (nearestMoney != null) {
-            //     Direction d = parent.pm.getPathField(nearestMoney).getDirectionAtPoint(location);
-            //     if (gc.canMove(unit.id(), d)) {
-            //         gc.moveRobot(unit.id(), d);
-            //     }
-            // }
+            
+            // try {
+                // MapLocation nearestMoney = null;
+                // int nearestDistance = Integer.MAX_VALUE;            
+                // for (String locationKey : moneyCount.keySet()) {                
+                //     MapLocation tryLocation = bc.bcMapLocationFromJson(locationKey);                
+                //     // long distance = location.distanceSquaredTo(tryLocation);
+                //     // if (distance < nearestDistance || (distance == nearestDistance && rng.nextBoolean())) {
+                //     //     nearestMoney = tryLocation;
+                //     //     nearestDistance = distance;
+                //     // }
+                //     PathField path = parent.pm.getPathField(tryLocation);
+                //     if (path.isPointSet(location)) {                    
+                //         int distance = path.getDistanceAtPoint(location);                    
+                //         if (distance < nearestDistance) {                        
+                //             nearestMoney = tryLocation;
+                //             nearestDistance = distance;                        
+                //         }
+                //     }                
+                // }                
+
+                // if (nearestMoney != null) {
+                //     Direction d = parent.pm.getPathField(nearestMoney).getDirectionAtPoint(location);
+                //     // System.out.println("test");
+                //     if (Utils.tryMoveRotate(gc, unit, d) != -1) {
+                //         stationary = true;                    
+                //     }
+                // }
+            // } catch (Exception e) {e.printStackTrace();}
         }
 
         Direction bestDirection = null;

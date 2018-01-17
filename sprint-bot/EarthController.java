@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
 import java.util.TreeMap;
+import java.util.LinkedList;
 
 public class EarthController extends PlanetController
 {
@@ -18,6 +19,7 @@ public class EarthController extends PlanetController
 
     public HashMap<UnitType, Integer> robotCount;    
     public HashMap<String, Long> moneyCount;
+    public LinkedList<MapLocation> moneyLocations;
 
     public TargetingMaster tm;
 
@@ -41,10 +43,12 @@ public class EarthController extends PlanetController
         }
 
         moneyCount = new HashMap<String, Long>();
+        moneyLocations = new LinkedList<MapLocation>();
         for (int i = 0; i < earthMap.getHeight(); i++) {
             for (int j = 0; j < earthMap.getWidth(); j++) {
                 MapLocation tempLocation = new MapLocation(Planet.Earth, j, i);
                 moneyCount.put(tempLocation.toJson(), earthMap.initialKarboniteAt(tempLocation));
+                moneyLocations.add(tempLocation);
             }
         }
 
@@ -185,6 +189,18 @@ public class EarthController extends PlanetController
         }
     }
     
+    public MapLocation findTarget(MapLocation myLocation) {
+        MapLocation myTarget = null;
+        PathField pathToTarget = null;
+        for(int i = 0; i < tm.getNumTargets(); i ++) {
+            myTarget = tm.getTarget(i);
+            pathToTarget = pm.getPathField(myTarget);
+            if(pathToTarget.isPointSet(myLocation))
+                break;
+        }
+        return myTarget;        
+    }
+
     public Planet getPlanet() {
         return Planet.Earth;
     }
