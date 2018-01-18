@@ -23,6 +23,8 @@ public class EarthController extends PlanetController
 
     public TargetingMaster tm;
 
+    public LaunchingLogicHandler launchLogic; 
+
     public void control() {
     
         System.out.println("Earth Controller iniatied");
@@ -34,6 +36,8 @@ public class EarthController extends PlanetController
         enemyTeam = Utils.getOtherTeam(gc.team());
 
         earthMap = gc.startingMap(Planet.Earth);
+
+        launchLogic = new LaunchingLogicHandler(this, gc, -1, rng);
 
         VecUnit startingUnits = earthMap.getInitial_units();
         for(int i = 0; i < startingUnits.size(); i ++) {
@@ -56,6 +60,8 @@ public class EarthController extends PlanetController
         
             System.out.println("Round #"+gc.round());
             System.out.println("Time used: " + gc.getTimeLeftMs());
+
+            launchLogic.takeTurn();
 
             VecUnit allUnits = gc.units();
             for(int i = 0; i < allUnits.size(); i ++) {
@@ -116,13 +122,24 @@ public class EarthController extends PlanetController
 
 
             ResearchInfo research = gc.researchInfo();
-            if (research.getLevel(UnitType.Knight) != 3 && !research.hasNextInQueue()) {
-                gc.queueResearch(UnitType.Knight);
+            if(!research.hasNextInQueue()) {
+            	if(research.getLevel(UnitType.Ranger) < 1) {
+            		gc.queueResearch(UnitType.Ranger);
+            	}
+            	else if(research.getLevel(UnitType.Rocket) < 1) {
+            		gc.queueResearch(UnitType.Rocket);
+            	}
+            	else if(research.getLevel(UnitType.Worker) < 2) {
+            		gc.queueResearch(UnitType.Worker);
+            	}
+            	else if(research.getLevel(UnitType.Rocket) < 2) {
+            		gc.queueResearch(UnitType.Rocket); 
+            	}
+            	else if(research.getLevel(UnitType.Worker) < 4) {
+            		gc.queueResearch(UnitType.Worker);
+            	}
+            	//no other things ... yet
             }
-            if (research.getLevel(UnitType.Knight) == 3 && research.getLevel(UnitType.Worker) != 4 && !research.hasNextInQueue()) {
-                gc.queueResearch(UnitType.Worker);
-            }
-
             robotCount = new HashMap<UnitType, Integer>(); 
             
             units = gc.myUnits();
@@ -146,6 +163,10 @@ public class EarthController extends PlanetController
                             break;
                         case Worker:
                             newHandler = new WorkerHandler(this, gc, unit.id(), rng);
+                            break;
+                        case Rocket:
+                            newHandler = new RocketHandler(this, gc, unit.id(), rng, launchLogic);
+                            requestRocketSwarm(8, unit.location().mapLocation());
                             break;
                         default:
                             break;
@@ -275,5 +296,64 @@ public class EarthController extends PlanetController
             swarm.setPath(this.pm.generatePathField(target));
             this.getSwarm().add(swarm);
         }
+    }
+
+    public void requestRocketSwarm(int goalSize, MapLocation rocketLoc) {
+        for(int i = 0; i < this.getSwarm().size(); i++) {
+            Swarm d = this.getSwarm().get(i);
+            if(d.swarmTarget == null && d.getUnits().size() >= goalSize) {
+                if(d instanceof RocketSwarm) {
+                    d.setSwarmTarget(rocketLoc);
+                    return;
+                }
+            }
+        }
+        VecUnit units = gc.myUnits();
+        List<Integer> typeLocations = new ArrayList<Integer>();
+        for(int i = 0; i < units.size(); i++) {
+            Unit want = units.get(i);
+            if(want.unitType() == UnitType.Ranger || want.unitType() == UnitType.Worker) {
+                if(want.health() >= 90L && !want.location().isInGarrison() && want.location().isOnPlanet(Planet.Earth))
+                    typeLocations.add(want.id());
+            }
+        }
+        if(typeLocations.size() < goalSize) {
+            this.createSwarm(new RocketSwarm(gc), goalSize, new MapLocation(Planet.Earth, 0, 0), rocketLoc);
+            return;
+        }
+        else {
+            RocketSwarm swarm = new RocketSwarm(gc);
+            TreeMap<Long, Integer> metric = new TreeMap<Long, Integer>();
+            for(Integer a : typeLocations) {
+                metric.put(Utils.distanceSquaredTo(gc.unit(a).location().mapLocation(), rocketLoc), a);
+            }
+            int[] counter = new int[] {3, 5}; //{workers, rangers}
+
+            for(Long a : metric.keySet()) {
+                UnitType type = gc.unit(metric.get(a)).unitType();
+                if(type == UnitType.Worker && counter[0] > 0) {
+                    swarm.addUnit(metric.get(a));
+                    counter[0]--;
+                }
+                else if(type == UnitType.Ranger && counter[1] > 0) {
+                    swarm.addUnit(metric.get(a));
+                    counter[1]--;
+                }
+                if(counter[0] == 0 && counter[1] == 9) break;
+            }
+            List<Integer> swarmUnits = swarm.getUnits();
+            int sumX = 0;
+            int sumY = 0;
+            for(Integer a : swarmUnits) {
+                sumX += gc.unit(a).location().mapLocation().getX();
+                sumY += gc.unit(a).location().mapLocation().getY();
+            }
+            MapLocation centroid = new MapLocation(Planet.Earth, ((int) sumX / swarmUnits.size()), ((int) sumY / swarmUnits.size()));
+            swarm.setSwarmLeader(centroid);
+            swarm.setSwarmTarget(rocketLoc);
+            swarm.setPath(this.pm.generatePathField(rocketLoc));
+            this.getSwarm().add(swarm);
+        }
+
     }
 }

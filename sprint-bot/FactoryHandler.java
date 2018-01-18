@@ -27,10 +27,6 @@ public class FactoryHandler extends UnitHandler {
             }
         }
         */
-        if(gc.canProduceRobot(this.id, UnitType.Ranger)) {
-            gc.produceRobot(this.id, UnitType.Ranger);
-        }
-
         if(unit.structureIsBuilt() != 0) {
             VecUnitID garrison = unit.structureGarrison();
             //System.out.println("Garrison size: " + garrison.size());
@@ -46,7 +42,7 @@ public class FactoryHandler extends UnitHandler {
                         //SWARM STUFF
                         if(parent.getSwarmCreationRequest().size() > 0) {
                             Swarm processedSwarm = parent.getSwarmCreationRequest().peek();
-                            if(processedSwarm instanceof RangerSwarm) {
+                            if(processedSwarm instanceof RangerSwarm || processedSwarm instanceof RocketSwarm) {
                                 if(justUnloaded.unitType() == UnitType.Ranger) {
                                     processedSwarm.addUnit(justUnloaded.id());
                                     if(processedSwarm.isSwarm()) {
@@ -66,6 +62,28 @@ public class FactoryHandler extends UnitHandler {
                                         }
                                     }
                                     System.out.println("Ranger unloaded for swarm");
+                                }
+                            }
+                            if(processedSwarm instanceof RocketSwarm) {
+                                if(justUnloaded.unitType() == UnitType.Worker) {
+                                    processedSwarm.addUnit(justUnloaded.id());
+                                    if(processedSwarm.isSwarm()) {
+                                        if(processedSwarm.swarmTarget != null) {
+                                            try {
+                                                TreeMap<Long, MapLocation> uNits = new TreeMap<Long, MapLocation>();
+                                                for(int j = 0; j < processedSwarm.getUnits().size(); j++) {
+                                                    Unit unit1 = gc.unit(processedSwarm.getUnits().get(j));
+                                                    uNits.put(Utils.distanceSquaredTo(unit1.location().mapLocation(), processedSwarm.swarmTarget), unit.location().mapLocation());
+                                                }
+                                                processedSwarm.setSwarmLeader(uNits.get(uNits.firstKey()));
+                                            } catch (RuntimeException e) {}
+                                        } else {
+                                            processedSwarm.setSwarmLeader(gc.unit(processedSwarm.getUnits().get(0)).location().mapLocation());
+                                            parent.getSwarm().add(processedSwarm);
+                                            System.out.println("Swarm has enough robots in it");
+                                        }
+                                    }
+                                    System.out.println("Worker unloaded for swarm");
                                 }
                             }
                         }
@@ -88,8 +106,28 @@ public class FactoryHandler extends UnitHandler {
                                 Unit justUnloaded = gc.senseUnitAtLocation(unit.location().mapLocation().add(dir));
                                 if(parent.getSwarmCreationRequest().size() > 0) {
                                     Swarm processedSwarm = parent.getSwarmCreationRequest().peek();
-                                    if(processedSwarm instanceof RangerSwarm) {
+                                    if(processedSwarm instanceof RangerSwarm || processedSwarm instanceof RocketSwarm) {
                                         if(justUnloaded.unitType() == UnitType.Ranger) {
+                                            processedSwarm.addUnit(justUnloaded.id());
+                                            if(processedSwarm.isSwarm()) {
+                                                if(processedSwarm.swarmTarget != null) {
+                                                    TreeMap<Long, MapLocation> uNits = new TreeMap<Long, MapLocation>();
+                                                    for(int j = 0; j < processedSwarm.getUnits().size(); j++) {
+                                                        Unit unit1 = gc.unit(processedSwarm.getUnits().get(j));
+                                                        uNits.put(Utils.distanceSquaredTo(unit1.location().mapLocation(), processedSwarm.swarmTarget), unit1.location().mapLocation());
+                                                    }
+                                                    processedSwarm.setSwarmLeader(uNits.get(uNits.firstKey()));
+                                                } else {
+                                                    processedSwarm.setSwarmLeader(gc.unit(processedSwarm.getUnits().get(0)).location().mapLocation());
+                                                    parent.getSwarm().add(processedSwarm);
+                                                    System.out.println("Swarm has enough robots in it");
+                                                }
+                                            }
+                                            //System.out.println("Ranger unloaded for swarm");
+                                        }
+                                    }
+                                    if(processedSwarm instanceof RocketSwarm) {
+                                        if(justUnloaded.unitType() == UnitType.Worker) {
                                             processedSwarm.addUnit(justUnloaded.id());
                                             if(processedSwarm.isSwarm()) {
                                                 if(processedSwarm.swarmTarget != null) {
@@ -133,8 +171,21 @@ public class FactoryHandler extends UnitHandler {
                             gc.produceRobot(this.id, UnitType.Ranger);
                         }
                     }
+                    else if(processedSwarm instanceof RocketSwarm) {
+                        double chooser = rng.nextDouble();
+                        if(chooser <= 0.25 && gc.canProduceRobot(this.id, UnitType.Worker)) {
+                            gc.produceRobot(this.id, UnitType.Worker);
+                        }
+                        else if(gc.canProduceRobot(this.id, UnitType.Ranger)) {                            
+                            gc.produceRobot(this.id, UnitType.Ranger);
+                        }
+                    }
                 }
             }
+        }
+
+        if(gc.canProduceRobot(this.id, UnitType.Ranger)) {
+            gc.produceRobot(this.id, UnitType.Ranger);
         }
     }
 }
