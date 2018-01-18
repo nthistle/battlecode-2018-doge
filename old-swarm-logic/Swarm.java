@@ -15,7 +15,7 @@ public abstract class Swarm
     protected final GameController gc;
     protected List<Integer> unitIDs;
     protected int goalSize;
-    protected final int MIN_SWARM_SIZE = 8;
+    protected final int MIN_SWARM_SIZE = 7;
     protected MapLocation swarmTarget; //the final target of the path
     protected PathField currPath; //temporary
     protected MapLocation swarmLeader; //robots should be following the swarmLeader

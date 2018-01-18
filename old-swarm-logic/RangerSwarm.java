@@ -105,7 +105,7 @@ public class RangerSwarm extends Swarm {
 	}
 
 	public void moveToTarget() {
-		if(this.isSwarm() && this.isTogether()) {
+		if(this.isSwarm()) {
 			this.swarmIsMoving = true;
 			//System.out.println("swarm is moving now");
 		} else if(!this.isTogether()){

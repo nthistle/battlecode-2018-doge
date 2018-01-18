@@ -91,7 +91,7 @@ public class EarthController extends PlanetController
             if(gc.round() >= 1 && gc.round() % 15 == 0) {
             	System.out.println("Created a new swarm");
             	MapLocation a = findTarget(null);
-                this.createSwarm(new RangerSwarm(gc), 9, a);
+                this.createSwarm(new RangerSwarm(gc), 8, a);
             }
 
             //END SWARM STUFF

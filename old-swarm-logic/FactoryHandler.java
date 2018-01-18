@@ -91,7 +91,6 @@ public class FactoryHandler extends UnitHandler {
                     }
                 }
             }
-
             //TODO figure out what to do with this because technically nobody should be in the way because as soon as shit is created it starts random walking
             if(!ableToUnload && garrison.size() > 0) {
                 System.out.println("Unable to unload a unit");
@@ -99,51 +98,53 @@ public class FactoryHandler extends UnitHandler {
                 for(int i = 0; i < dirs.length; i++) {
                     Direction dir = dirs[this.rng.nextInt(dirs.length)];
                     //TODO instead of try catch, just check if there is a unit on that location before sensing a unit on that logation
-                    if(gc.hasUnitAtLocation(unit.location().mapLocation().add(dir))) {
-                        System.out.println("Can unload in dir: " + dir);
-                        if(gc.startingMap(gc.planet()).onMap(unit.location().mapLocation().add(dir)) && Utils.tryMoveWiggle(gc, gc.senseUnitAtLocation(unit.location().mapLocation().add(dir)).id(), dir) != 0) {
-                            System.out.println("Forcefully moved away");
-                            if(gc.canUnload(this.id, dir)) {
-                                gc.unload(this.id, dir);
-                                Unit justUnloaded = gc.senseUnitAtLocation(unit.location().mapLocation().add(dir));
-                                if(parent.getSwarmRequest().size() > 0) {
-                                    Swarm processedSwarm = null;
-                                    for(int z = 0; z < parent.getSwarmRequest().size(); z++) {
-                                        processedSwarm = parent.getSwarmRequest().get(z);
-                                        if(processedSwarm.goalFactory == this.id)
-                                            break;
-                                        else
-                                            processedSwarm = null;
-                                    }
-                                    if(processedSwarm == null) {
-                                        //hello there are no swarms to create time to dip
-                                        return;
-                                    }
-                                    if(processedSwarm instanceof RangerSwarm) {
-                                        if(processedSwarm.goalFactory == this.id && justUnloaded.unitType() == UnitType.Ranger) {
-                                            processedSwarm.addUnit(justUnloaded.id());
-                                            if(processedSwarm.isSwarm()) {
-                                                if(processedSwarm.swarmTarget != null && processedSwarm.swarmLeader == null) {
-                                                    TreeMap<Long, MapLocation> uNits = new TreeMap<Long, MapLocation>();
-                                                    for(int j = 0; j < processedSwarm.getUnits().size(); j++) {
-                                                        Unit unit1 = gc.unit(processedSwarm.getUnits().get(j));
-                                                        uNits.put(Utils.distanceSquaredTo(unit1.location().mapLocation(), processedSwarm.swarmTarget), unit1.location().mapLocation());
+                    try {
+                        if(gc.hasUnitAtLocation(unit.location().mapLocation().add(dir))) {
+                            //System.out.println("Can unload in dir: " + dir);
+                            if(gc.startingMap(gc.planet()).onMap(unit.location().mapLocation().add(dir)) && Utils.tryMoveWiggle(gc, gc.senseUnitAtLocation(unit.location().mapLocation().add(dir)).id(), dir) != 0) {
+                                System.out.println("Forcefully moved away");
+                                if(gc.canUnload(this.id, dir)) {
+                                    gc.unload(this.id, dir);
+                                    Unit justUnloaded = gc.senseUnitAtLocation(unit.location().mapLocation().add(dir));
+                                    if(parent.getSwarmRequest().size() > 0) {
+                                        Swarm processedSwarm = null;
+                                        for(int z = 0; z < parent.getSwarmRequest().size(); z++) {
+                                            processedSwarm = parent.getSwarmRequest().get(z);
+                                            if(processedSwarm.goalFactory == this.id)
+                                                break;
+                                            else
+                                                processedSwarm = null;
+                                        }
+                                        if(processedSwarm == null) {
+                                            //hello there are no swarms to create time to dip
+                                            return;
+                                        }
+                                        if(processedSwarm instanceof RangerSwarm) {
+                                            if(processedSwarm.goalFactory == this.id && justUnloaded.unitType() == UnitType.Ranger) {
+                                                processedSwarm.addUnit(justUnloaded.id());
+                                                if(processedSwarm.isSwarm()) {
+                                                    if(processedSwarm.swarmTarget != null && processedSwarm.swarmLeader == null) {
+                                                        TreeMap<Long, MapLocation> uNits = new TreeMap<Long, MapLocation>();
+                                                        for(int j = 0; j < processedSwarm.getUnits().size(); j++) {
+                                                            Unit unit1 = gc.unit(processedSwarm.getUnits().get(j));
+                                                            uNits.put(Utils.distanceSquaredTo(unit1.location().mapLocation(), processedSwarm.swarmTarget), unit1.location().mapLocation());
+                                                        }
+                                                        processedSwarm.setSwarmLeader(uNits.get(uNits.firstKey()));
+                                                    } else {
+                                                        processedSwarm.setSwarmLeader(gc.unit(processedSwarm.getUnits().get(0)).location().mapLocation());
+                                                        parent.getSwarm().add(processedSwarm);
+                                                        System.out.println("Swarm has enough robots in it");
                                                     }
-                                                    processedSwarm.setSwarmLeader(uNits.get(uNits.firstKey()));
-                                                } else {
-                                                    processedSwarm.setSwarmLeader(gc.unit(processedSwarm.getUnits().get(0)).location().mapLocation());
-                                                    parent.getSwarm().add(processedSwarm);
-                                                    System.out.println("Swarm has enough robots in it");
                                                 }
+                                                //System.out.println("Ranger unloaded for swarm");
                                             }
-                                            //System.out.println("Ranger unloaded for swarm");
                                         }
                                     }
+                                    break;
                                 }
-                                break;
                             }
                         }
-                    }
+                    } catch (Exception e){}
                 }
             }
         }
