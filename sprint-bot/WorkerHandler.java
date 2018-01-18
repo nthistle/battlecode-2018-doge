@@ -22,7 +22,7 @@ public class WorkerHandler extends UnitHandler {
     
     @Override
     public void takeTurn(Unit unit) {        
-
+        try{
         if (!unit.location().isOnMap()) {            
             return;
         }
@@ -106,16 +106,6 @@ public class WorkerHandler extends UnitHandler {
             }
         }
 
-        if (!stationary && gc.karbonite() >= 100 && (parent.getRobotCount(UnitType.Factory) == 0 || (parent.getRobotCount(UnitType.Factory) >= 3 && nearbyFactoryCount == 0) || nearbyFactoryCount > 0)) {
-            Direction buildDirection = findBuildDirection(unit);            
-            if (buildDirection != null && gc.canBlueprint(unit.id(), UnitType.Factory, buildDirection)) {
-                // System.out.println("Blueprinting factory!");
-                gc.blueprint(unit.id(), UnitType.Factory, buildDirection);
-                parent.incrementRobotCount(UnitType.Factory);
-                stationary = true;                
-            }
-        }                
-
         if (!stationary && nearbyEnemies.size() >= (int)((nearbyFriendly.size() - nearbyFactoryCount - nearbyWorkerCount) * 1.5)) {
             Unit nearestEnemy = null;
             int nearestDistanceEnemy = Integer.MAX_VALUE;
@@ -131,6 +121,16 @@ public class WorkerHandler extends UnitHandler {
                 stationary = true;
             }            
         }
+
+        if (!stationary && gc.karbonite() >= 100 && (parent.getRobotCount(UnitType.Factory) == 0 || (parent.getRobotCount(UnitType.Factory) >= 3 && nearbyFactoryCount == 0) || nearbyFactoryCount > 0)) {
+            Direction buildDirection = findBuildDirection(unit);            
+            if (buildDirection != null && gc.canBlueprint(unit.id(), UnitType.Factory, buildDirection)) {
+                // System.out.println("Blueprinting factory!");
+                gc.blueprint(unit.id(), UnitType.Factory, buildDirection);
+                parent.incrementRobotCount(UnitType.Factory);
+                stationary = true;                
+            }
+        }                
 
         if (!stationary) {
             LinkedList<MapLocation> moneyLocations = ((EarthController)parent).moneyLocations;
@@ -241,6 +241,7 @@ public class WorkerHandler extends UnitHandler {
         if (moveDirection != null && Utils.tryMoveRotate(gc, unit, moveDirection) != -1) {
             previous = location;
         }                
+        }catch(Exception e){};
     }
 
     private Direction findMoveDirection(Unit unit) {        
