@@ -3,6 +3,8 @@ import java.util.Random;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.ListIterator;
 import java.util.HashMap;
 
 public class WorkerHandler extends UnitHandler {
@@ -26,7 +28,14 @@ public class WorkerHandler extends UnitHandler {
         }
 
         if (unit.location().isOnPlanet(Planet.Mars)) {
-            
+            if (gc.round() >= 750) {
+                for (Direction d : Utils.directionList) {
+                    if (gc.canReplicate(unit.id(), d)) {
+                        gc.replicate(unit.id(), d);                             
+                        break;
+                    }
+                }                
+            }            
             return;
         }
 
@@ -107,8 +116,53 @@ public class WorkerHandler extends UnitHandler {
             }
         }                
 
+        if (!stationary && nearbyEnemies.size() >= (int)((nearbyFriendly.size() - nearbyFactoryCount - nearbyWorkerCount) * 1.5)) {
+            Unit nearestEnemy = null;
+            int nearestDistanceEnemy = Integer.MAX_VALUE;
+            for (int j = 0; j < nearbyEnemies.size(); j++) {
+                Unit nearbyUnit = nearbyEnemies.get(j);                                
+                int distance = (int)location.distanceSquaredTo(nearbyUnit.location().mapLocation());
+                if (distance < nearestDistanceEnemy || (distance == nearestDistanceEnemy && rng.nextBoolean())) {
+                    nearestEnemy = nearbyUnit;
+                    nearestDistanceEnemy = distance;
+                }                
+            }            
+            if (!stationary && nearestEnemy != null && Utils.tryMoveRotate(gc, unit, location.directionTo(location.subtract(location.directionTo(nearestEnemy.location().mapLocation())))) != -1) {
+                stationary = true;
+            }            
+        }
+
         if (!stationary) {
-            
+            LinkedList<MapLocation> moneyLocations = ((EarthController)parent).moneyLocations;
+            ListIterator<MapLocation> iterator = moneyLocations.listIterator();
+            MapLocation nearestMoney = null;
+            long nearestDistance = Integer.MAX_VALUE;            
+            MapLocation mostMoneyLocation = null;
+            long mostMoney = 0;
+            while (iterator.hasNext()) {
+                MapLocation tryLocation = iterator.next();
+                if (tryLocation.isWithinRange(unit.visionRange(), location)) {
+                    long money = gc.karboniteAt(tryLocation);
+                    if (money <= 0) {
+                        iterator.remove();
+                        continue;
+                    }
+                    if (mostMoneyLocation == null || money > mostMoney) {
+                        mostMoney = money;
+                        mostMoneyLocation = tryLocation;                        
+                    }
+                }
+                long distance = location.distanceSquaredTo(tryLocation);
+                if (nearestMoney == null || distance < nearestDistance) {
+                    nearestDistance = distance;
+                    nearestMoney = mostMoneyLocation;
+                }
+            }            
+            if (mostMoneyLocation != null && Utils.tryMoveRotate(gc, unit, location.directionTo(mostMoneyLocation)) != -1) {
+                stationary = true;
+            } else if (nearestMoney != null && Utils.tryMoveRotate(gc, unit, location.directionTo(nearestMoney)) != -1) {
+                stationary = true;
+            }
             // try {
                 // MapLocation nearestMoney = null;
                 // int nearestDistance = Integer.MAX_VALUE;            
@@ -178,22 +232,6 @@ public class WorkerHandler extends UnitHandler {
         //         break;
         //     }
         // }
-
-        if (!stationary && nearbyEnemies.size() >= (int)(nearbyFriendly.size() * 1.5)) {
-            Unit nearestEnemy = null;
-            int nearestDistanceEnemy = Integer.MAX_VALUE;
-            for (int j = 0; j < nearbyEnemies.size(); j++) {
-                Unit nearbyUnit = nearbyEnemies.get(j);                                
-                int distance = (int)location.distanceSquaredTo(nearbyUnit.location().mapLocation());
-                if (distance < nearestDistanceEnemy || (distance == nearestDistanceEnemy && rng.nextBoolean())) {
-                    nearestEnemy = nearbyUnit;
-                    nearestDistanceEnemy = distance;
-                }                
-            }            
-            if (!stationary && nearestEnemy != null && Utils.tryMoveRotate(gc, unit, location.directionTo(location.subtract(location.directionTo(nearestEnemy.location().mapLocation())))) != -1) {
-                stationary = true;
-            }            
-        }
 
         if (stationary) {
             return;

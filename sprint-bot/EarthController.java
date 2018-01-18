@@ -190,6 +190,16 @@ public class EarthController extends PlanetController
     }
     
     public MapLocation findTarget(MapLocation myLocation) {
+        if (myLocation == null) {
+            VecUnit original = gc.startingMap(Planet.Earth).getInitial_units();            
+            List<Unit> startingPositions = new ArrayList<>();
+            for(int i = 0; i < original.size(); i++) {
+                if(original.get(i).team() == gc.team()) {
+                    startingPositions.add(original.get(i));
+                }
+            }
+            myLocation = startingPositions.get(this.rng.nextInt(startingPositions.size())).location().mapLocation();            
+        }
         MapLocation myTarget = null;
         PathField pathToTarget = null;
         for(int i = 0; i < tm.getNumTargets(); i ++) {
