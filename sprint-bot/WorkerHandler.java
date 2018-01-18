@@ -30,46 +30,35 @@ public class WorkerHandler extends UnitHandler {
             return;
         }
 
-        PlanetMap map = ((EarthController)parent).earthMap;
-        HashMap<String, Long> moneyCount = ((EarthController)parent).moneyCount;
-
         boolean stationary = false;        
+
+        PlanetMap map = ((EarthController)parent).earthMap;
+        HashMap<String, Long> moneyCount = ((EarthController)parent).moneyCount;        
 
         MapLocation location = unit.location().mapLocation();        
 
         VecUnit nearbyFriendly = gc.senseNearbyUnitsByTeam(location, unit.visionRange(), gc.team());
+        VecUnit nearbyEnemies = gc.senseNearbyUnitsByTeam(location, unit.visionRange(), Utils.getOtherTeam(gc.team()));
 
-        int nearbyWorkers = 0;
+        int nearbyFactoryCount = 0;
+        int nearbyBuiltFactoryCount = 0;
+        int nearbyWorkerCount = 0;
         for (int i = 0; i < nearbyFriendly.size(); i++) {
             if (nearbyFriendly.get(i).unitType() == UnitType.Worker) {
-                nearbyWorkers++;
+                nearbyWorkerCount++;
+            } else if (nearbyFriendly.get(i).unitType() == UnitType.Factory) {
+                nearbyFactoryCount++;
+                if (nearbyFriendly.get(i).structureIsBuilt() == 1) {
+                    nearbyBuiltFactoryCount++;
+                }
             }
         }
 
-        VecUnit nearbyEnemies = gc.senseNearbyUnitsByTeam(location, unit.visionRange(), Utils.getOtherTeam(gc.team()));
-
-        if (nearbyEnemies.size() >= (int)(nearbyFriendly.size() * 1.5)) {
-            Unit nearestEnemy = null;
-            int nearestDistanceEnemy = Integer.MAX_VALUE;
-            for (int j = 0; j < nearbyEnemies.size(); j++) {
-                Unit nearbyUnit = nearbyEnemies.get(j);                                
-                int distance = (int)location.distanceSquaredTo(nearbyUnit.location().mapLocation());
-                if (distance < nearestDistanceEnemy || (distance == nearestDistanceEnemy && rng.nextBoolean())) {
-                    nearestEnemy = nearbyUnit;
-                    nearestDistanceEnemy = distance;
-                }                
-            }            
-            if (!stationary && nearestEnemy != null && Utils.tryMoveRotate(gc, unit, location.directionTo(location.subtract(location.directionTo(nearestEnemy.location().mapLocation())))) != -1) {
-                stationary = true;
-            }            
-        }
-
-        if (parent.getRobotCount(UnitType.Factory) == 1 && (parent.getRobotCount(UnitType.Worker) == 1 || (parent.getRobotCount(UnitType.Factory) <= parent.getRobotCount(UnitType.Worker) && gc.senseNearbyUnitsByType(location, unit.visionRange(), UnitType.Worker).size() <= 1))) {
+        if (nearbyFactoryCount > 0 && nearbyWorkerCount < 3) { 
             // System.out.println("Early game replication");
             for (Direction d : Utils.directionList) {
                 if (gc.canReplicate(unit.id(), d)) {
-                    gc.replicate(unit.id(), d);
-                    System.out.println(gc.units().get(gc.units().size() - 1));
+                    gc.replicate(unit.id(), d);     
                     parent.incrementRobotCount(UnitType.Worker);
                     break;
                 }
@@ -81,7 +70,8 @@ public class WorkerHandler extends UnitHandler {
         int nearestDistanceFactory = Integer.MAX_VALUE;
         for (int j = 0; j < nearbyFactories.size(); j++) {
             Unit nearbyUnit = nearbyFactories.get(j);
-            if (nearbyUnit.structureIsBuilt() == 1) {
+            PathField path = parent.pm.getPathField(nearbyUnit.location().mapLocation());
+            if (nearbyUnit.structureIsBuilt() == 1 || !path.isPointSet(location)) {
                 continue;
             }
             if (gc.canBuild(unit.id(), nearbyUnit.id())) {                
@@ -98,13 +88,16 @@ public class WorkerHandler extends UnitHandler {
                 }
             }
         }
-
-        if (!stationary && nearestFactory != null && Utils.tryMoveRotate(gc, unit, location.directionTo(nearestFactory.location().mapLocation())) != -1) {
-            stationary = true;
-            previous = location;
+        if (!stationary && nearestFactory != null) {
+            MapLocation target = nearestFactory.location().mapLocation();
+            // PathField path = parent.pm.getPathField(target);
+            if (Utils.tryMoveRotate(gc, unit, location.directionTo(target)) != -1) {
+                stationary = true;
+                previous = location;                
+            }
         }
 
-        if (!stationary && ((gc.karbonite() >= 100 && gc.round() <= 500) || gc.karbonite() >= 175)) {
+        if (!stationary && gc.karbonite() >= 100 && (parent.getRobotCount(UnitType.Factory) == 0 || (parent.getRobotCount(UnitType.Factory) >= 3 && nearbyFactoryCount == 0) || nearbyFactoryCount > 0)) {
             Direction buildDirection = findBuildDirection(unit);
             if (buildDirection != null && gc.canBlueprint(unit.id(), UnitType.Factory, buildDirection)) {
                 // System.out.println("Blueprinting factory!");
@@ -114,27 +107,82 @@ public class WorkerHandler extends UnitHandler {
             }
         }
 
-        Direction bestDirection = null;
-        long most = 0;
-        for (Direction d : Direction.values()) {                         
-            MapLocation tryLocation = location.add(d);
-            if (!map.onMap(tryLocation) || map.isPassableTerrainAt(tryLocation) == 0) {
-                continue;
-            }
-            if (gc.canHarvest(unit.id(), d) && (bestDirection == null || gc.karboniteAt(tryLocation) > most)) {
-                bestDirection = d;
-                most = gc.karboniteAt(tryLocation);
-            }
-        }
-        if (bestDirection != null) {
-            System.out.println("Harvesting");
-            gc.harvest(unit.id(), bestDirection);
-            String key = location.add(bestDirection).toJson();
-            moneyCount.put(key, moneyCount.get(key) - unit.workerHarvestAmount());
+        if (!stationary) {
+            // MapLocation nearestMoney = null;
+            // int nearestDistance = Integer.MAX_VALUE;
+            // for (String locationKey : moneyCount.keySet()) {
+            //     MapLocation tryLocation = bc.bcMapLocationFromJson(locationKey);
+            //     PathField path = parent.pm.getPathField(tryLocation);
+            //     if (path.isPointSet(location)) {
+            //         int distance = path.getDistanceAtPoint(location);
+            //         if (distance < nearestDistance) {
+            //             nearestMoney = tryLocation;
+            //             nearestDistance = distance;
+            //         }
+            //     }
+            // }
+            // if (nearestMoney != null) {
+            //     Direction d = parent.pm.getPathField(nearestMoney).getDirectionAtPoint(location);
+            //     if (gc.canMove(unit.id(), d)) {
+            //         gc.moveRobot(unit.id(), d);
+            //     }
+            // }
         }
 
-        if (!stationary) {
-            
+        Direction bestDirection = null;
+        String bestLocationKey = null;
+        long mostMoney = 0;
+        for (Direction d : Direction.values()) {                         
+            MapLocation tryLocation = location.add(d);
+            String locationKey = tryLocation.toJson();            
+            if (moneyCount.containsKey(locationKey)) {
+                long money = gc.karboniteAt(tryLocation);
+                if (money <= 0) {
+                    moneyCount.remove(locationKey);
+                    continue;
+                } else {
+                    moneyCount.put(locationKey, money);       
+                    if (gc.canHarvest(unit.id(), d) && (bestDirection == null || money > mostMoney)) {
+                        bestDirection = d;
+                        bestLocationKey = locationKey;
+                        mostMoney = money;
+                    }
+                }
+            }            
+        }
+        if (bestDirection != null) {
+            // System.out.println("Harvesting");
+            gc.harvest(unit.id(), bestDirection);            
+            if (mostMoney <= unit.workerHarvestAmount()) {
+                moneyCount.remove(bestLocationKey);                
+            } else {
+                moneyCount.put(bestLocationKey, mostMoney - unit.workerHarvestAmount());
+            }            
+        }
+
+        // VecUnit nbors = gc.senseNearbyUnitsByType(unit.location().mapLocation(), 2, UnitType.Factory);
+        // for(int i = 0; i < nbors.size(); i ++) {
+        //     if(nbors.get(i).team() != gc.team()) continue;
+        //     if(gc.canRepair(this.id, nbors.get(i))) {
+        //         gc.repair(this.id, nbors.get(i));
+        //         break;
+        //     }
+        // }
+
+        if (!stationary && nearbyEnemies.size() >= (int)(nearbyFriendly.size() * 1.5)) {
+            Unit nearestEnemy = null;
+            int nearestDistanceEnemy = Integer.MAX_VALUE;
+            for (int j = 0; j < nearbyEnemies.size(); j++) {
+                Unit nearbyUnit = nearbyEnemies.get(j);                                
+                int distance = (int)location.distanceSquaredTo(nearbyUnit.location().mapLocation());
+                if (distance < nearestDistanceEnemy || (distance == nearestDistanceEnemy && rng.nextBoolean())) {
+                    nearestEnemy = nearbyUnit;
+                    nearestDistanceEnemy = distance;
+                }                
+            }            
+            if (!stationary && nearestEnemy != null && Utils.tryMoveRotate(gc, unit, location.directionTo(location.subtract(location.directionTo(nearestEnemy.location().mapLocation())))) != -1) {
+                stationary = true;
+            }            
         }
 
         if (stationary) {

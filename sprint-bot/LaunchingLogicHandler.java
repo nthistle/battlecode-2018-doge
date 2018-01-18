@@ -11,14 +11,19 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	protected static int[][] label;
 	protected static int[][] adjacentSquares;
 	protected static List<Integer> kryptoniteTotals;
+	protected static List<Integer> usedZones;
 	public LaunchingLogicHandler(PlanetController parent, GameController gc, int id, Random rng) {
 		super(parent, gc, id, rng);
         this.zoneMap = this.getZones();
-        System.out.println(label);
+        System.out.println(Arrays.deepToString(label));
         this.usedLandingPoints = new ArrayList<MapLocation>();
 	}
 	
 	public void takeTurn() {
+		recalculate();
+	}
+
+	public void recalculate() {
 		calculateOptimalLandingLocation();
 		calculateOptimalLaunchingTime();
 	}
@@ -36,7 +41,10 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		for(ArrayList<MapLocation> zone : this.zoneMap) {
 			Collections.sort(zone, Comparators.MapLocComp);
 			for(MapLocation spot : zone) {
-				if(!usedLandingPoints.contains(spot)) this.landingPoint = spot;
+				if(!usedLandingPoints.contains(spot)) {
+					this.landingPoint = spot;
+					return;
+				}
 			}
 		}
 	}
@@ -56,10 +64,22 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	
 	public void addUsedMapLocation(MapLocation ml) {
 		this.usedLandingPoints.add(ml);
+		int i = ml.getY(), j = ml.getX();
+		for(int di = -1; di <= 1; di++) {
+			for(int dj = -1; dj <= 1; dj++) {
+				try {
+					adjacentSquares[i+di][j+dj]--;
+				}catch(Exception e){}
+			}
+		}
+		usedZones.set(label[i][j]-1, usedZones.get(label[i][j]-1) + 1);
+		recalculate();
 	}
 	
 	private List<ArrayList<MapLocation>> getZones() {
 		PlanetMap marsMap = gc.startingMap(Planet.Mars);
+		System.out.println(marsMap.getHeight());
+		System.out.println(marsMap.getWidth());
 		values = new int[(int)marsMap.getHeight()][(int)marsMap.getWidth()];
 		label = new int[(int)marsMap.getHeight()][(int)marsMap.getWidth()];
 		adjacentSquares = new int[(int)marsMap.getHeight()][(int)marsMap.getWidth()];
@@ -73,7 +93,8 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		}
 		for(int i = 0; i < marsMap.getHeight(); i++) {
 			for(int j = 0; j < marsMap.getWidth(); j++) {
-				if(gc.isOccupiable(new MapLocation(Planet.Mars, j, i)) == 0) {
+				System.out.println(i + ", " + j);
+				if(Utils.canOccupyMars(gc, new MapLocation(Planet.Mars, j, i))) {
 					label[i][j] = -1; //impassable point
 				}
 				else if(label[i][j] == 0){ //not yet visited
@@ -95,9 +116,11 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		}
 		List<ArrayList<MapLocation>> ret = new ArrayList<ArrayList<MapLocation>>(zone);
 		kryptoniteTotals = new ArrayList<Integer>(zone);
+		usedZones = new ArrayList<Integer>(zone);
 		for(int i = 0; i < zone; i++) {
 			ret.add(new ArrayList<MapLocation>());
 			kryptoniteTotals.add(0);
+			usedZones.add(0);
 		}
 		for(int i = 0; i < marsMap.getHeight(); i++) {
 			for(int j = 0; j < marsMap.getWidth(); j++) {
@@ -116,7 +139,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 				|| j < 0
 				|| j >= marsMap.getWidth()
 				|| label[i][j] != 0
-				|| gc.isOccupiable(new MapLocation(Planet.Mars, j, i)) == 0) 
+				|| Utils.canOccupyMars(gc, new MapLocation(Planet.Mars, j, i))) 
 			return;
 		else {
 			label[i][j] = tag;
@@ -136,7 +159,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 			public int compare(ArrayList<MapLocation> a, ArrayList<MapLocation> b) { //select the objectively better zone
 				int totA = kryptoniteTotals.get(label[(int)a.get(0).getY()][(int)a.get(0).getX()]-1);
 				int totB = kryptoniteTotals.get(label[(int)b.get(0).getY()][(int)b.get(0).getX()]-1);
-				return (totB + 100 * b.size()) - (totA + 100 * a.size());
+				return (totB + 100 * b.size() - 25 * usedZones.get(label[(int)b.get(0).getY()][(int)b.get(0).getX()]-1)) - (totA + 100 * a.size() - 25 * usedZones.get(label[(int)a.get(0).getY()][(int)a.get(0).getX()]-1));
 			}
 		};
 		
@@ -151,5 +174,5 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		};
 	}
 	
-	
+	        
 }
