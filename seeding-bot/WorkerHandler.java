@@ -292,15 +292,15 @@ public class WorkerHandler extends UnitHandler {
         Direction bestDirection = null;
         int mostEmpty = 0;
         for (Direction d : Utils.directionList) {                        
-            MapLocation tryLocation = mapLocation.add(d);                
+            MapLocation tryLocation = unit.location().mapLocation().add(d);
             if (previousLocation != null && tryLocation.equals(previousLocation)) {
                 continue;
             }
-            if (Utils.canOccupy(gc, tryLocation, earthParent, tried)) {
+            if (Utils.canOccupy(gc, tryLocation, ((EarthController)parent), tried)) {
                 int empty = 0;
                 for (Direction dd : Utils.directionList) {
                     MapLocation tryTryLocation = tryLocation.add(dd);
-                    if (Utils.canOccupy(gc, tryLocation, earthParent, tried)) {
+                    if (Utils.canOccupy(gc, tryLocation, ((EarthController)parent), tried)) {
                         empty++;
                     }
                 }                
@@ -319,15 +319,15 @@ public class WorkerHandler extends UnitHandler {
         Direction bestDirection = null;
         int mostEmpty = 0;                        
         for (Direction d : Utils.directionList) {
-            MapLocation tryLocation = mapLocation.add(d);                
-            if (Utils.canOccupy(gc, tryLocation, earthParent, tried)) {
+            MapLocation tryLocation = unit.location().mapLocation().add(d);
+            if (Utils.canOccupy(gc, tryLocation, parent, tried)) {
                 if (!testBuildLocation(tryLocation, d, triedTried)) {
                     continue;
                 }
                 int empty = 0;                
                 for (Direction dd : Utils.directionList) {
                     MapLocation tryTryLocation = tryLocation.add(dd);
-                    if (Utils.canOccupy(gc, tryLocation, earthParent, tried)) {
+                    if (Utils.canOccupy(gc, tryLocation, ((EarthController)parent), tried)) {
                         empty++;
                     } 
                 }                
@@ -345,7 +345,7 @@ public class WorkerHandler extends UnitHandler {
         for (int i = 0; i < Utils.directionList.size(); i++) {
             Direction tryDirection = Utils.directionList.get(i);
             MapLocation tryLocation = location.add(tryDirection);                        
-            status = status && Utils.canOccupy(gc, tryLocation, earthParent, UnitType.Factory, triedTried);   
+            status = status && Utils.canOccupy(gc, tryLocation, parent, UnitType.Factory, triedTried);   
         }        
         return status;
     }

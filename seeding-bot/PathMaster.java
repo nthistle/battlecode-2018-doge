@@ -5,15 +5,20 @@ import java.util.Queue;
 public class PathMaster
 {
 	protected PlanetMap basemap;
+	protected PathField[][] pathFieldCache;
 	
 	public PathMaster(PlanetMap basemap) {
 		this.basemap = basemap;
+		this.pathFieldCache = new PathField[(int)basemap.getWidth()][(int)basemap.getHeight()];
 	}
 
 	public PathField getPathField(MapLocation target) {
-		// if it's cached, return the cached pathfield
-		// if it's not, call generate and cache it
-		return null; // filler
+		int x = target.getX();
+		int y = target.getY();
+		if(this.pathFieldCache[x][y]==null) {
+			this.pathFieldCache[x][y] = generatePathField(target);
+		}
+		return this.pathFieldCache[x][y];
 	}
 
 	public PathField generatePathField(MapLocation target) {

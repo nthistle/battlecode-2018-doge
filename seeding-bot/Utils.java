@@ -130,6 +130,8 @@ public class Utils
             return true;
         }
         PlanetMap map = ((EarthController)parent).earthMap;
+        System.out.println(map);
+        System.out.println(map.onMap(location));
         boolean status = map.onMap(location) && map.isPassableTerrainAt(location) == 1 && !gc.hasUnitAtLocation(location);
         if (status) {
             visited.add(location);

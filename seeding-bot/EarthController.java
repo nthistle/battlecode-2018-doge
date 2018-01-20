@@ -16,16 +16,41 @@ public class EarthController extends PlanetController
         super(gc, pm, rng);
     }
     
+    public PlanetMap earthMap;
+
+    public Team enemyTeam;
+
+    public HashMap<UnitType, Integer> robotCount;    
+    public HashMap<String, Long> moneyCount;
+    public LinkedList<MapLocation> moneyLocations;
+    
+
+    public HashMap<Integer,UnitHandler> myHandler;
+
     public void control() {
     
         System.out.println("Earth Controller iniatied");
     
-        HashMap<Integer,UnitHandler> myHandler = new HashMap<Integer,UnitHandler>();
+        myHandler = new HashMap<Integer,UnitHandler>();
+        enemyTeam = Utils.getOtherTeam(gc.team());
+
+        earthMap = gc.startingMap(Planet.Earth);
+
+        moneyCount = new HashMap<String, Long>();
+        moneyLocations = new LinkedList<MapLocation>();
+        for (int i = 0; i < earthMap.getHeight(); i++) {
+            for (int j = 0; j < earthMap.getWidth(); j++) {
+                MapLocation tempLocation = new MapLocation(Planet.Earth, j, i);
+                moneyCount.put(tempLocation.toJson(), earthMap.initialKarboniteAt(tempLocation));
+                moneyLocations.add(tempLocation);
+            }
+        }
 
         while (true) {
         
-            System.out.println("Round #"+gc.round());
-            
+            System.out.println("Round #" + gc.round() + ", " + gc.getTimeLeftMs());
+            robotCount = new HashMap<UnitType, Integer>(); 
+                        
             VecUnit units = gc.myUnits();
             
             for(int i = 0; i < units.size(); i ++) {
@@ -54,12 +79,40 @@ public class EarthController extends PlanetController
                     
                     myHandler.put(unit.id(), newHandler);
                 }
+                incrementRobotCount(unit.unitType());                
+
+            }
+            for (int i = 0; i < units.size(); i++) {
+                Unit unit = units.get(i);
                 myHandler.get(unit.id()).takeTurn(unit);
             }
             gc.nextTurn();
         }
     }
     
+    public int getRobotCount(UnitType type) {
+        if (!robotCount.containsKey(type)) {
+            return 0;
+        }
+        return robotCount.get(type);
+    }
+
+    public void incrementRobotCount(UnitType type) {
+        robotCount.put(type, getRobotCount(type) + 1);
+    }
+    
+    private void initialMoneyInfo() {
+        moneyCount = new HashMap<String, Long>();
+        moneyLocations = new LinkedList<MapLocation>();
+        for (int i = 0; i < earthMap.getHeight(); i++) {
+            for (int j = 0; j < earthMap.getWidth(); j++) {
+                MapLocation tempLocation = new MapLocation(Planet.Earth, j, i);
+                moneyCount.put(tempLocation.toJson(), earthMap.initialKarboniteAt(tempLocation));
+                moneyLocations.add(tempLocation);
+            }
+        }
+    }
+
     public Planet getPlanet() {
         return Planet.Earth;
     }

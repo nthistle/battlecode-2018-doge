@@ -13,6 +13,12 @@ public class EarthController extends PlanetController
         super(gc, pm, rng);
     }
 
+    public HashMap<Integer,UnitHandler> myHandler;
+
+    public TargetingMaster tm;
+
+    public LaunchingLogicHandler launchLogic; 
+
     public PlanetMap earthMap;
 
     public Team enemyTeam;
@@ -21,17 +27,13 @@ public class EarthController extends PlanetController
     public HashMap<String, Long> moneyCount;
     public LinkedList<MapLocation> moneyLocations;
 
-    public TargetingMaster tm;
-
-    public LaunchingLogicHandler launchLogic; 
-
     public void control() {
     
         System.out.println("Earth Controller iniatied");
 
         this.tm = new TargetingMaster(this.gc);
     
-        HashMap<Integer,UnitHandler> myHandler = new HashMap<Integer,UnitHandler>();
+        myHandler = new HashMap<Integer,UnitHandler>();
 
         enemyTeam = Utils.getOtherTeam(gc.team());
 
