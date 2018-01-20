@@ -1,4 +1,7 @@
 import bc.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Random;
 
 public class Utils
@@ -38,6 +41,10 @@ public class Utils
             default: break;
         }
         return Direction.Center;
+    }
+    
+    public static long distanceSquaredTo(MapLocation a, MapLocation b) {
+        return ((long)Math.pow((a.getX() - b.getX()), 2)) + ((long)Math.pow((a.getY() - b.getY()), 2));
     }
     
     // lazy way
@@ -96,5 +103,55 @@ public class Utils
     public static boolean canMoveWiggle(GameController gc, int unitId, Direction dir) {
         Direction[] neighboring = getAdjacentDirs(dir);
         return gc.canMove(unitId, dir) || gc.canMove(unitId, neighboring[0]) || gc.canMove(unitId, neighboring[1]);
+    }
+
+    public static ArrayList<Direction> directionList = new ArrayList<Direction>(Arrays.asList(Direction.North, Direction.Northeast, Direction.East, Direction.Southeast, Direction.South, Direction.Southwest, Direction.West, Direction.Northwest));
+
+    public static int[] smallRotation = new int[] {0, -1, 1};
+    public static int[] bigRotation = new int[] {0, -1, 1, -2, 2};
+
+    public static int tryMoveRotate(GameController gc, Unit unit, Direction direction) {
+        if (!gc.isMoveReady(unit.id())) {
+            return -1;   
+        }
+        int index = directionList.indexOf(direction);
+        for (int i = 0; i < bigRotation.length; i++) {
+            Direction tryDirection = directionList.get((8 + index + bigRotation[i]) % 8);
+            if (gc.canMove(unit.id(), tryDirection)) {
+                gc.moveRobot(unit.id(), tryDirection);
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public static boolean canOccupy(GameController gc, MapLocation location, PlanetController parent, HashSet<MapLocation> visited) {
+        if (visited.contains(location)) {
+            return true;
+        }
+        PlanetMap map = ((EarthController)parent).earthMap;
+        boolean status = map.onMap(location) && map.isPassableTerrainAt(location) == 1 && !gc.hasUnitAtLocation(location);
+        if (status) {
+            visited.add(location);
+        }
+        return status;
+    }
+
+    public static boolean canOccupy(GameController gc, MapLocation location, PlanetController parent, UnitType type, HashSet<MapLocation> visited) {
+        if (visited.contains(location)) {
+            return true;
+        }
+        PlanetMap map = ((EarthController)parent).earthMap;
+        boolean status = !map.onMap(location) || map.isPassableTerrainAt(location) == 0 || !gc.hasUnitAtLocation(location) || gc.senseUnitAtLocation(location).unitType() != type;
+        if (status) {
+            visited.add(location);
+        }
+        return status;
+    }
+    
+    public static boolean canOccupyMars(GameController gc, MapLocation location) {
+        PlanetMap map = gc.startingMap(Planet.Mars);
+        boolean status = map.onMap(location) && map.isPassableTerrainAt(location) == 0 && !gc.hasUnitAtLocation(location);
+        return status;
     }
 }
