@@ -1,4 +1,6 @@
 *.bc18
+*.bc18r
+*.bc18z
 *.bc18t
 install_viewer.py
 viewer_latest

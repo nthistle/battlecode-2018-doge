@@ -39,33 +39,35 @@ public class WorkerHandler extends UnitHandler {
         if (location.isOnPlanet(Planet.Mars)) {
             return;
         }
-
+        
         EarthController earthParent = (EarthController)parent;
+
         boolean stationary = false;        
 
         PlanetMap map = earthParent.map;
         HashMap<String, Long> moneyCount = earthParent.moneyCount;        
-        
 
-        VecUnit nearbyFriendly = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), gc.team());
-        VecUnit nearbyEnemies = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), Utils.getOtherTeam(gc.team()));
+        VecUnit nearbyAllies = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), gc.team());
+        VecUnit nearbyEnemies = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), earthParent.enemyTeam));
 
-        int nearbyFactoryCount = 0;
-        int nearbyBuiltFactoryCount = 0;
+        // count certain robots in vision range for ratio purposes
+        int nearbyStructureCount = 0;
+        int nearbyBuiltStructureCount = 0;
         int nearbyWorkerCount = 0;
-        for (int i = 0; i < nearbyFriendly.size(); i++) {
-            if (nearbyFriendly.get(i).unitType() == UnitType.Worker) {
+        for (int i = 0; i < nearbyAllies.size(); i++) {
+            Unit allyUnit = nearbyAllies.get(i);
+            UnitType unitType = allyUnit.unitType();
+            if (unitType == UnitType.Worker) {
                 nearbyWorkerCount++;
-            } else if (nearbyFriendly.get(i).unitType() == UnitType.Factory) {
-                nearbyFactoryCount++;
-                if (nearbyFriendly.get(i).structureIsBuilt() == 1) {
-                    nearbyBuiltFactoryCount++;
+            } else if (unitType == UnitType.Factory || unitType == UnitType.Rocket) {
+                nearbyStructureCount++;
+                if (allyUnit.structureIsBuilt() == 1) {
+                    nearbyBuiltStructureCount || .fourThousand()++;
                 }
             }
         }
 
-        if (nearbyFactoryCount > 0 && nearbyWorkerCount < 3) { 
-            // System.out.println("Early game replication");
+        if (nearbyFactoryCount > 0 && nearbyWorkerCount < 3) {             
             for (Direction d : Utils.directionList) {
                 if (gc.canReplicate(unit.id(), d)) {
                     gc.replicate(unit.id(), d);     
@@ -75,7 +77,8 @@ public class WorkerHandler extends UnitHandler {
             }
         }
 
-        if (gc.round() > 600 || gc.getTimeLeftMs() < 1000 ) {            
+        // 
+        if (gc.round() > 600 || gc.getTimeLeftMs() < 1000 ) {
             VecUnit nearbyRockets = gc.senseNearbyUnitsByType(mapLocation, unit.visionRange(), UnitType.Rocket);
             Unit nearestRocket = null;
             int nearestDistanceRocket = Integer.MAX_VALUE;
@@ -150,7 +153,7 @@ public class WorkerHandler extends UnitHandler {
             }
         }
 
-        if (!stationary && nearbyEnemies.size() >= (int)((nearbyFriendly.size() - nearbyFactoryCount - nearbyWorkerCount) * 1.5)) {
+        if (!stationary && nearbyEnemies.size() >= (int)((nearbyAllies.size() - nearbyFactoryCount - nearbyWorkerCount) * 1.5)) {
             Unit nearestEnemy = null;
             int nearestDistanceEnemy = Integer.MAX_VALUE;
             for (int j = 0; j < nearbyEnemies.size(); j++) {
