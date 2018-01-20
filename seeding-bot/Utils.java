@@ -129,9 +129,7 @@ public class Utils
         if (visited.contains(location)) {
             return true;
         }
-        PlanetMap map = ((EarthController)parent).earthMap;
-        System.out.println(map);
-        System.out.println(map.onMap(location));
+        PlanetMap map = ((EarthController)parent).map;                
         boolean status = map.onMap(location) && map.isPassableTerrainAt(location) == 1 && !gc.hasUnitAtLocation(location);
         if (status) {
             visited.add(location);
@@ -143,7 +141,7 @@ public class Utils
         if (visited.contains(location)) {
             return true;
         }
-        PlanetMap map = ((EarthController)parent).earthMap;
+        PlanetMap map = ((EarthController)parent).map;
         boolean status = !map.onMap(location) || map.isPassableTerrainAt(location) == 0 || !gc.hasUnitAtLocation(location) || gc.senseUnitAtLocation(location).unitType() != type;
         if (status) {
             visited.add(location);

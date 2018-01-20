@@ -43,7 +43,7 @@ public class WorkerHandler extends UnitHandler {
         EarthController earthParent = (EarthController)parent;
         boolean stationary = false;        
 
-        PlanetMap map = earthParent.earthMap;
+        PlanetMap map = earthParent.map;
         HashMap<String, Long> moneyCount = earthParent.moneyCount;        
         
 
