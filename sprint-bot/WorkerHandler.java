@@ -74,50 +74,50 @@ public class WorkerHandler extends UnitHandler {
             }
         }
 
-        if (gc.round() > 600 || gc.getTimeLeftMs() < 1000 ) {
-            try{
-            VecUnit nearbyRockets = gc.senseNearbyUnitsByType(location, unit.visionRange(), UnitType.Rocket);
-            Unit nearestRocket = null;
-            int nearestDistanceRocket = Integer.MAX_VALUE;
-            for (int j = 0; j < nearbyRockets.size(); j++) {
-                Unit nearbyUnit = nearbyRockets.get(j);
-                PathField path = parent.pm.getPathField(nearbyUnit.location().mapLocation());
-                if (nearbyUnit.structureIsBuilt() == 1 || !path.isPointSet(location)) {
-                    continue;
-                }
-                if (gc.canBuild(unit.id(), nearbyUnit.id())) {                
-                    // System.out.println("Building factory!");                
-                    gc.build(unit.id(), nearbyUnit.id());   
-                    stationary = true;             
-                    break;
-                }
-                if (nearbyUnit.team() == gc.team()) {
-                    int distance = (int)location.distanceSquaredTo(nearbyUnit.location().mapLocation());
-                    if (distance < nearestDistanceRocket || (distance == nearestDistanceRocket && rng.nextBoolean())) {
-                        nearestRocket = nearbyUnit;
-                        nearestDistanceRocket = distance;
-                    }
-                }
-            }            
-            if (!stationary && nearestRocket != null) {
-                MapLocation target = nearestRocket.location().mapLocation();
-                // PathField path = parent.pm.getPathField(target);
-                if (Utils.tryMoveRotate(gc, unit, location.directionTo(target)) != -1) {
-                    stationary = true;                    
-                }
-            }      
-            if (stationary) {
-                      return;
-                  }      
-            for (Direction d : Utils.directionList) {  
-                if (gc.canBlueprint(unit.id(), UnitType.Rocket, d)) {
-                    gc.blueprint(unit.id(), UnitType.Rocket, d);
-                    break;
-                }                
-            }        
-            return;
-            }catch(Exception e){}    
-        }        
+        // if (gc.round() > 600 || gc.getTimeLeftMs() < 1000 ) {
+        //     try{
+        //     VecUnit nearbyRockets = gc.senseNearbyUnitsByType(location, unit.visionRange(), UnitType.Rocket);
+        //     Unit nearestRocket = null;
+        //     int nearestDistanceRocket = Integer.MAX_VALUE;
+        //     for (int j = 0; j < nearbyRockets.size(); j++) {
+        //         Unit nearbyUnit = nearbyRockets.get(j);
+        //         PathField path = parent.pm.getPathField(nearbyUnit.location().mapLocation());
+        //         if (nearbyUnit.structureIsBuilt() == 1 || !path.isPointSet(location)) {
+        //             continue;
+        //         }
+        //         if (gc.canBuild(unit.id(), nearbyUnit.id())) {                
+        //             // System.out.println("Building factory!");                
+        //             gc.build(unit.id(), nearbyUnit.id());   
+        //             stationary = true;             
+        //             break;
+        //         }
+        //         if (nearbyUnit.team() == gc.team()) {
+        //             int distance = (int)location.distanceSquaredTo(nearbyUnit.location().mapLocation());
+        //             if (distance < nearestDistanceRocket || (distance == nearestDistanceRocket && rng.nextBoolean())) {
+        //                 nearestRocket = nearbyUnit;
+        //                 nearestDistanceRocket = distance;
+        //             }
+        //         }
+        //     }            
+        //     if (!stationary && nearestRocket != null) {
+        //         MapLocation target = nearestRocket.location().mapLocation();
+        //         // PathField path = parent.pm.getPathField(target);
+        //         if (Utils.tryMoveRotate(gc, unit, location.directionTo(target)) != -1) {
+        //             stationary = true;                    
+        //         }
+        //     }      
+        //     if (stationary) {
+        //               return;
+        //           }      
+        //     for (Direction d : Utils.directionList) {  
+        //         if (gc.canBlueprint(unit.id(), UnitType.Rocket, d)) {
+        //             gc.blueprint(unit.id(), UnitType.Rocket, d);
+        //             break;
+        //         }                
+        //     }        
+        //     return;
+        //     }catch(Exception e){}    
+        // }        
 
         VecUnit nearbyFactories = gc.senseNearbyUnitsByType(location, unit.visionRange(), UnitType.Factory);
         Unit nearestFactory = null;
