@@ -5,8 +5,11 @@ import java.util.Random;
 
 public class EarthController extends PlanetController
 {
+    private PathMaster pm;
+
     public EarthController(GameController gc, Random rng) {
         super(gc, rng);
+        this.pm = new PathMaster(gc.startingMap(Planet.Earth));
     }
     
     public void control() {
@@ -51,6 +54,10 @@ public class EarthController extends PlanetController
             }
             gc.nextTurn();
         }
+    }
+
+    public PathMaster getPM() {
+        return this.pm;
     }
     
     public Planet getPlanet() {

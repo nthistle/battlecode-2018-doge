@@ -12,13 +12,15 @@ import java.util.Random;
 public abstract class PlanetController
 {
     protected final GameController gc;
-    protected final PathMaster pm;
     protected final Random rng;
 
-    public PlanetController(GameController gc, PathMaster pm, Random rng) {
+    public final PathMaster pm;
+
+    public PlanetController(GameController gc, Random rng) {
         this.gc = gc;
-        this.pm = pm;
         this.rng = rng;
+        
+        this.pm = new PathMaster(gc.startingMap(gc.planet()));
     }
     
     /**

@@ -32,13 +32,22 @@ public class PathMaster
 
 		while(queue.size() > 0) {
 			cur = queue.poll();
-			if(pf.isPointSet(cur.x, cur.y))
+			if(pf.isPointSet(cur.x, cur.y)) {
+				if(pf.getPoint(cur.x, cur.y).dist == cur.dist)
+					// if the point is set and the distances are the same, add the extra direction as a possibility
+					pf.addDirection(cur.x, cur.y, cur.dir);
 				continue;
-			pf.setPoint(cur.x, cur.y, cur.dir, cur.dist);
+			} else {
+				// if it's not set yet, we're going to set it and then add neighboring directions 
+				pf.setPoint(cur.x, cur.y, cur.dir, cur.dist);
+			}
 			for(Direction dir : Utils.directions()) {
 				BFSLocation possLoc = cur.add(dir);
-				if(pf.isPointValid(possLoc.x, possLoc.y) && !pf.isPointSet(possLoc.x, possLoc.y) && checkPassable(cur.x, cur.y)) {
-					queue.add(possLoc);
+				if(pf.isPointValid(possLoc.x, possLoc.y) && checkPassable(cur.x, cur.y)) {
+					// we'll add the point to the queue if it hasn't been set yet, or if it's going to end up as another
+					// with the same distance
+					if(!pf.isPointSet(possLoc.x, possLoc.y) || pf.getPoint(possLoc.x, possLoc.y).dist == possLoc.dist)
+						queue.add(possLoc);
 				}
 			}
 		}
