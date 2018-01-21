@@ -22,23 +22,20 @@ public class EarthController extends PlanetController
     public VecUnit units;
     public HashMap<UnitType, Integer> robotCount;    
 
-    public HashMap<String, Long> moneyCount;
-    public LinkedList<MapLocation> moneyLocations;    
-
     public HashMap<Integer,UnitHandler> myHandler;
 
     public void control() {
     
         System.out.println("Earth Controller iniatied");
 
-        globalValues();
-        initialMoneyInfo();
-
+        globalValues();        
+    
         myHandler = new HashMap<Integer,UnitHandler>();
 
         while (true) {
         
             System.out.println("Round #" + gc.round() + ", " + gc.getTimeLeftMs());
+            System.gc();
 
             update();
             
@@ -55,19 +52,6 @@ public class EarthController extends PlanetController
     private void globalValues() {
         enemyTeam = Utils.getOtherTeam(gc.team());
         map = gc.startingMap(Planet.Earth);        
-    }
-
-    // store initial karbonite locations and values
-    private void initialMoneyInfo() {
-        moneyCount = new HashMap<String, Long>();
-        moneyLocations = new LinkedList<MapLocation>();
-        for (int i = 0; i < map.getHeight(); i++) {
-            for (int j = 0; j < map.getWidth(); j++) {
-                MapLocation tempLocation = new MapLocation(Planet.Earth, j, i);
-                moneyCount.put(tempLocation.toJson(), map.initialKarboniteAt(tempLocation));
-                moneyLocations.add(tempLocation);
-            }
-        }
     }
 
     // round by round independent updates
