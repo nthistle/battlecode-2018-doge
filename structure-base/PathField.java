@@ -67,6 +67,34 @@ public class PathField
         return getDirectionsAtPoint(ml.getX(), ml.getY());
     }
 
+    public Direction getDirectionAtPoint(int x, int y) {
+        return getStraightestDirectionAtPoint(x, y);
+    }
+
+    public Direction getDirectionAtPoint(MapLocation ml) {
+        return getStraightestDirectionAtPoint(ml);
+    }
+
+    public Direction getStraightestDirectionAtPoint(int x, int y) {
+        Direction[] dirs = getDirectionsAtPoint(x,y);
+        MapLocation cLoc = new MapLocation(target.getPlanet(), x, y);
+        Direction optimalDir = cLoc.directionTo(target);
+        Direction bestAvail = dirs[0];
+        int bestAff = Utils.getDirectionAffinity(bestAvail, optimalDir);
+        for(int i = 1; i < dirs.length; i ++) {
+            if(dirs[i]==null) return bestAvail;
+            if(Utils.getDirectionAffinity(dirs[i], optimalDir)>bestAff) {
+                bestAff = Utils.getDirectionAffinity(dirs[i], optimalDir);
+                bestAvail = dirs[i];
+            }
+        }
+        return bestAvail;
+    }
+
+    public Direction getStraightestDirectionAtPoint(MapLocation ml) {
+        return getStraightestDirectionAtPoint(ml.getX(), ml.getY());
+    }
+
     /**
      * Assuming you follow the directions provided by this pathfield, the number of steps
      * you must take to reach this PathField's target
