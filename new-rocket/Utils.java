@@ -204,7 +204,7 @@ public class Utils
             return true;
         }
         PlanetMap map = ((EarthController)parent).earthMap;
-        boolean status = !map.onMap(location) || map.isPassableTerrainAt(location) == 0 || !gc.hasUnitAtLocation(location) || gc.senseUnitAtLocation(location).unitType() != type;
+        boolean status = !map.onMap(location) || map.isPassableTerrainAt(location) == 1 || !gc.hasUnitAtLocation(location) || gc.senseUnitAtLocation(location).unitType() != type;
         if (status) {
             visited.add(location);
         }
