@@ -9,8 +9,7 @@ public class RangerHandler extends UnitHandler {
     public RangerHandler(PlanetController parent, GameController gc, int id, Random rng) {
         super(parent, gc, id, rng);
         this.enemy = Utils.getOtherTeam(gc.team());
-        this.pathToTarget = new PathMaster(gc.startingMap(Planet.Earth)).generatePathField(((EarthController)parent).getTarget());
-        // kinda really bad time-wise, but hopefully good enough for now
+        this.pathToTarget = ((EarthController)parent).getPM().getPathField(((EarthController)parent).getTarget());
     }
     
     public void takeTurn() {
@@ -58,6 +57,6 @@ public class RangerHandler extends UnitHandler {
     private void doMovement(Unit unit) {
     	int tx = unit.location().mapLocation().getX();
     	int ty = unit.location().mapLocation().getY();
-    	Utils.tryMoveWiggle(this.gc, this.id, this.pathToTarget.getDirectionAtPoint(tx, ty));
+    	Utils.tryMoveWiggle(this.gc, this.id, this.pathToTarget.getDirectionsAtPoint(tx, ty)[0]);
     }
 }
