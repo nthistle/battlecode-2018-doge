@@ -1,6 +1,7 @@
 import bc.*;
 import java.util.Queue;
 import java.util.LinkedList;
+import java.util.Random;
 
 public class FactoryHandler extends UnitHandler {
 
@@ -49,7 +50,7 @@ public class FactoryHandler extends UnitHandler {
 
     	if(buildQueue.size()==0) return;
 
-    	int usableKarbonite = gc.karbonite();
+    	long usableKarbonite = gc.karbonite();
     	// build stuff
     	if(myParent.isSavingForFactory) usableKarbonite -= bc.bcUnitTypeBlueprintCost(UnitType.Factory);
     	if(myParent.isSavingForRocket)  usableKarbonite -= bc.bcUnitTypeBlueprintCost(UnitType.Rocket);

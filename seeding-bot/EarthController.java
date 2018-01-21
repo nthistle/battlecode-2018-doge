@@ -76,7 +76,7 @@ public class EarthController extends PlanetController
     }
 
     public void initializeTMTargets() {
-        VecUnit startingUnits = earthMap.getInitial_units();
+        VecUnit startingUnits = gc.startingMap(gc.planet()).getInitial_units();
         for(int i = 0; i < startingUnits.size(); i ++) {
             if(startingUnits.get(i).team() == enemyTeam) {
                 tm.addTarget(startingUnits.get(i).location().mapLocation());
