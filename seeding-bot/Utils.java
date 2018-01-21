@@ -108,22 +108,36 @@ public class Utils
     public static ArrayList<Direction> directionList = new ArrayList<Direction>(Arrays.asList(Direction.North, Direction.Northeast, Direction.East, Direction.Southeast, Direction.South, Direction.Southwest, Direction.West, Direction.Northwest));
 
     public static int[] smallRotation = new int[] {0, -1, 1};
-    public static int[] bigRotation = new int[] {0, -1, 1, -2, 2};
+    public static int[] mediumRotation = new int[] {0, -1, 1, -2, 2};
+    public static int[] bigRotation = new int[] {0, -1, 1, -2, 2, -3, 3, 4};
 
-    public static int tryMoveRotate(GameController gc, Unit unit, Direction direction) {
-        if (!gc.isMoveReady(unit.id())) {
-            return -1;   
+    public static boolean tryMoveRotate(GameController gc, int id, Direction direction) {
+        if (!gc.isMoveReady(id)) {
+            return false;   
         }
+        int index = directionList.indexOf(direction);
+        for (int i = 0; i < mediumRotation.length; i++) {
+            Direction tryDirection = directionList.get((8 + index + mediumRotation[i]) % 8);
+            if (gc.canMove(id, tryDirection)) {
+                gc.moveRobot(id, tryDirection);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean tryReplicateRotate(GameController gc, int id, Direction direction) {
         int index = directionList.indexOf(direction);
         for (int i = 0; i < bigRotation.length; i++) {
             Direction tryDirection = directionList.get((8 + index + bigRotation[i]) % 8);
-            if (gc.canMove(unit.id(), tryDirection)) {
-                gc.moveRobot(unit.id(), tryDirection);
-                return i;
+            if (gc.canReplicate(id, tryDirection)) {
+                gc.replicate(id, tryDirection);
+                return true;
             }
         }
-        return -1;
+        return false;
     }
+
 
     public static boolean canOccupy(GameController gc, MapLocation location, PlanetController parent, HashSet<MapLocation> visited) {
         if (visited.contains(location)) {
