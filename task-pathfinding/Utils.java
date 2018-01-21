@@ -12,6 +12,21 @@ public class Utils
         return Team.Blue;
     }
 
+    // sort of like a dot product
+    public static int getDirectionAffinity(Direction a, Direction b) {
+        int adx = bc.bcDirectionDx(a);
+        int ady = bc.bcDirectionDy(a);
+        int bdx = bc.bcDirectionDx(b);
+        int bdy = bc.bcDirectionDy(b);
+        if(adx==0||ady==0) {
+            adx*=2; ady*=2;
+        }
+        if(bdx==0||bdy==0) {
+            bdx*=2; bdy*=2;
+        }
+        return (adx*bdx)+(ady*bdy);
+    }
+
     public static Direction[] directions() {
         return new Direction[] {
             Direction.North,

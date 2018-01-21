@@ -57,6 +57,6 @@ public class RangerHandler extends UnitHandler {
     private void doMovement(Unit unit) {
     	int tx = unit.location().mapLocation().getX();
     	int ty = unit.location().mapLocation().getY();
-    	Utils.tryMoveWiggle(this.gc, this.id, this.pathToTarget.getDirectionsAtPoint(tx, ty)[0]);
+    	Utils.tryMoveWiggle(this.gc, this.id, this.pathToTarget.getStraightestDirectionAtPoint(tx, ty));
     }
 }
