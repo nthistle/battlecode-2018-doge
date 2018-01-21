@@ -7,7 +7,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	protected MapLocation landingPoint;
 	protected static List<MapLocation> usedLandingPoints;
 	protected long launchingTime;
-	protected static int[][] values;
+	protected static long[][] values;
 	protected static int[][] label;
 	protected static int[][] adjacentSquares;
 	protected static List<Integer> kryptoniteTotals;
@@ -103,6 +103,14 @@ public class LaunchingLogicHandler extends UnitHandler  {
 					zone++;
 					recur(label, i, j, zone, marsMap);
 				}
+				for(int di = -1; di <= 1; di++) {
+					for(int dj = -1; dj <= 1; dj++) {
+						try {
+							if(label[i+di][j+dj] > 0) adjacentSquares[i][j]++;
+						}catch(Exception e) {}
+					}
+				}
+				values[i][j] += gc.karboniteAt(new MapLocation(Planet.Mars, j, i));
 			}
 		}
 		for(int i = 0; i < marsMap.getHeight(); i++) {
