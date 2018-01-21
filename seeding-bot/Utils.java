@@ -1,5 +1,15 @@
 import bc.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Random;
+import java.util.Set;
+import java.util.TreeMap;
 
 public class Utils
 {
@@ -142,15 +152,6 @@ public class Utils
             return 3;
         }
         return 0;
-    }
-
-    public static boolean compareMapLocation(MapLocation a, MapLocation b) {
-        return a.getPlanet() == b.getPlanet() && a.getX() == b.getX() && a.getY() == b.getY();
-    }
-
-    public static boolean canMoveWiggle(GameController gc, int unitId, Direction dir) {
-        Direction[] neighboring = getAdjacentDirs(dir);
-        return gc.canMove(unitId, dir) || gc.canMove(unitId, neighboring[0]) || gc.canMove(unitId, neighboring[1]);
     }
 
     public static boolean compareMapLocation(MapLocation a, MapLocation b) {
