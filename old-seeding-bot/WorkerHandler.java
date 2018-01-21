@@ -9,9 +9,8 @@ import java.util.Random;
 
 // TODO:
 // smarter factory placement -> adjacencies and avoid putting on money
-// smarter harvesting mechanics
+// rotation around structure while building
 // Mars
-// smarter replication code
 
 public class WorkerHandler extends UnitHandler {
     
@@ -43,8 +42,7 @@ public class WorkerHandler extends UnitHandler {
         // references to parent 
         EarthController earthParent = (EarthController)parent;
         PlanetMap map = earthParent.map;
-        HashMap<UnitType, Integer> robotCount = earthParent.robotCount;
-        HashMap<String, Long> moneyCount = earthParent.moneyCount;        
+        HashMap<UnitType, Integer> robotCount = earthParent.robotCount;        
         
         // status markers        
         boolean busy = false;
@@ -52,8 +50,7 @@ public class WorkerHandler extends UnitHandler {
 
         VecUnit nearbyAllies = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), gc.team());
         VecUnit nearbyEnemies = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), earthParent.enemyTeam);        
-        ArrayList<Unit> nearbyStructures = new ArrayList<Unit>(); // ally only        
-        ArrayList<Unit> adjacentStructures = new ArrayList<Unit>(); // ally only
+        ArrayList<Unit> nearbyStructures = new ArrayList<Unit>(); // ally only                
 
         // count certain robots in vision range for ratio purposes
         // store them as well as precompute nearest
@@ -75,16 +72,24 @@ public class WorkerHandler extends UnitHandler {
                 }
                 nearbyStructures.add(allyUnit);
                 MapLocation tryLocation = allyUnit.location().mapLocation();
-                PathField path = earthParent.pm.getPathField(tryLocation);
-                if (!path.isPointSet(mapLocation)) {
-                    continue;
+                long distance;
+                PathField path = null;
+                if (gc.round() < 100) {
+                    path = earthParent.pm.getPathField(tryLocation);
+                    if (!path.isPointSet(mapLocation)) {
+                        continue;
+                    }
+                    distance = path.getDistanceAtPoint(mapLocation);
+                } else {
+                    distance = mapLocation.distanceSquaredTo(tryLocation);
                 }
-                long distance = path.getDistanceAtPoint(mapLocation);
                 if (nearestStructure == null || distance < nearestDistance) {
                     nearestStructure = tryLocation;
                     nearestDistance = distance;
-                    structurePath = path;
-                }
+                    if (gc.round() < 100) {
+                        structurePath = path;   
+                    }                    
+                }                    
             } else {
                 nearbyTroopCount++;
             }
@@ -146,8 +151,11 @@ public class WorkerHandler extends UnitHandler {
         }
 
         // if cannot build but there are nearby structures move towards them
-        if (!busy && nearestStructure != null) {            
-            if (Utils.tryMoveRotate(gc, id, structurePath.getDirectionAtPoint(mapLocation))) {
+        if (!busy && nearestStructure != null) {
+            if (gc.round() < 100 && Utils.tryMoveRotate(gc, id, structurePath.getDirectionAtPoint(mapLocation))) {
+                busy = true;
+                previousLocation = mapLocation;
+            } else if (Utils.tryMoveRotate(gc, id, mapLocation.directionTo(nearestStructure))) {
                 busy = true;
                 previousLocation = mapLocation;
             }
@@ -170,8 +178,9 @@ public class WorkerHandler extends UnitHandler {
         // }        
 
         // if conditions are appropriate blueprint factory
-        if (!busy && gc.karbonite() >= 100 && (earthParent.getRobotCount(UnitType.Factory) == 0 || (earthParent.getRobotCount(UnitType.Factory) >= 3 && nearbyStructures.size() == 0) || nearbyStructures.size() > 0)) {
-            Direction buildDirection = findBuildDirection(unit);
+        long totalStructures = nearbyStructures.size() + nearbyBuiltStructureCount;
+        if (!busy && gc.karbonite() >= 100 && (earthParent.getRobotCount(UnitType.Factory) == 0 || (earthParent.getRobotCount(UnitType.Factory) < 3 && nearbyWorkerCount > 1) || (earthParent.getRobotCount(UnitType.Factory) >= 3 && totalStructures == 0) || totalStructures > 0)) {
+            Direction buildDirection = findBuildDirection(unit);            
             if (buildDirection != null && gc.canBlueprint(id, UnitType.Factory, buildDirection)) {
                 gc.blueprint(id, UnitType.Factory, buildDirection);
                 earthParent.incrementRobotCount(UnitType.Factory);
@@ -180,77 +189,20 @@ public class WorkerHandler extends UnitHandler {
             }
         }                
 
-        // move towards locations of monetary interest
-        // TODO: balance between the money and distance
-        // if (!busy) {
-        //     LinkedList<MapLocation> moneyLocations = earthParent.moneyLocations;
-        //     ListIterator<MapLocation> iterator = moneyLocations.listIterator();
-        //     PathField moneyPath = null;
-        //     MapLocation nearestMoney = null;
-        //     nearestDistance = Long.MAX_VALUE;
-        //     PathField mostMoneyPath = null;
-        //     MapLocation mostMoneyLocation = null;            
-        //     long mostMoney = 0;
-        //     while (iterator.hasNext()) {
-        //         MapLocation tryLocation = iterator.next();                                
-        //         PathField path = earthParent.pm.getPathField(tryLocation);
-        //         if (!path.isPointSet(mapLocation)) {
-        //             continue;
-        //         }                
-        //         if (tryLocation.isWithinRange(unit.visionRange(), mapLocation)) {
-        //             long money = gc.karboniteAt(tryLocation);
-        //             if (money <= 0) {
-        //                 iterator.remove();
-        //                 continue;
-        //             }
-        //             if (mostMoneyLocation == null || money > mostMoney) {
-        //                 mostMoney = money;
-        //                 mostMoneyLocation = tryLocation;                        
-        //                 moneyPath = path;
-        //             }
-        //         }                
-        //         long distance = path.getDistanceAtPoint(mapLocation);                
-        //         if (nearestMoney == null || distance < nearestDistance) {
-        //             nearestDistance = distance;
-        //             nearestMoney = mostMoneyLocation;
-        //             mostMoneyPath = path;
-        //         }
-        //     }                        
-        //     if (mostMoneyLocation != null && Utils.tryMoveRotate(gc, id, mostMoneyPath.getDirectionAtPoint(mapLocation))) {
-        //         busy = true;
-        //     } else if (nearestMoney != null && Utils.tryMoveRotate(gc, id, moneyPath.getDirectionAtPoint(mapLocation))) {
-        //         busy = true;
-        //     }            
-        // }
-
         if (!done) {
-            Direction harvestDirection = null;
-            String harvestLocationKey = null;
+            Direction harvestDirection = null;            
             long mostMoney = 0;
             for (Direction d : Direction.values()) {                         
-                MapLocation tryLocation = mapLocation.add(d);
-                String locationKey = tryLocation.toJson();
-                if (moneyCount.containsKey(locationKey)) {
-                    long money = gc.karboniteAt(tryLocation);
-                    if (money <= 0) {
-                        moneyCount.remove(locationKey);
-                        continue;
-                    } else {
-                        moneyCount.put(locationKey, money);       
-                        if (gc.canHarvest(id, d) && (harvestDirection == null || money > mostMoney)) {
-                            harvestDirection = d;
-                            harvestLocationKey = locationKey;
-                            mostMoney = money;
-                        }
-                    }
+                MapLocation tryLocation = mapLocation.add(d);                
+                if (map.onMap(tryLocation) && gc.canHarvest(id, d)) {   
+                    long money = gc.karboniteAt(tryLocation);                                         
+                    if (harvestDirection == null || money > mostMoney) {
+                        harvestDirection = d;                        
+                        mostMoney = money;
+                    }                    
                 }            
             }
             if (harvestDirection != null) {                
-                if (mostMoney <= unit.workerHarvestAmount()) {
-                    moneyCount.remove(harvestLocationKey);                
-                } else {
-                    moneyCount.put(harvestLocationKey, mostMoney - unit.workerHarvestAmount());
-                }
                 gc.harvest(id, harvestDirection);            
                 done = true;
             }            

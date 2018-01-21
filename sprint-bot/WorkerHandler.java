@@ -178,36 +178,36 @@ public class WorkerHandler extends UnitHandler {
         }                
 
         if (!stationary) {
-            LinkedList<MapLocation> moneyLocations = ((EarthController)parent).moneyLocations;
-            ListIterator<MapLocation> iterator = moneyLocations.listIterator();
-            MapLocation nearestMoney = null;
-            long nearestDistance = Integer.MAX_VALUE;            
-            MapLocation mostMoneyLocation = null;
-            long mostMoney = 0;
-            while (iterator.hasNext()) {
-                MapLocation tryLocation = iterator.next();
-                if (tryLocation.isWithinRange(unit.visionRange(), location)) {
-                    long money = gc.karboniteAt(tryLocation);
-                    if (money <= 0) {
-                        iterator.remove();
-                        continue;
-                    }
-                    if (mostMoneyLocation == null || money > mostMoney) {
-                        mostMoney = money;
-                        mostMoneyLocation = tryLocation;                        
-                    }
-                }
-                long distance = location.distanceSquaredTo(tryLocation);
-                if (nearestMoney == null || distance < nearestDistance) {
-                    nearestDistance = distance;
-                    nearestMoney = mostMoneyLocation;
-                }
-            }            
-            if (mostMoneyLocation != null && Utils.tryMoveRotate(gc, unit, location.directionTo(mostMoneyLocation)) != -1) {
-                stationary = true;
-            } else if (nearestMoney != null && Utils.tryMoveRotate(gc, unit, location.directionTo(nearestMoney)) != -1) {
-                stationary = true;
-            }
+            // LinkedList<MapLocation> moneyLocations = ((EarthController)parent).moneyLocations;
+            // ListIterator<MapLocation> iterator = moneyLocations.listIterator();
+            // MapLocation nearestMoney = null;
+            // long nearestDistance = Integer.MAX_VALUE;            
+            // MapLocation mostMoneyLocation = null;
+            // long mostMoney = 0;
+            // while (iterator.hasNext()) {
+            //     MapLocation tryLocation = iterator.next();
+            //     if (tryLocation.isWithinRange(unit.visionRange(), location)) {
+            //         long money = gc.karboniteAt(tryLocation);
+            //         if (money <= 0) {
+            //             iterator.remove();
+            //             continue;
+            //         }
+            //         if (mostMoneyLocation == null || money > mostMoney) {
+            //             mostMoney = money;
+            //             mostMoneyLocation = tryLocation;                        
+            //         }
+            //     }
+            //     long distance = location.distanceSquaredTo(tryLocation);
+            //     if (nearestMoney == null || distance < nearestDistance) {
+            //         nearestDistance = distance;
+            //         nearestMoney = mostMoneyLocation;
+            //     }
+            // }            
+            // if (mostMoneyLocation != null && Utils.tryMoveRotate(gc, unit, location.directionTo(mostMoneyLocation)) != -1) {
+            //     stationary = true;
+            // } else if (nearestMoney != null && Utils.tryMoveRotate(gc, unit, location.directionTo(nearestMoney)) != -1) {
+            //     stationary = true;
+            // }
             // try {
                 // MapLocation nearestMoney = null;
                 // int nearestDistance = Integer.MAX_VALUE;            
