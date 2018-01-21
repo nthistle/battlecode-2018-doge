@@ -9,17 +9,29 @@ public class EarthController extends PlanetController
         super(gc, rng);
     }
     
+    public PlanetMap map;
+    public Team enemyTeam;
+
+    public VecUnit units;
+    public HashMap<UnitType, Integer> robotCount = new HashMap<UnitType, Integer>();
+    public HashMap<Integer,UnitHandler> myHandler;
+    
     public void control() {
     
         System.out.println("Earth Controller initiated");
     
-        HashMap<Integer,UnitHandler> myHandler = new HashMap<Integer,UnitHandler>();
+        globalValues();
+
+        myHandler = new HashMap<Integer,UnitHandler>();
 
         while (true) {
         
-            System.out.println("Round #"+gc.round());
+            System.out.println("Round #" + gc.round() + ", (" + gc.getTimeLeftMs() + " ms left");
+            System.gc();
             
             VecUnit units = gc.myUnits();
+
+            refreshRobotCount(units);
             
             for(int i = 0; i < units.size(); i ++) {
                 Unit unit = units.get(i);
@@ -39,6 +51,30 @@ public class EarthController extends PlanetController
 
             gc.nextTurn();
         }
+    }
+        
+    public int getRobotCount(UnitType type) {
+        return this.robotCount.get(type);
+    }
+
+    public void incrementRobotCount(UnitType type) {
+        this.robotCount.put(type, getRobotCount(type)+1);
+    }
+
+    private void refreshRobotCount(VecUnit units) {
+        for(UnitType ut : UnitType.values()) {
+            robotCount.put(ut, 0);
+        }
+        for(int i = 0; i < units.size(); i ++) {
+            UnitType ut = units.get(i).unitType();
+            incrementRobotCount(ut);
+        }
+    }
+
+    // initialize global values
+    private void globalValues() {
+        enemyTeam = Utils.getOtherTeam(gc.team());
+        map = gc.startingMap(Planet.Earth);        
     }
 
     public void takeTurnByType(HashMap<Integer,UnitHandler> myHandler, VecUnit units, UnitType unitType) {
