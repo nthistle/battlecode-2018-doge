@@ -1,5 +1,6 @@
 import bc.*;
 import java.util.Random;
+import java.util.HashMap;
 
 public class MarsController extends PlanetController
 {
