@@ -22,6 +22,20 @@ public class Utils
         return Team.Blue;
     }
 
+    // fisher-yates
+    public static Direction[] shuffleDirectionArray(Direction[] array, Random rng) {
+        Direction temp;
+        int index;
+        for (int i = array.length - 1; i > 0; i--)
+        {
+            index = rng.nextInt(i + 1);
+            temp = array[index];
+            array[index] = array[i];
+            array[i] = temp;
+        }
+        return array;
+    }
+
     // sort of like a dot product
     public static int getDirectionAffinity(Direction a, Direction b) {
         int adx = bc.bcDirectionDx(a);
@@ -223,7 +237,7 @@ public class Utils
     
     public static boolean canOccupyMars(GameController gc, MapLocation location) {
         PlanetMap map = gc.startingMap(Planet.Mars);
-        boolean status = map.onMap(location) && map.isPassableTerrainAt(location) == 0 && !gc.hasUnitAtLocation(location);
+        boolean status = map.onMap(location) && map.isPassableTerrainAt(location) == 1 && !gc.hasUnitAtLocation(location);
         return status;
     }
 }
