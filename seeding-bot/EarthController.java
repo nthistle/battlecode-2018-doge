@@ -22,6 +22,9 @@ public class EarthController extends PlanetController
     public VecUnit units;
     public HashMap<UnitType, Integer> robotCount = new HashMap<UnitType, Integer>();
     public HashMap<Integer,UnitHandler> myHandler;
+
+    public boolean isSavingForFactory = false;
+    public boolean isSavingForRocket = false;
     
     public void control() {
     
@@ -31,12 +34,24 @@ public class EarthController extends PlanetController
 
         myHandler = new HashMap<Integer,UnitHandler>();
 
+        initializeTMTargets();
+
         while (true) {
         
             System.out.println("Round #" + gc.round() + ", (" + gc.getTimeLeftMs() + " ms left");
             System.gc();
-            
+
+            VecUnit allUnits = gc.units();
             VecUnit units = gc.myUnits();
+
+            for(int i = 0; i < allUnits.size(); i ++) {
+                // this is probably going to clog targetingmaster to high hell but who cares rn
+                Unit uu = allUnits.get(i);
+                if(uu.team() == enemyTeam && !uu.location().isInGarrison() && !uu.location().isInSpace() && uu.location().isOnPlanet(Planet.Earth)) {
+                    tm.addTarget(uu.location().mapLocation());
+                    break;
+                }
+            }
 
             refreshRobotCount(units);
             
@@ -57,6 +72,15 @@ public class EarthController extends PlanetController
             takeTurnByType(myHandler, units, UnitType.Worker);
 
             gc.nextTurn();
+        }
+    }
+
+    public void initializeTMTargets() {
+        VecUnit startingUnits = earthMap.getInitial_units();
+        for(int i = 0; i < startingUnits.size(); i ++) {
+            if(startingUnits.get(i).team() == enemyTeam) {
+                tm.addTarget(startingUnits.get(i).location().mapLocation());
+            }
         }
     }
         
