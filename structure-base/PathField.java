@@ -56,15 +56,15 @@ public class PathField
     }
 
     /**
-     * Returns the direction to move at this point to follow the shortest path to this
+     * Returns the directions to move at this point to follow a shortest path to this
      * PathField's target
      */
-    public Direction getDirectionAtPoint(int x, int y) {
-        return getPoint(x,y).dir;
+    public Direction[] getDirectionsAtPoint(int x, int y) {
+        return getPoint(x,y).dirs;
     }
 
-    public Direction getDirectionAtPoint(MapLocation ml) {
-        return getDirectionAtPoint(ml.getX(), ml.getY());
+    public Direction[] getDirectionsAtPoint(MapLocation ml) {
+        return getDirectionsAtPoint(ml.getX(), ml.getY());
     }
 
     /**
@@ -89,25 +89,47 @@ public class PathField
         return getPoint(ml.getX(), ml.getY());
     }
 
+    public MapLocation getTargetLocation() {
+        return this.target;
+    }
+
     /**
      *  END PUBLIC FACING METHODS
      */
 
+    public void setPoint(int x, int y, Direction[] dirs, int dist) {
+        field[x][y] = new PathPoint(dirs, dist);
+    }
+
     public void setPoint(int x, int y, Direction dir, int dist) {
-        field[x][y] = new PathPoint(dir, dist);
+        Direction[] dirs = new Direction[8];
+        dirs[0] = dir;
+        field[x][y] = new PathPoint(dirs, dist);
+    }
+
+    public void addDirection(int x, int y, Direction dir) {
+        field[x][y].addDirection(dir);
     }
 
     public class PathPoint
     {
-        public final Direction dir;
+        public final Direction[] dirs;
         public final int dist;
+        public int numDirs;
 
-        public PathPoint(Direction dir, int dist) {
-            this.dir = dir;
+        public PathPoint(Direction[] dirs, int dist) {
+            this.dirs = dirs;
             this.dist = dist;
+            this.numDirs = 0;
+            for(Direction d : dirs)
+                if(d!=null) this.numDirs += 1;
         }
 
-        public Direction getDirection() { return this.dir; }
+        public void addDirection(Direction d) {
+            this.dirs[this.numDirs++] = d;
+        }
+
+        public Direction[] getDirections() { return this.dirs; }
         public int getDistance() { return this.dist; }
     }
 }

@@ -15,14 +15,12 @@ public class Player {
         else rand = new Random(seed);
         
         GameController gc = new GameController();
-
-        PathMaster pm = new PathMaster(gc.startingMap(gc.planet()));
         
         PlanetController pc = null;
         if(gc.planet() == Planet.Earth) {
-            pc = new EarthController(gc, pm, rand);
+            pc = new EarthController(gc, rand);
         } else if(gc.planet() == Planet.Mars) {
-            pc = new MarsController(gc, pm, rand);
+            pc = new MarsController(gc, rand);
         }
         
         System.out.println("Running PlanetController...");
