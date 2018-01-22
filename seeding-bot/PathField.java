@@ -74,6 +74,26 @@ public class PathField
     public Direction getDirectionAtPoint(MapLocation ml) {
         return getStraightestDirectionAtPoint(ml);
     }
+    
+    //returns all the points n away from the target point
+    public List<MapLocation> getPointsNAway(int n) {
+    	List<MapLocation> ret = new ArrayList<MapLocation>(75); //good init value, eh?
+    	for(PathPoint[] ppVec : field) {
+    		for(PathPoint point : ppVec) {
+    			if(Math.abs(point.dist - n) < 3) { // some error, bod
+    				ret.add(point);
+    			}
+    		}
+    	}
+    	return ret;
+    }
+    
+    public List<MapLocation> getPointsPercentAlong(MapLocation start, double perc) {
+    	int i = start.getX(), j = start.getY();
+    	int dist = field[i][j].dist;
+    	int n = (int)(perc * dist);
+    	return this.getPointsNAway(n);
+    }
 
     public Direction getStraightestDirectionAtPoint(int x, int y) {
         Direction[] dirs = getDirectionsAtPoint(x,y);

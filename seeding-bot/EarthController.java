@@ -21,7 +21,7 @@ public class EarthController extends PlanetController
 
     public VecUnit units;
     public HashMap<UnitType, Integer> robotCount = new HashMap<UnitType, Integer>();
-    public HashMap<Integer,UnitHandler> myHandler;
+    public HashMap<Integer, UnitHandler> myHandler;
 
     public boolean isSavingForFactory = false;
     public boolean isSavingForRocket = false;
@@ -32,7 +32,7 @@ public class EarthController extends PlanetController
     
         globalValues();
 
-        myHandler = new HashMap<Integer,UnitHandler>();
+        myHandler = new HashMap<Integer, UnitHandler>();
 
         initializeTMTargets();
 
