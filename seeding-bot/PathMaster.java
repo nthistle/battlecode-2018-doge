@@ -5,12 +5,11 @@ import java.util.Queue;
 public class PathMaster
 {
 	protected PlanetMap basemap;
-	protected PathField[][] pathFieldCache;
 	protected int[][] labels;
 	
 	public PathMaster(PlanetMap basemap) {
 		this.basemap = basemap;
-		this.pathFieldCache = new PathField[(int)basemap.getWidth()][(int)basemap.getHeight()];
+		// this.pathFieldCache = new PathField[(int)basemap.getWidth()][(int)basemap.getHeight()];
 		this.labels = this.generateLabels();
 	}
 	
@@ -59,10 +58,11 @@ public class PathMaster
 	public PathField getPathField(MapLocation target) {
 		int x = target.getX();
 		int y = target.getY();
-		if(this.pathFieldCache[x][y]==null) {
-			this.pathFieldCache[x][y] = generatePathField(target);
-		}
-		return this.pathFieldCache[x][y];
+		// if(this.pathFieldCache[x][y]==null) {
+			// this.pathFieldCache[x][y] = generatePathField(target);
+		// }
+		return generatePathField(target);
+		// return this.pathFieldCache[x][y];
 	}
 
 	public PathField generatePathField(MapLocation target) {
