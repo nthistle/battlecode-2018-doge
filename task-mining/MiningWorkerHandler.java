@@ -31,12 +31,12 @@ public class MiningWorkerHandler extends UnitHandler {
     @Override
     public void takeTurn(Unit unit) {
 
-        /*
+        
         //TODO change if necessary
         if(!hasTarget()) {
             m.assignTarget(this);
         }
-        */
+        
 
         MapLocation mapLocation = unit.location().mapLocation();
         if(this.target != null) {

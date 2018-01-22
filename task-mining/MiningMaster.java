@@ -25,8 +25,6 @@ public class MiningMaster {
 	protected Cluster[][] clusterMap;
 	protected PlanetController parentController;
 
-
-
 	//
 	protected List<MapLocation> teamStartingPositions;
 	//
@@ -107,6 +105,14 @@ public class MiningMaster {
 		}
 	}
 
+	//given the id of preferrably a worker xD, it will reassign that a minerworkerhandler
+	//returns true if the new miner has a target, return false if he doesnt
+	public boolean convertToMiner(int id) {
+		UnitHandler newHandler = new MiningWorkerHandler(this.parentController, this.parentController.gc, id, this.parentController.rng, this);
+		((EarthController) this.parentController).myHandler.put(id, newHandler);
+		return assignTarget((MiningWorkerHandler) newHandler);
+	}
+
 	//given a mining worker handler, checks if it has a target, if not give it a target
 	//returns true if a target was assigned, returns false if not (if false, we dont need any more miners)
 	public boolean assignTarget(MiningWorkerHandler a) {
@@ -153,6 +159,7 @@ public class MiningMaster {
 		if(needToBeFilled1.size() == 0)
 			return false;
 
+		/*
 		//finally select the one that is the closest to the starting location of the miner
 		TreeMap<Long, Cluster> locs = new TreeMap<Long, Cluster>();
 		for(int i = 0; i < needToBeFilled1.size(); i++) {
@@ -165,6 +172,10 @@ public class MiningMaster {
 		} else {
 			return false;
 		}
+		*/
+		a.setTarget(new MapLocation(this.parentController.getPlanet(), needToBeFilled1.get(0).clusterMaxima.x, needToBeFilled1.get(0).clusterMaxima.y), this.parentController.pm);
+		this.clusterMap[needToBeFilled1.get(0).clusterMaxima.x][needToBeFilled1.get(0).clusterMaxima.y].minersAt += 1;
+		return true;
 		//this.clusterMap[this.clusters.get(i).clusterMaxima.x][this.clusters.get(i).clusterMaxima.y].minersAt += 1;
 	}
 
@@ -220,9 +231,15 @@ public class MiningMaster {
 		for(int i = 0; i < 3; i++) {
 			topChoices += this.clusters.get(i).clusterMaxima + " ";
 		}
+		/*
 		System.out.println("Our top choices are " + topChoices);
 		System.out.println(Cluster.heuristic(this.clusters.get(0)));
-		System.out.println(Cluster.heuristic(this.clusters.get(this.clusters.size()-1)));
+		System.out.println(Cluster.heuristic(this.clusters.get(this.clusters.size()-1)));*/
+		for(int i = 0; i < this.clusters.size(); i++) {
+			System.out.print("Cluster: " + this.clusters.get(i).clusterMaxima + " ");
+			System.out.print("Heuristic value: " + Cluster.heuristic(this.clusters.get(i)));
+			System.out.println();
+		}
 	}
 
 	public static class Comparators {
