@@ -5,20 +5,64 @@ import java.util.Queue;
 public class PathMaster
 {
 	protected PlanetMap basemap;
-	protected PathField[][] pathFieldCache;
+	protected int[][] labels;
 	
 	public PathMaster(PlanetMap basemap) {
 		this.basemap = basemap;
-		this.pathFieldCache = new PathField[(int)basemap.getWidth()][(int)basemap.getHeight()];
+		// this.pathFieldCache = new PathField[(int)basemap.getWidth()][(int)basemap.getHeight()];
+		this.labels = this.generateLabels();
+	}
+	
+	public boolean isConnected(MapLocation a, MapLocation b) {
+		int i1 = a.getY(), j1 = a.getX(), i2 = b.getY(), j2 = b.getX();
+		return this.labels[i1][j1] > 0 && this.labels[i2][j2] > 0 && this.labels[i1][j1] == this.labels[i2][j2];
+	}
+	
+	private int[][] generateLabels() {
+		int[][] ret = new int[(int)this.basemap.getHeight()][(int)this.basemap.getWidth()];
+		int zone = 0;
+		for(int i = 0; i < ret.length; i++) {
+			for(int j = 0; j < ret[i].length; j++) {
+				if(this.basemap.isPassableTerrainAt(new MapLocation(this.basemap.getPlanet(), j, i)) == 0) {
+					ret[i][j] = -1;
+				}
+				else if(label[i][j] == 0) {
+					zone++;
+					recur(ret, i, j, zone);
+				}
+			}
+		}
+	}
+	
+	private void recur(int[][] ret, int i, int j, int tag) {
+		if(i < 0
+				|| i >= marsMap.getHeight()
+				|| j < 0
+				|| j >= marsMap.getWidth()
+				|| ret[i][j] != 0
+				|| this.basemap.isPassableTerrainAt(new MapLocation(this.basemap.getPlanet(), j, i)) == 0) 
+			return;
+		else {
+			ret[i][j] = tag;
+			recur(ret, i+1, j, tag, marsMap);
+			recur(ret, i+1, j+1, tag, marsMap);
+			recur(ret, i, j+1, tag, marsMap);
+			recur(ret, i-1, j+1, tag, marsMap);
+			recur(ret, i-1, j, tag, marsMap);
+			recur(ret, i-1, j-1, tag, marsMap);
+			recur(ret, i, j-1, tag, marsMap);
+			recur(ret, i+1, j-1, tag, marsMap);
+		}
 	}
 
 	public PathField getPathField(MapLocation target) {
 		int x = target.getX();
 		int y = target.getY();
-		if(this.pathFieldCache[x][y]==null) {
-			this.pathFieldCache[x][y] = generatePathField(target);
-		}
-		return this.pathFieldCache[x][y];
+		// if(this.pathFieldCache[x][y]==null) {
+			// this.pathFieldCache[x][y] = generatePathField(target);
+		// }
+		return generatePathField(target);
+		// return this.pathFieldCache[x][y];
 	}
 
 	public PathField generatePathField(MapLocation target) {
