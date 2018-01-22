@@ -96,7 +96,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		for(int i = 0; i < marsMap.getHeight(); i++) {
 			for(int j = 0; j < marsMap.getWidth(); j++) {
 				System.out.println(i + ", " + j);
-				if(Utils.canOccupyMars(gc, new MapLocation(Planet.Mars, j, i))) {
+				if(!Utils.canOccupyMars(gc, new MapLocation(Planet.Mars, j, i))) {
 					label[i][j] = -1; //impassable point
 				}
 				else if(label[i][j] == 0){ //not yet visited
@@ -111,17 +111,6 @@ public class LaunchingLogicHandler extends UnitHandler  {
 					}
 				}
 				values[i][j] += gc.karboniteAt(new MapLocation(Planet.Mars, j, i));
-			}
-		}
-		for(int i = 0; i < marsMap.getHeight(); i++) {
-			for(int j = 0; j < marsMap.getWidth(); j++) {
-				for(int di = -1; di <= 1; di++) {
-					for(int dj = -1; dj <= 1; dj++) {
-						try {
-							if(label[i+di][j+dj] > 0) adjacentSquares[i][j]++;
-						}catch(Exception e) {}
-					}
-				}
 			}
 		}
 		List<ArrayList<MapLocation>> ret = new ArrayList<ArrayList<MapLocation>>(zone);
@@ -149,7 +138,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 				|| j < 0
 				|| j >= marsMap.getWidth()
 				|| label[i][j] != 0
-				|| Utils.canOccupyMars(gc, new MapLocation(Planet.Mars, j, i))) 
+				|| !Utils.canOccupyMars(gc, new MapLocation(Planet.Mars, j, i))) 
 			return;
 		else {
 			label[i][j] = tag;
