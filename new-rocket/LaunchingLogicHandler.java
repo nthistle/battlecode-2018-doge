@@ -7,7 +7,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	protected MapLocation landingPoint;
 	protected static List<MapLocation> usedLandingPoints;
 	protected long launchingTime;
-	protected static long[][] values;
+	protected static int[][] values;
 	protected static int[][] label;
 	protected static int[][] adjacentSquares;
 	protected static List<Integer> kryptoniteTotals;
@@ -110,7 +110,8 @@ public class LaunchingLogicHandler extends UnitHandler  {
 						}catch(Exception e) {}
 					}
 				}
-				values[i][j] += gc.karboniteAt(new MapLocation(Planet.Mars, j, i));
+//				if(Utils.canOccupyMars(gc, new MapLocation(Planet.Mars, j, i))) 
+//					values[i][j] += (int)gc.karboniteAt(new MapLocation(Planet.Mars, j, i));
 			}
 		}
 		List<ArrayList<MapLocation>> ret = new ArrayList<ArrayList<MapLocation>>(zone);
