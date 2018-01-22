@@ -36,6 +36,7 @@ public class WorkerHandler extends UnitHandler {
         MapLocation mapLocation = location.mapLocation();
 
         if (location.isOnPlanet(Planet.Mars)) {
+            System.out.println("LITTINGTON_BILLINGTON");
             return;
         }
 
@@ -116,7 +117,7 @@ public class WorkerHandler extends UnitHandler {
         for (int i = 0; i < nearbyStructures.size(); i++) {
             Unit nearbyUnit = nearbyStructures.get(i);            
             if (gc.canBuild(id, nearbyUnit.id())) {
-                gc.build(id, nearbyUnit.id());                
+                gc.build(id, nearbyUnit.id());                                
                 busy = true;                
                 done = true;
                 break;
@@ -162,20 +163,16 @@ public class WorkerHandler extends UnitHandler {
         }
 
         // simple rocket build code
-        // conditions will be decided later
-        // rest is handled by rocket handlers
-        // if (!busy && (gc.round() > 600 || gc.getTimeLeftMs() < 1000)) {
-        //     for (Direction d : Utils.directions()) {
-        //         if (gc.canBlueprint(id, UnitType.Rocket, d)) {
-        //             gc.blueprint(id, UnitType.Rocket, d);
-        //             earthParent.incrementRobotCount(UnitType.Rocket);
-        //             busy = true;
-        //             done = true;
-        //             break;
-        //         }                
-        //     }        
-        //     return;            
-        // }        
+        if (!busy && earthParent.isSavingForRocket) {
+            Direction buildDirection = findBuildDirection(unit);                                    
+            if (buildDirection != null && gc.canBlueprint(id, UnitType.Rocket, buildDirection)) {
+                gc.blueprint(id, UnitType.Rocket, buildDirection);
+                earthParent.incrementRobotCount(UnitType.Rocket);
+                earthParent.isSavingForRocket = false;
+                busy = true;
+                done = true;                                    
+            }                    
+        }        
 
         // if conditions are appropriate blueprint factory
         long totalStructures = nearbyStructures.size() + nearbyBuiltStructureCount;
@@ -184,6 +181,7 @@ public class WorkerHandler extends UnitHandler {
             if (buildDirection != null && gc.canBlueprint(id, UnitType.Factory, buildDirection)) {
                 gc.blueprint(id, UnitType.Factory, buildDirection);
                 earthParent.incrementRobotCount(UnitType.Factory);
+                earthParent.isSavingForFactory = false;
                 busy = true;
                 done = true;                
             }

@@ -181,7 +181,17 @@ public class Utils
 
     public static int[] smallRotation = new int[] {0, -1, 1};
     public static int[] mediumRotation = new int[] {0, -1, 1, -2, 2};
+    public static int[] getRotation = new int[] {-1, 1, -2, 2};
     public static int[] bigRotation = new int[] {0, -1, 1, -2, 2, -3, 3, 4};
+
+    public static Direction[] getRotateDirections(Direction direction) {
+        Direction[] directions = new Direction[4];
+        int index = directionList.indexOf(direction);
+        for (int i = 0; i < getRotation.length; i++) {
+            directions[i] = directionList.get((8 + index + getRotation[i]) % 8);
+        }
+        return directions;   
+    }
 
     public static boolean tryMoveRotate(GameController gc, int id, Direction direction) {
         if (!gc.isMoveReady(id)) {
