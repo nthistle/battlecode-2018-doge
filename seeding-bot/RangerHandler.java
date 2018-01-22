@@ -36,7 +36,7 @@ public class RangerHandler extends UnitHandler {
         // references to parent
         EarthController earthParent = (EarthController)parent;
         PlanetMap map = earthParent.map;
-        TargetingMaster tm = earthParent.tm);
+        TargetingMaster tm = earthParent.tm;
 
         // code here
 
