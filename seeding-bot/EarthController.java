@@ -15,6 +15,8 @@ public class EarthController extends PlanetController
     public EarthController(GameController gc, Random rng) {
         super(gc, rng);
     }
+
+    protected LaunchingLogicHandler llh;
     
     public PlanetMap map;
     public Team enemyTeam;
@@ -35,6 +37,8 @@ public class EarthController extends PlanetController
         myHandler = new HashMap<Integer, UnitHandler>();
 
         initializeTMTargets();
+
+        llh = new LaunchingLogicHandler(this, gc, -1, rng);
 
         while (true) {
         
@@ -63,6 +67,8 @@ public class EarthController extends PlanetController
                 }
             }
 
+            llh.takeTurn();
+
             takeTurnByType(myHandler, units, UnitType.Factory);
 
             takeTurnByType(myHandler, units, UnitType.Ranger);
@@ -70,6 +76,8 @@ public class EarthController extends PlanetController
             takeTurnByType(myHandler, units, UnitType.Knight);
 
             takeTurnByType(myHandler, units, UnitType.Worker);
+
+            takeTurnByType(myHandler, units, UnitType.Rocket);
 
             gc.nextTurn();
         }
@@ -133,6 +141,9 @@ public class EarthController extends PlanetController
                 break;
             case Worker:
                 newHandler = new WorkerHandler(this, gc, unit.id(), rng);
+                break;
+            case Rocket:
+                newHandler = new RocketHandler(this, gc, unit.id(), rng, this.llh, FIRST_CONTACT_CREW);
                 break;
             default:
                 break;
