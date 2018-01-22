@@ -213,7 +213,7 @@ public class Utils
     
     public static boolean canOccupyMars(GameController gc, MapLocation location) {
     	PlanetMap map = gc.startingMap(Planet.Mars);
-    	boolean status = map.onMap(location) && map.isPassableTerrainAt(location) == 0 && !gc.hasUnitAtLocation(location);
+    	boolean status = map.onMap(location) && map.isPassableTerrainAt(location) == 1 && !gc.hasUnitAtLocation(location);
     	return status;
     }
 }
