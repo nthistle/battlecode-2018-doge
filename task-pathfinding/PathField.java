@@ -75,6 +75,35 @@ public class PathField
         return getStraightestDirectionAtPoint(ml);
     }
 
+    public List<MapLocation> getPointsNAway(int n) {
+        return getPointsNAway(n, 3);
+    }
+    
+    //returns all the points n away from the target point
+    public List<MapLocation> getPointsNAway(int n, int errorDist) {
+    	List<MapLocation> ret = new ArrayList<MapLocation>(75);
+    	for(PathPoint[] ppVec : field) {
+    		for(PathPoint point : ppVec) {
+                if(point==null) continue;
+    			if(Math.abs(point.dist - n) < 3) { // some error, bod
+    				ret.add(point);
+    			}
+    		}
+    	}
+    	return ret;
+    }
+    
+    public List<MapLocation> getPointsPercentAlong(MapLocation start, double perc, int errorDist) {
+        int i = start.getX(), j = start.getY();
+        int dist = field[i][j].dist;
+        int n = (int)(perc * dist);
+        return this.getPointsNAway(n,errorDist);
+    }
+    
+    public List<MapLocation> getPointsPercentAlong(MapLocation start, double perc) {
+        return this.getPointsPercentAlong(start, perc, 3);
+    }
+
     public Direction getStraightestDirectionAtPoint(int x, int y) {
         Direction[] dirs = getDirectionsAtPoint(x,y);
         MapLocation cLoc = new MapLocation(target.getPlanet(), x, y);

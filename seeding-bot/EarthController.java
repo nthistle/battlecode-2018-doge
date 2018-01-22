@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Random;
 import java.util.TreeMap;
+import java.util.Queue;
 
 public class EarthController extends PlanetController
 {
@@ -24,10 +25,14 @@ public class EarthController extends PlanetController
     public VecUnit units;
     public HashMap<UnitType, Integer> robotCount = new HashMap<UnitType, Integer>();
     public HashMap<Integer, UnitHandler> myHandler;
+    public List<Queue<UnitType>> factoryBuildQueues = new ArrayList<Queue<UnitType>>();
 
     public boolean isSavingForFactory = false;
+    public long factoryRequestRound = 0;
     public boolean isSavingForRocket = false;
-    
+    public long rocketRequestRound = 0;
+    public long rocketsBuilt = 0;   
+
     public void control() {
     
         System.out.println("Earth Controller initiated");
@@ -38,11 +43,15 @@ public class EarthController extends PlanetController
 
         initializeTMTargets();
 
+        queueResearch();
+        
         llh = new LaunchingLogicHandler(this, gc, -1, rng);
 
         while (true) {
         
             System.out.println("Round #" + gc.round() + ", (" + gc.getTimeLeftMs() + " ms left");
+
+            System.runFinalization();
             System.gc();
 
             VecUnit allUnits = gc.units();
@@ -57,6 +66,8 @@ public class EarthController extends PlanetController
                 }
             }
 
+            rocketStatus();
+            
             refreshRobotCount(units);
             
             for(int i = 0; i < units.size(); i ++) {
@@ -81,6 +92,28 @@ public class EarthController extends PlanetController
 
             gc.nextTurn();
         }
+    }
+
+    private void rocketStatus() {
+        if (gc.researchInfo().getLevel(UnitType.Rocket) >= 1 && (rocketsBuilt < (int)(gc.round() / 150) || gc.getTimeLeftMs() < 1500 || gc.round() > 650 || (gc.round() > 200 && gc.units().size() - gc.myUnits().size() > gc.myUnits().size() * 2))) {
+            isSavingForRocket = true;            
+            rocketRequestRound = gc.round();
+        }        
+        if (gc.round() > rocketRequestRound + 15) {
+            isSavingForRocket = false;
+        }
+    }
+
+    private void queueResearch() {        
+        gc.queueResearch(UnitType.Ranger);
+        gc.queueResearch(UnitType.Worker);
+        gc.queueResearch(UnitType.Rocket);
+        gc.queueResearch(UnitType.Ranger);
+        gc.queueResearch(UnitType.Rocket);
+        gc.queueResearch(UnitType.Rocket);
+        gc.queueResearch(UnitType.Worker);
+        gc.queueResearch(UnitType.Worker);
+        gc.queueResearch(UnitType.Worker);
     }
 
     public void initializeTMTargets() {
