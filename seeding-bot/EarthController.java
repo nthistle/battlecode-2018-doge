@@ -29,7 +29,8 @@ public class EarthController extends PlanetController
 
     public boolean isSavingForFactory = false;
     public boolean isSavingForRocket = false;
-    
+    public int rocketsBuilt = 0;   
+
     public void control() {
     
         System.out.println("Earth Controller initiated");
@@ -40,6 +41,8 @@ public class EarthController extends PlanetController
 
         initializeTMTargets();
 
+        queueResearch();
+        
         llh = new LaunchingLogicHandler(this, gc, -1, rng);
 
         while (true) {
@@ -61,6 +64,8 @@ public class EarthController extends PlanetController
                 }
             }
 
+            
+            
             refreshRobotCount(units);
             
             for(int i = 0; i < units.size(); i ++) {
@@ -85,6 +90,18 @@ public class EarthController extends PlanetController
 
             gc.nextTurn();
         }
+    }
+
+    public void queueResearch() {        
+        gc.queueResearch(UnitType.Ranger);
+        gc.queueResearch(UnitType.Worker);
+        gc.queueResearch(UnitType.Rocket);
+        gc.queueResearch(UnitType.Ranger);
+        gc.queueResearch(UnitType.Rocket);
+        gc.queueResearch(UnitType.Rocket);
+        gc.queueResearch(UnitType.Worker);
+        gc.queueResearch(UnitType.Worker);
+        gc.queueResearch(UnitType.Worker);
     }
 
     public void initializeTMTargets() {
