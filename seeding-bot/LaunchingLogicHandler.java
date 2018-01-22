@@ -3,6 +3,7 @@ import bc.*;
 import java.util.*;
 
 public class LaunchingLogicHandler extends UnitHandler  {
+
 	protected List<ArrayList<MapLocation>> zoneMap; 
 	protected MapLocation landingPoint;
 	protected static List<MapLocation> usedLandingPoints;
@@ -12,6 +13,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	protected static int[][] adjacentSquares;
 	protected static List<Integer> kryptoniteTotals;
 	protected static List<Integer> usedZones;
+	
 	public LaunchingLogicHandler(PlanetController parent, GameController gc, int id, Random rng) {
 		super(parent, gc, id, rng);
         this.zoneMap = this.getZones();

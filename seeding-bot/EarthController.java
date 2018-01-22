@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Random;
 import java.util.TreeMap;
+import java.util.Queue;
 
 public class EarthController extends PlanetController
 {
@@ -24,6 +25,7 @@ public class EarthController extends PlanetController
     public VecUnit units;
     public HashMap<UnitType, Integer> robotCount = new HashMap<UnitType, Integer>();
     public HashMap<Integer, UnitHandler> myHandler;
+    public List<Queue<UnitType>> factoryBuildQueues = new ArrayList<Queue<UnitType>>();
 
     public boolean isSavingForFactory = false;
     public boolean isSavingForRocket = false;
@@ -43,6 +45,8 @@ public class EarthController extends PlanetController
         while (true) {
         
             System.out.println("Round #" + gc.round() + ", (" + gc.getTimeLeftMs() + " ms left");
+
+            System.runFinalization();
             System.gc();
 
             VecUnit allUnits = gc.units();
