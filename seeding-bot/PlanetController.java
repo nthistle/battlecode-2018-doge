@@ -15,12 +15,14 @@ public abstract class PlanetController
     protected final Random rng;
 
     public final PathMaster pm;
+    public final TargetingMaster tm;
 
     public PlanetController(GameController gc, Random rng) {
         this.gc = gc;
         this.rng = rng;
         
         this.pm = new PathMaster(gc.startingMap(gc.planet()));
+        this.tm = new TargetingMaster(gc);
     }
     
     /**
