@@ -29,7 +29,7 @@ public class EarthController extends PlanetController
 
     public boolean isSavingForFactory = false;
     public boolean isSavingForRocket = false;
-    public int rocketsBuilt = 0;   
+    public int rocketsBuilt = 0;
 
     public void control() {
     
@@ -164,7 +164,7 @@ public class EarthController extends PlanetController
                 newHandler = new WorkerHandler(this, gc, unit.id(), rng);
                 break;
             case Rocket:
-                newHandler = new RocketHandler(this, gc, unit.id(), rng, this.llh, FIRST_CONTACT_CREW);
+                newHandler = new RocketHandler(this, gc, unit.id(), rng, this.llh, RocketHandler.FIRST_CONTACT_CREW);
                 break;
             default:
                 break;

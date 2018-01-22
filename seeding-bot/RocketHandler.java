@@ -71,13 +71,14 @@ public class RocketHandler extends UnitHandler {
     	}
     }
     
+    // NOT WORKING
     public void makeRequests() {
-    	for(String type : this.wantedTroops) {
+    	/*for(String type : this.wantedTroops) {
     		if(this.canRequest.get(type)) {
         		parent.buildQueue.add(new ManufactureRequest(UnitType.valueOf(type), gc.unit(this.id).location().mapLocation(), true));
         		this.canRequest.put(type, false);
     		}
-    	}
+    	}*/
     }
     
     /**
@@ -150,25 +151,25 @@ public class RocketHandler extends UnitHandler {
      * only loads wanted troops 
      */
     public void load() {
-    	System.out.println("Loading...");
-		System.out.println("what i want: " + this.targetManifest);
-    	MapLocation myLocation = gc.unit(this.id).location().mapLocation();
-    	VecUnit adjacent = gc.senseNearbyUnitsByTeam(myLocation, 2, gc.team());
-    	System.out.println(this.wantedTroops);
-    	for(int i = 0; i < adjacent.size(); i++) {
-    		if(this.wantedTroops.contains(adjacent.get(i).unitType().toString()) && parent.handlerManager.get(adjacent.get(i).id()).isRocketBound()) {
-    			System.out.println("Loading " + adjacent.get(i).id());
-    			if(this.loadTroop(adjacent.get(i).id())) {
-    				this.targetManifest.put(adjacent.get(i).unitType().toString(), this.targetManifest.get(adjacent.get(i).unitType().toString()) - 1);
-    				if(this.targetManifest.get(adjacent.get(i).unitType().toString()) == 0) {
-    					this.wantedTroops.remove(adjacent.get(i).unitType().toString());
-    				}
-    				else {
-    					this.canRequest.put(adjacent.get(i).unitType().toString(), true);
-    				}
-    			}
-    		}
-    	}
+  //   	System.out.println("Loading...");
+		// System.out.println("what i want: " + this.targetManifest);
+  //   	MapLocation myLocation = gc.unit(this.id).location().mapLocation();
+  //   	VecUnit adjacent = gc.senseNearbyUnitsByTeam(myLocation, 2, gc.team());
+  //   	System.out.println(this.wantedTroops);
+  //   	for(int i = 0; i < adjacent.size(); i++) {
+  //   		if(this.wantedTroops.contains(adjacent.get(i).unitType().toString()) && parent.handlerManager.get(adjacent.get(i).id()).isRocketBound()) {
+  //   			System.out.println("Loading " + adjacent.get(i).id());
+  //   			if(this.loadTroop(adjacent.get(i).id())) {
+  //   				this.targetManifest.put(adjacent.get(i).unitType().toString(), this.targetManifest.get(adjacent.get(i).unitType().toString()) - 1);
+  //   				if(this.targetManifest.get(adjacent.get(i).unitType().toString()) == 0) {
+  //   					this.wantedTroops.remove(adjacent.get(i).unitType().toString());
+  //   				}
+  //   				else {
+  //   					this.canRequest.put(adjacent.get(i).unitType().toString(), true);
+  //   				}
+  //   			}
+  //   		}
+  //   	}
     }
     
     /**

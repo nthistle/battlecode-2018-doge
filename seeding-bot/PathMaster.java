@@ -1,6 +1,7 @@
 import bc.*;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.ArrayList;
 
 public class PathMaster
 {
@@ -26,7 +27,7 @@ public class PathMaster
 				if(this.basemap.isPassableTerrainAt(new MapLocation(this.basemap.getPlanet(), j, i)) == 0) {
 					ret[i][j] = -1;
 				}
-				else if(label[i][j] == 0) {
+				else if(labels[i][j] == 0) {
 					zone++;
 					recur(ret, i, j, zone);
 				}
@@ -36,22 +37,22 @@ public class PathMaster
 	
 	private void recur(int[][] ret, int i, int j, int tag) {
 		if(i < 0
-				|| i >= marsMap.getHeight()
+				|| i >= basemap.getHeight()
 				|| j < 0
-				|| j >= marsMap.getWidth()
+				|| j >= basemap.getWidth()
 				|| ret[i][j] != 0
 				|| this.basemap.isPassableTerrainAt(new MapLocation(this.basemap.getPlanet(), j, i)) == 0) 
 			return;
 		else {
 			ret[i][j] = tag;
-			recur(ret, i+1, j, tag, marsMap);
-			recur(ret, i+1, j+1, tag, marsMap);
-			recur(ret, i, j+1, tag, marsMap);
-			recur(ret, i-1, j+1, tag, marsMap);
-			recur(ret, i-1, j, tag, marsMap);
-			recur(ret, i-1, j-1, tag, marsMap);
-			recur(ret, i, j-1, tag, marsMap);
-			recur(ret, i+1, j-1, tag, marsMap);
+			recur(ret, i+1, j, tag);
+			recur(ret, i+1, j+1, tag);
+			recur(ret, i, j+1, tag);
+			recur(ret, i-1, j+1, tag);
+			recur(ret, i-1, j, tag);
+			recur(ret, i-1, j-1, tag);
+			recur(ret, i, j-1, tag);
+			recur(ret, i+1, j-1, tag);
 		}
 	}
 

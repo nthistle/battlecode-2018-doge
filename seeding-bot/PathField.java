@@ -1,4 +1,6 @@
 import bc.*;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Contains a "vector field" of directions of sorts; following arrows
@@ -82,11 +84,11 @@ public class PathField
     //returns all the points n away from the target point
     public List<MapLocation> getPointsNAway(int n, int errorDist) {
     	List<MapLocation> ret = new ArrayList<MapLocation>(75);
-    	for(PathPoint[] ppVec : field) {
-    		for(PathPoint point : ppVec) {
-                if(point==null) continue;
-    			if(Math.abs(point.dist - n) < 3) { // some error, bod
-    				ret.add(point);
+        for(int i = 0; i < field.length; i ++) {
+            for(int j = 0; j < field[i].length; j ++) {
+                if(!isPointSet(i,j)) continue;
+    			if(Math.abs(getDistanceAtPoint(i,j) - n) < errorDist) {
+    				ret.add(new MapLocation(basemap.getPlanet(), i, j));
     			}
     		}
     	}
