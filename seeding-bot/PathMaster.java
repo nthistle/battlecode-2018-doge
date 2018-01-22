@@ -27,12 +27,13 @@ public class PathMaster
 				if(this.basemap.isPassableTerrainAt(new MapLocation(this.basemap.getPlanet(), j, i)) == 0) {
 					ret[i][j] = -1;
 				}
-				else if(labels[i][j] == 0) {
+				else if(ret[i][j] == 0) {
 					zone++;
 					recur(ret, i, j, zone);
 				}
 			}
 		}
+		return ret;
 	}
 	
 	private void recur(int[][] ret, int i, int j, int tag) {
