@@ -7,7 +7,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	protected MapLocation landingPoint;
 	protected static List<MapLocation> usedLandingPoints;
 	protected long launchingTime;
-	protected static int[][] values;
+	protected static long[][] values;
 	protected static int[][] label;
 	protected static int[][] adjacentSquares;
 	protected static List<Integer> kryptoniteTotals;
@@ -96,17 +96,13 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		for(int i = 0; i < marsMap.getHeight(); i++) {
 			for(int j = 0; j < marsMap.getWidth(); j++) {
 				System.out.println(i + ", " + j);
-				if(Utils.canOccupyMars(gc, new MapLocation(Planet.Mars, j, i))) {
+				if(!Utils.canOccupyMars(gc, new MapLocation(Planet.Mars, j, i))) {
 					label[i][j] = -1; //impassable point
 				}
 				else if(label[i][j] == 0){ //not yet visited
 					zone++;
 					recur(label, i, j, zone, marsMap);
 				}
-			}
-		}
-		for(int i = 0; i < marsMap.getHeight(); i++) {
-			for(int j = 0; j < marsMap.getWidth(); j++) {
 				for(int di = -1; di <= 1; di++) {
 					for(int dj = -1; dj <= 1; dj++) {
 						try {
@@ -114,6 +110,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 						}catch(Exception e) {}
 					}
 				}
+				values[i][j] += gc.karboniteAt(new MapLocation(Planet.Mars, j, i));
 			}
 		}
 		List<ArrayList<MapLocation>> ret = new ArrayList<ArrayList<MapLocation>>(zone);
@@ -141,7 +138,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 				|| j < 0
 				|| j >= marsMap.getWidth()
 				|| label[i][j] != 0
-				|| Utils.canOccupyMars(gc, new MapLocation(Planet.Mars, j, i))) 
+				|| !Utils.canOccupyMars(gc, new MapLocation(Planet.Mars, j, i))) 
 			return;
 		else {
 			label[i][j] = tag;
