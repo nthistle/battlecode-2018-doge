@@ -169,6 +169,7 @@ public class WorkerHandler extends UnitHandler {
                 gc.blueprint(id, UnitType.Rocket, buildDirection);
                 earthParent.incrementRobotCount(UnitType.Rocket);
                 earthParent.isSavingForRocket = false;
+                earthParent.rocketsBuilt += 1; // not yet completely accurate
                 busy = true;
                 done = true;                                    
             }                    

@@ -26,8 +26,10 @@ public class EarthController extends PlanetController
     public HashMap<Integer, UnitHandler> myHandler;
 
     public boolean isSavingForFactory = false;
+    public long factoryRequestRound = 0;
     public boolean isSavingForRocket = false;
-    public int rocketsBuilt = 0;   
+    public long rocketRequestRound = 0;
+    public long rocketsBuilt = 0;   
 
     public void control() {
     
@@ -60,7 +62,7 @@ public class EarthController extends PlanetController
                 }
             }
 
-            
+            rocketStatus();
             
             refreshRobotCount(units);
             
@@ -88,7 +90,17 @@ public class EarthController extends PlanetController
         }
     }
 
-    public void queueResearch() {        
+    private void rocketStatus() {
+        if (gc.researchInfo().getLevel(UnitType.Rocket) >= 1 && (rocketsBuilt < (int)(gc.round() / 150) || gc.getTimeLeftMs() < 1500 || gc.round() > 650 || (gc.round() > 200 && gc.units().size() - gc.myUnits().size() > gc.myUnits().size() * 2))) {
+            isSavingForRocket = true;            
+            rocketRequestRound = gc.round();
+        }        
+        if (gc.round() > rocketRequestRound + 15) {
+            isSavingForRocket = false;
+        }
+    }
+
+    private void queueResearch() {        
         gc.queueResearch(UnitType.Ranger);
         gc.queueResearch(UnitType.Worker);
         gc.queueResearch(UnitType.Rocket);
