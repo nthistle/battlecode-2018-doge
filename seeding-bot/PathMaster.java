@@ -1,7 +1,9 @@
 import bc.*;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.HashMap;
 import java.util.ArrayList;
+import java.awt.Point;
 
 public class PathMaster
 {
@@ -75,13 +77,13 @@ public class PathMaster
 		limitedCache.put(new Point(x,y), pf);
 	}
 
-	public void getCachedPathField(int x, int y) {
+	public PathField getCachedPathField(int x, int y) {
 		return limitedCache.get(new Point(x,y));
 	}
 
 	public PathField getAndCachePathField(MapLocation target) {
 		PathField pf = this.generatePathField(target);
-		this.cachePathField(new Point(target.x, target.y), pf);
+		this.cachePathField(target.getX(), target.getY(), pf);
 		return pf;
 	}
 

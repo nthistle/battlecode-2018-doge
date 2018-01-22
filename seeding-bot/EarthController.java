@@ -150,6 +150,8 @@ public class EarthController extends PlanetController
     }
 
     public void takeTurnByType(HashMap<Integer,UnitHandler> myHandler, VecUnit units, UnitType unitType) {
+        long timeTaken = 0;
+        long number = 0;
         for(int i = 0; i < units.size(); i ++) {
             Unit unit = units.get(i);
             if(unit.unitType() == unitType) {
