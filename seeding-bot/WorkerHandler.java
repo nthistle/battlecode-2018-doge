@@ -36,6 +36,7 @@ public class WorkerHandler extends UnitHandler {
         MapLocation mapLocation = location.mapLocation();
 
         if (location.isOnPlanet(Planet.Mars)) {
+            System.out.println("LITTINGTON_BILLINGTON");
             return;
         }
 
