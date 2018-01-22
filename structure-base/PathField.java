@@ -1,4 +1,6 @@
 import bc.*;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Contains a "vector field" of directions of sorts; following arrows
@@ -67,6 +69,10 @@ public class PathField
         return getDirectionsAtPoint(ml.getX(), ml.getY());
     }
 
+    /**
+     * Alias for getStraightestDirectionAtPoint so that old code is still backwards-compatible,
+     * although the functionality is slightly different
+     */
     public Direction getDirectionAtPoint(int x, int y) {
         return getStraightestDirectionAtPoint(x, y);
     }
@@ -75,34 +81,12 @@ public class PathField
         return getStraightestDirectionAtPoint(ml);
     }
 
-    public List<MapLocation> getPointsNAway(int n) {
-        return getPointsNAway(n, 3);
-    }
-    
-    //returns all the points n away from the target point
-    public List<MapLocation> getPointsNAway(int n, int errorDist) {
-    	List<MapLocation> ret = new ArrayList<MapLocation>(75);
-    	for(PathPoint[] ppVec : field) {
-    		for(PathPoint point : ppVec) {
-                if(point==null) continue;
-    			if(Math.abs(point.dist - n) < 3) { // some error, bod
-    				ret.add(point);
-    			}
-    		}
-    	}
-    	return ret;
-    }
-    
-    public List<MapLocation> getPointsPercentAlong(MapLocation start, double perc, int errorDist) {
-        int i = start.getX(), j = start.getY();
-        int dist = field[i][j].dist;
-        int n = (int)(perc * dist);
-        return this.getPointsNAway(n,errorDist);
-    }
-    
-    public List<MapLocation> getPointsPercentAlong(MapLocation start, double perc) {
-        return this.getPointsPercentAlong(start, perc, 3);
-    }
+    /**
+     * Of the possible directions to move at this point that result in the shortest path, picks
+     * the one that is the "straightest" path towards the target. This avoids behavior like
+     * before, where units would take a shortest route, but because diagonal is not penalized,
+     * it would be unnecessarily zig-zaggy.
+     */
 
     public Direction getStraightestDirectionAtPoint(int x, int y) {
         Direction[] dirs = getDirectionsAtPoint(x,y);
@@ -148,6 +132,42 @@ public class PathField
 
     public MapLocation getTargetLocation() {
         return this.target;
+    }
+
+
+    /**
+     * Gets the MapLocations that are N distance away from this PathField's target location.
+     * That is, from any of these locations, the target of this PathField is N steps along
+     * the path away. Note that this is NOT distance squared. This method also has an errorDist
+     * built in, which says within what range 
+     */
+    public List<MapLocation> getPointsNAway(int n) {
+        return getPointsNAway(n, 3);
+    }
+    
+    //returns all the points n away from the target point
+    public List<MapLocation> getPointsNAway(int n, int errorDist) {
+        List<MapLocation> ret = new ArrayList<MapLocation>(75);
+        for(int i = 0; i < field.length; i ++) {
+            for(int j = 0; j < field[i].length; j ++) {
+                if(!isPointSet(i,j)) continue;
+                if(Math.abs(getDistanceAtPoint(i,j) - n) < errorDist) {
+                    ret.add(new MapLocation(basemap.getPlanet(), i, j));
+                }
+            }
+        }
+        return ret;
+    }
+    
+    public List<MapLocation> getPointsPercentAlong(MapLocation start, double perc, int errorDist) {
+        int i = start.getX(), j = start.getY();
+        int dist = field[i][j].dist;
+        int n = (int)(perc * dist);
+        return this.getPointsNAway(n,errorDist);
+    }
+    
+    public List<MapLocation> getPointsPercentAlong(MapLocation start, double perc) {
+        return this.getPointsPercentAlong(start, perc, 3);
     }
 
     /**
