@@ -129,7 +129,7 @@ public class Utils
             }
             
             //attempt moving to adjacencies
-            Direction[] adj = Utils.getAdjacentDirs(dir);
+            Direction[] adj = getRotateDirections(dir);
             for(Direction c : adj) {
                 // System.out.println("Re-trying to recur move in " + c);
                 if(gc.hasUnitAtLocation(myLocation.add(c))) {
