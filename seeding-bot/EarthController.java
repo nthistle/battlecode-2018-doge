@@ -49,7 +49,7 @@ public class EarthController extends PlanetController
 
         while (true) {
         
-            System.out.println("Round #" + gc.round() + ", (" + gc.getTimeLeftMs() + " ms left");
+            System.out.println("Round #" + gc.round() + ", (" + gc.getTimeLeftMs() + " ms left)");
 
             System.runFinalization();
             System.gc();
