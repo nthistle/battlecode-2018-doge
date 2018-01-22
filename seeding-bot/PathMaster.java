@@ -6,12 +6,16 @@ import java.util.ArrayList;
 public class PathMaster
 {
 	protected PlanetMap basemap;
+	protected HashMap<Point,PathField> limitedCache;
+	protected int cacheCount;
 	protected int[][] labels;
 	
 	public PathMaster(PlanetMap basemap) {
 		this.basemap = basemap;
 		// this.pathFieldCache = new PathField[(int)basemap.getWidth()][(int)basemap.getHeight()];
 		this.labels = this.generateLabels();
+		this.limitedCache = new HashMap<Point,PathField>();
+		this.cacheCount = 0;
 	}
 	
 	public boolean isConnected(MapLocation a, MapLocation b) {
@@ -65,6 +69,20 @@ public class PathMaster
 		// }
 		return generatePathField(target);
 		// return this.pathFieldCache[x][y];
+	}
+
+	public void cachePathField(int x, int y, PathField pf) {
+		limitedCache.put(new Point(x,y), pf);
+	}
+
+	public void getCachedPathField(int x, int y) {
+		return limitedCache.get(new Point(x,y));
+	}
+
+	public PathField getAndCachePathField(MapLocation target) {
+		PathField pf = this.generatePathField(target);
+		this.cachePathField(new Point(target.x, target.y), pf);
+		return pf;
 	}
 
 	public PathField generatePathField(MapLocation target) {

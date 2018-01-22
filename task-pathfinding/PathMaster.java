@@ -1,16 +1,21 @@
 import bc.*;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.ArrayList;
 
 public class PathMaster
 {
 	protected PlanetMap basemap;
+	protected HashMap<Point,PathField> limitedCache;
+	protected int cacheCount;
 	protected int[][] labels;
 	
 	public PathMaster(PlanetMap basemap) {
 		this.basemap = basemap;
 		// this.pathFieldCache = new PathField[(int)basemap.getWidth()][(int)basemap.getHeight()];
 		this.labels = this.generateLabels();
+		this.limitedCache = new HashMap<Point,PathField>();
+		this.cacheCount = 0;
 	}
 	
 	public boolean isConnected(MapLocation a, MapLocation b) {
@@ -26,32 +31,33 @@ public class PathMaster
 				if(this.basemap.isPassableTerrainAt(new MapLocation(this.basemap.getPlanet(), j, i)) == 0) {
 					ret[i][j] = -1;
 				}
-				else if(label[i][j] == 0) {
+				else if(ret[i][j] == 0) {
 					zone++;
 					recur(ret, i, j, zone);
 				}
 			}
 		}
+		return ret;
 	}
 	
 	private void recur(int[][] ret, int i, int j, int tag) {
 		if(i < 0
-				|| i >= marsMap.getHeight()
+				|| i >= basemap.getHeight()
 				|| j < 0
-				|| j >= marsMap.getWidth()
+				|| j >= basemap.getWidth()
 				|| ret[i][j] != 0
 				|| this.basemap.isPassableTerrainAt(new MapLocation(this.basemap.getPlanet(), j, i)) == 0) 
 			return;
 		else {
 			ret[i][j] = tag;
-			recur(ret, i+1, j, tag, marsMap);
-			recur(ret, i+1, j+1, tag, marsMap);
-			recur(ret, i, j+1, tag, marsMap);
-			recur(ret, i-1, j+1, tag, marsMap);
-			recur(ret, i-1, j, tag, marsMap);
-			recur(ret, i-1, j-1, tag, marsMap);
-			recur(ret, i, j-1, tag, marsMap);
-			recur(ret, i+1, j-1, tag, marsMap);
+			recur(ret, i+1, j, tag);
+			recur(ret, i+1, j+1, tag);
+			recur(ret, i, j+1, tag);
+			recur(ret, i-1, j+1, tag);
+			recur(ret, i-1, j, tag);
+			recur(ret, i-1, j-1, tag);
+			recur(ret, i, j-1, tag);
+			recur(ret, i+1, j-1, tag);
 		}
 	}
 
@@ -63,6 +69,20 @@ public class PathMaster
 		// }
 		return generatePathField(target);
 		// return this.pathFieldCache[x][y];
+	}
+
+	public void cachePathField(int x, int y, PathField pf) {
+		limitedCache.put(new Point(x,y), pf);
+	}
+
+	public void getCachedPathField(int x, int y) {
+		return limitedCache.get(new Point(x,y));
+	}
+
+	public PathField getAndCachePathField(MapLocation target) {
+		PathField pf = this.generatePathField(target);
+		this.cachePathField(new Point(target.x, target.y), pf);
+		return pf;
 	}
 
 	public PathField generatePathField(MapLocation target) {
