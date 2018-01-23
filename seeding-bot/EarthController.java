@@ -69,6 +69,8 @@ public class EarthController extends PlanetController
             rocketStatus();
             
             refreshRobotCount(units);
+
+            refreshTargets(allUnits);
             
             for(int i = 0; i < units.size(); i ++) {
                 Unit unit = units.get(i);
@@ -91,6 +93,15 @@ public class EarthController extends PlanetController
             takeTurnByType(myHandler, units, UnitType.Rocket);
 
             gc.nextTurn();
+        }
+    }
+
+    private void refreshTargets(VecUnit units) {
+        for (int i = 0; i < units.size(); i++) {
+            Unit unit = units.get(i);
+            if (unit.team() == enemyTeam && unit.location().isOnMap()) {
+                tm.addTarget(unit.location().mapLocation());
+            }
         }
     }
 

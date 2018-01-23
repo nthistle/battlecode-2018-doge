@@ -16,7 +16,24 @@ public class TargetingMaster
 		return this.targets.get(this.targets.size()-numFrom-1);
 	}
 
-	public void popTarget(int numFrom) {
+	public MapLocation getTarget(MapLocation requestLocation) {
+		MapLocation closestTarget = null;
+		long closestDistance = Long.MAX_VALUE;
+		for (MapLocation tryLocation : targets) {
+			long distance = requestLocation.distanceSquaredTo(tryLocation);
+			if (closestTarget == null || distance < closestDistance) {
+				closestTarget = tryLocation;
+				closestDistance = distance;
+			}
+		}
+		return closestTarget;
+	}
+
+	public void removeTarget(MapLocation toBeRemoved) {
+		targets.remove(toBeRemoved);
+	}
+
+	public void popTarget(int numFrom) {		
 		this.targets.remove(this.targets.size()-numFrom-1);
 	}
 

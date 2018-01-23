@@ -38,7 +38,7 @@ public class RangerHandler extends UnitHandler {
         PlanetMap map = earthParent.map;
         TargetingMaster tm = earthParent.tm;
 
-        // code here
+                
 
     }
 }
