@@ -53,7 +53,7 @@ public class RangerHandler extends UnitHandler {
 
         MapLocation target = getTarget(mapLocation, unit.visionRange(), enemyTeam, tm);
 
-        
+        Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));
     }
 
     private void load(VecUnit all, ArrayList<Unit> attackers, ArrayList<Unit> passive) {

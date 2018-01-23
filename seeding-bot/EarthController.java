@@ -142,7 +142,7 @@ public class EarthController extends PlanetController
     }
 
     private void rocketStatus() {
-        if (gc.researchInfo().getLevel(UnitType.Rocket) >= 1 && (rocketsBuilt < (int)(gc.round() / 150) || gc.getTimeLeftMs() < 1500 || gc.round() > 650 || (gc.round() > 200 && gc.units().size() - gc.myUnits().size() > gc.myUnits().size() * 2))) {
+        if (gc.researchInfo().getLevel(UnitType.Rocket) >= 1 && (rocketsBuilt < (int)(gc.round() / 150) || gc.getTimeLeftMs() < 1500 || (gc.round() > 200 && gc.units().size() - gc.myUnits().size() > gc.myUnits().size() * 2))) {
             isSavingForRocket = true;            
             rocketRequestRound = gc.round();
         }        
