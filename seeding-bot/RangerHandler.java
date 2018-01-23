@@ -36,9 +36,25 @@ public class RangerHandler extends UnitHandler {
         // references to parent
         EarthController earthParent = (EarthController)parent;
         PlanetMap map = earthParent.map;
+        Team enemyTeam = earthParent.enemyTeam;
         TargetingMaster tm = earthParent.tm;
 
-                
+        MapLocation target = getTarget(mapLocation, unit.visionRange(), enemyTeam, tm);
 
+    }
+
+    private MapLocation getTarget(MapLocation requestLocation, long range, Team enemyTeam, TargetingMaster tm) {
+        while (true) {
+            MapLocation target = tm.getTarget(requestLocation);
+            if (target == null) {
+                break;
+            }
+            if (target.isWithinRange(range, requestLocation) && gc.senseNearbyUnitsByTeam(target, range, enemyTeam).size() == 0) {
+                tm.removeTarget(target);
+                continue;
+            }
+            return target;
+        }        
+        return null;
     }
 }
