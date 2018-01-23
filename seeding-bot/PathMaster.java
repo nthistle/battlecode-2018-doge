@@ -14,7 +14,6 @@ public class PathMaster
 	
 	public PathMaster(PlanetMap basemap) {
 		this.basemap = basemap;
-		// this.pathFieldCache = new PathField[(int)basemap.getWidth()][(int)basemap.getHeight()];
 		this.labels = this.generateLabels();
 		this.limitedCache = new HashMap<Point,PathField>();
 		this.cacheCount = 0;
@@ -32,10 +31,8 @@ public class PathMaster
 			for(int j = 0; j < ret[i].length; j++) {
 				if(this.basemap.isPassableTerrainAt(new MapLocation(this.basemap.getPlanet(), j, i)) == 0) {
 					ret[i][j] = -1;
-				}
-				else if(ret[i][j] == 0) {
-					zone++;
-					recur(ret, i, j, zone);
+				} else if(ret[i][j] == 0) {
+					recur(ret, i, j, zone++);
 				}
 			}
 		}
