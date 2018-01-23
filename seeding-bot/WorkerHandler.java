@@ -75,8 +75,8 @@ public class WorkerHandler extends UnitHandler {
                 MapLocation tryLocation = allyUnit.location().mapLocation();
                 long distance;
                 PathField path = null;
-                if (gc.round() < 100) {
-                    path = earthParent.pm.getPathField(tryLocation);
+                if (gc.round() < 50) {
+                    path = earthParent.pm.getPathFieldWithCache(tryLocation);
                     if (!path.isPointSet(mapLocation)) {
                         continue;
                     }
@@ -87,7 +87,7 @@ public class WorkerHandler extends UnitHandler {
                 if (nearestStructure == null || distance < nearestDistance) {
                     nearestStructure = tryLocation;
                     nearestDistance = distance;
-                    if (gc.round() < 100) {
+                    if (gc.round() < 50) {
                         structurePath = path;   
                     }                    
                 }                    
@@ -153,7 +153,7 @@ public class WorkerHandler extends UnitHandler {
 
         // if cannot build but there are nearby structures move towards them
         if (!busy && nearestStructure != null) {
-            if (gc.round() < 100 && Utils.tryMoveRotate(gc, id, structurePath.getDirectionAtPoint(mapLocation))) {
+            if (gc.round() < 50 && Utils.tryMoveRotate(gc, id, structurePath.getDirectionAtPoint(mapLocation))) {
                 busy = true;
                 previousLocation = mapLocation;
             } else if (Utils.tryMoveRotate(gc, id, mapLocation.directionTo(nearestStructure))) {
@@ -163,7 +163,7 @@ public class WorkerHandler extends UnitHandler {
         }
 
         // simple rocket build code
-        if (!busy && earthParent.isSavingForRocket) {
+        if (!busy && gc.karbonite() >= 75 && earthParent.isSavingForRocket) {
             Direction buildDirection = findBuildDirection(unit);                                    
             if (buildDirection != null && gc.canBlueprint(id, UnitType.Rocket, buildDirection)) {
                 gc.blueprint(id, UnitType.Rocket, buildDirection);
