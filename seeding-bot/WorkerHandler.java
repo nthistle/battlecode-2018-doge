@@ -178,7 +178,7 @@ public class WorkerHandler extends UnitHandler {
         // if conditions are appropriate blueprint factory
         long totalStructures = nearbyStructures.size() + nearbyBuiltStructureCount;
         if (!busy && gc.karbonite() >= 100 && (earthParent.getRobotCount(UnitType.Factory) == 0 || (earthParent.getRobotCount(UnitType.Factory) < 3 && nearbyWorkerCount > 1) || (earthParent.getRobotCount(UnitType.Factory) >= 3 && totalStructures == 0) || totalStructures > 0)) {
-            Direction buildDirection = findBuildDirection(unit, UnitType.Rocket);
+            Direction buildDirection = findBuildDirection(unit, UnitType.Factory);
             if (buildDirection != null && gc.canBlueprint(id, UnitType.Factory, buildDirection)) {
                 gc.blueprint(id, UnitType.Factory, buildDirection);
                 earthParent.incrementRobotCount(UnitType.Factory);
