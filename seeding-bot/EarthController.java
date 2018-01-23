@@ -107,11 +107,13 @@ public class EarthController extends PlanetController
         int workersNecessary = 3 - this.getRobotCount(UnitType.Worker);
         // never want to get below 3 workers, have the factories URGENTLY make them
 
+        Unit unit;
+        FactoryHandler fh;
         for(int i = 0; i < units.size(); i ++) {
-            Unit unit = units.get(i);
+            unit = units.get(i);
             if(unit.unitType()!=UnitType.Factory) continue;
-            
-            FactoryHandler fh = (FactoryHandler)myHandler.get(unit.id());
+
+            fh = (FactoryHandler)myHandler.get(unit.id());
             if(workersNecessary > 0 && fh.peekBuildQueue()!=UnitType.Worker) {
                 fh.clearBuildQueue();
                 fh.addToBuildQueue(UnitType.Worker);
@@ -130,8 +132,9 @@ public class EarthController extends PlanetController
     }
 
     private void refreshTargets(VecUnit units) {
+        Unit unit;
         for (int i = 0; i < units.size(); i++) {
-            Unit unit = units.get(i);
+            unit = units.get(i);
             if (unit.team() == enemyTeam && unit.location().isOnMap()) {
                 tm.addTarget(unit.location().mapLocation());
             }
@@ -199,8 +202,9 @@ public class EarthController extends PlanetController
         for(UnitType ut : UnitType.values()) {
             robotCount.put(ut, 0);
         }
+        UnitType ut;
         for(int i = 0; i < units.size(); i ++) {
-            UnitType ut = units.get(i).unitType();
+            ut = units.get(i).unitType();
             incrementRobotCount(ut);
         }
     }
@@ -212,10 +216,9 @@ public class EarthController extends PlanetController
     }
 
     public void takeTurnByType(HashMap<Integer,UnitHandler> myHandler, VecUnit units, UnitType unitType) {
-        long timeTaken = 0;
-        long number = 0;
+        Unit unit;
         for(int i = 0; i < units.size(); i ++) {
-            Unit unit = units.get(i);
+            unit = units.get(i);
             if(unit.unitType() == unitType) {
                 myHandler.get(unit.id()).takeTurn(unit);
             }
