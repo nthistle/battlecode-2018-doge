@@ -71,6 +71,10 @@ public class PathMaster
 		return cachedPf;
 	}
 
+	public void clearPFCache(MapLocation target) {
+		this.limitedCache.remove(new Point(target.getX(), target.getY()));
+	}
+
 	public PathField getPathField(MapLocation target) {
 		int x = target.getX();
 		int y = target.getY();
