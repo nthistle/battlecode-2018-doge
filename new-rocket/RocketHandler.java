@@ -14,6 +14,7 @@ public class RocketHandler extends UnitHandler {
 	private MapLocation dest;
 	private LaunchingLogicHandler llh;
 	private Map<String, Boolean> canRequest;
+	public final boolean firstContact; 
 	
 	/**
 	 * generate a rocket handler for a rocket
@@ -23,6 +24,8 @@ public class RocketHandler extends UnitHandler {
 	 */
     public RocketHandler(PlanetController parent, GameController gc, int id, Random rng, LaunchingLogicHandler llh, double[] manifest) {
         super(parent, gc, id, rng);
+        
+        this.firstContact = manifest[0] > 0;
         
         //parse the manifestj
         this.canRequest = new HashMap<String, Boolean>();
@@ -62,7 +65,7 @@ public class RocketHandler extends UnitHandler {
     	if(unit.structureIsBuilt() != 0) {
     		this.load();
     		this.makeRequests();
-    		this.setDestination(llh.optimalLandingLocation());
+    		this.setDestination(llh.optimalLandingLocation(this.firstContact));
     		System.out.println("Dest: " + this.getDestination());
     		if(this.shouldLaunch() && gc.canLaunchRocket(this.id, this.dest)) {
     			this.blastOff();
@@ -114,8 +117,6 @@ public class RocketHandler extends UnitHandler {
     }
     
     public boolean shouldLaunch() {
-    	System.out.println(this.llh.optimalLaunchingTime());
-    	System.out.println(gc.round());
     	if(this.isLoaded() && this.llh.optimalLaunchingTime() == gc.round()) return true;
     	else if(gc.unit(this.id).health() <= 150) return true;
     	//TODO: expand list of cases to include damage nearby, etc. 
@@ -128,8 +129,8 @@ public class RocketHandler extends UnitHandler {
      * @return true if fully stocked, false if not
      */
     public boolean isLoaded() {
-    	System.out.println("Wanted troops: " + this.wantedTroops);
-    	System.out.println("Wanted troops size: " + this.wantedTroops.size());
+//    	System.out.println("Wanted troops: " + this.wantedTroops);
+//    	System.out.println("Wanted troops size: " + this.wantedTroops.size());
     	return this.wantedTroops.size() == 0;
     }
     
