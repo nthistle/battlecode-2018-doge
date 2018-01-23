@@ -27,6 +27,8 @@ public class EarthController extends PlanetController
     public HashMap<Integer, UnitHandler> myHandler;
     public List<Queue<UnitType>> factoryBuildQueues = new ArrayList<Queue<UnitType>>();
 
+    public Queue<Integer> attackTargets = new LinkedList<Integer>();
+
     public boolean isSavingForFactory = false;
     public long factoryRequestRound = 0;
     public boolean isSavingForRocket = false;
