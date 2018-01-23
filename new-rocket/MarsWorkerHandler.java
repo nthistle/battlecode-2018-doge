@@ -17,6 +17,7 @@ public class MarsWorkerHandler extends UnitHandler {
     @Override
     public void takeTurn(Unit unit) {
     	//Hiearchy of action:
+    	//0. RUN AWAY FROM BAD THINGS
     	//1. Replicate
     	//2. Mine
     	//3. Move
@@ -24,8 +25,16 @@ public class MarsWorkerHandler extends UnitHandler {
     	boolean didStuff = false;
     	curReplicateCooldown--;
     	
+    	//run like a bitch
+    	RocketLandingInfo rli = gc.rocketLandings();
+    	List<MapLocation> bad = new LinkedList<MapLocation>();
+    	//peep next ten rounds
+    	for(int i = (int)gc.round(); i < (int)gc.round() + 10; i++) {
+    		
+    	}
+    	
     	//replicate
-    	if(curReplicateCooldown <= 0) {
+    	if(gc.karbonite() > 250) {
     		for(Direction c : Direction.values()) {
     			if(gc.canReplicate(this.id, c)) {
     				gc.replicate(this.id, c);
@@ -46,7 +55,7 @@ public class MarsWorkerHandler extends UnitHandler {
     	
     	if(didStuff) return;
     	
-    	//move
+    	//random move
     	if(gc.isMoveReady(this.id)) {
             for(int i = 0; i < 5; i ++) {
                 Direction moveDir = Utils.getRandomDirection(Direction.values(), this.rng);
