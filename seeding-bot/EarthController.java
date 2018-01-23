@@ -29,6 +29,9 @@ public class EarthController extends PlanetController
 
     public Queue<Integer> attackTargets = new LinkedList<Integer>();
 
+    public boolean noEnemies = true;
+    public long maxUnits = Integer.MAX_VALUE;
+
     public boolean isSavingForFactory = false;
     public long factoryRequestRound = 0;
     public boolean isSavingForRocket = false;
@@ -58,6 +61,8 @@ public class EarthController extends PlanetController
 
             VecUnit allUnits = gc.units();
             VecUnit units = gc.myUnits();
+
+            noEnemies = true;
 
             for(int i = 0; i < allUnits.size(); i ++) {
                 // this is probably going to clog targetingmaster to high hell but who cares rn
@@ -104,6 +109,10 @@ public class EarthController extends PlanetController
     }
 
     private void updateFactoryBuildQueues(HashMap<Integer,UnitHandler> myHandler, VecUnit units) {
+        if (noEnemies && getRobotCount(UnitType.Ranger) + getRobotCount(UnitType.Healer) > maxUnits) {
+            return;
+        }
+
         int workersNecessary = 3 - this.getRobotCount(UnitType.Worker);
         // never want to get below 3 workers, have the factories URGENTLY make them
 
@@ -137,6 +146,7 @@ public class EarthController extends PlanetController
             unit = units.get(i);
             if (unit.team() == enemyTeam && unit.location().isOnMap()) {
                 tm.addTarget(unit.location().mapLocation());
+                noEnemies = false;
             }
         }
     }
@@ -213,6 +223,7 @@ public class EarthController extends PlanetController
     private void globalValues() {
         enemyTeam = Utils.getOtherTeam(gc.team());
         map = gc.startingMap(Planet.Earth);        
+        maxUnits = Math.max((int)map.getHeight(), (int)map.getWidth()) * 4;
     }
 
     public void takeTurnByType(HashMap<Integer,UnitHandler> myHandler, VecUnit units, UnitType unitType) {

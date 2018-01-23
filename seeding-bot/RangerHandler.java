@@ -39,6 +39,7 @@ public class RangerHandler extends UnitHandler {
         PlanetMap map = earthParent.map;
         Team enemyTeam = earthParent.enemyTeam;
         TargetingMaster tm = earthParent.tm;        
+        PathMaster pm = earthParent.pm;
         Queue<Integer> attackTargets = earthParent.attackTargets;
         
         VecUnit nearby = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), gc.team());
@@ -54,6 +55,11 @@ public class RangerHandler extends UnitHandler {
         MapLocation target = getTarget(mapLocation, unit.visionRange(), enemyTeam, tm);
 
         Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));
+    }
+
+    public Direction getRandomDirection(MapLocation mapLocation, MapLocation targetLocation, PathMaster pm) {
+        Direction[] dirs = pm.getPathFieldWithCache(targetLocation).getDirectionsAtPoint(mapLocation);
+        return dirs[rng.nextInt(dirs.length)];
     }
 
     private void load(VecUnit all, ArrayList<Unit> attackers, ArrayList<Unit> passive) {
