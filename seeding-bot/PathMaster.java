@@ -63,6 +63,14 @@ public class PathMaster
 		}
 	}
 
+	// warning, this method WILL cache the path that you ask for
+	public PathField getPathFieldWithCache(MapLocation target) {
+		PathField cachedPf = getCachedPathField(target.getX(), target.getY());
+		if(cachedPf == null)
+			return getAndCachePathField(target);
+		return cachedPf;
+	}
+
 	public PathField getPathField(MapLocation target) {
 		int x = target.getX();
 		int y = target.getY();

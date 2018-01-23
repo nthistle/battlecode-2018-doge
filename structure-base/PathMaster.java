@@ -1,7 +1,9 @@
 import bc.*;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.HashMap;
 import java.util.ArrayList;
+import java.awt.Point;
 
 public class PathMaster
 {
@@ -61,6 +63,14 @@ public class PathMaster
 		}
 	}
 
+	// warning, this method WILL cache the path that you ask for
+	public PathField getPathFieldWithCache(MapLocation target) {
+		PathField cachedPf = getCachedPathField(target.getX(), target.getY());
+		if(cachedPf == null)
+			return getAndCachePathField(target);
+		return cachedPf;
+	}
+
 	public PathField getPathField(MapLocation target) {
 		int x = target.getX();
 		int y = target.getY();
@@ -75,13 +85,13 @@ public class PathMaster
 		limitedCache.put(new Point(x,y), pf);
 	}
 
-	public void getCachedPathField(int x, int y) {
+	public PathField getCachedPathField(int x, int y) {
 		return limitedCache.get(new Point(x,y));
 	}
 
 	public PathField getAndCachePathField(MapLocation target) {
 		PathField pf = this.generatePathField(target);
-		this.cachePathField(new Point(target.x, target.y), pf);
+		this.cachePathField(target.getX(), target.getY(), pf);
 		return pf;
 	}
 
