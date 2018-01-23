@@ -164,7 +164,7 @@ public class WorkerHandler extends UnitHandler {
 
         // simple rocket build code
         if (!busy && gc.karbonite() >= 75 && earthParent.isSavingForRocket) {
-            Direction buildDirection = findBuildDirection(unit, UnitType.Rocket);
+            Direction buildDirection = findBuildDirection(unit);            
             if (buildDirection != null && gc.canBlueprint(id, UnitType.Rocket, buildDirection)) {
                 gc.blueprint(id, UnitType.Rocket, buildDirection);
                 earthParent.incrementRobotCount(UnitType.Rocket);
@@ -178,7 +178,7 @@ public class WorkerHandler extends UnitHandler {
         // if conditions are appropriate blueprint factory
         long totalStructures = nearbyStructures.size() + nearbyBuiltStructureCount;
         if (!busy && gc.karbonite() >= 100 && (earthParent.getRobotCount(UnitType.Factory) == 0 || (earthParent.getRobotCount(UnitType.Factory) < 3 && nearbyWorkerCount > 1) || (earthParent.getRobotCount(UnitType.Factory) >= 3 && totalStructures == 0) || totalStructures > 0)) {
-            Direction buildDirection = findBuildDirection(unit, UnitType.Factory);
+            Direction buildDirection = findBuildDirection(unit);
             if (buildDirection != null && gc.canBlueprint(id, UnitType.Factory, buildDirection)) {
                 gc.blueprint(id, UnitType.Factory, buildDirection);
                 earthParent.incrementRobotCount(UnitType.Factory);
@@ -258,7 +258,7 @@ public class WorkerHandler extends UnitHandler {
         return harvestDirection;
     }
 
-    private Direction findBuildDirection(Unit unit, UnitType type) {
+    private Direction findBuildDirection(Unit unit) {
         HashSet<MapLocation> tried = new HashSet<MapLocation>();
         HashSet<MapLocation> triedTried = new HashSet<MapLocation>();
         Direction harvestDirection = null;
@@ -266,7 +266,7 @@ public class WorkerHandler extends UnitHandler {
         for (Direction d : Utils.directionList) {
             MapLocation tryLocation = unit.location().mapLocation().add(d);
             if (Utils.canOccupy(gc, tryLocation, parent, tried)) {
-                if (!testBuildLocation(tryLocation, d, type, triedTried)) {
+                if (!testBuildLocation(tryLocation, d, triedTried)) {
                     continue;
                 }
                 int empty = 0;                
@@ -285,13 +285,25 @@ public class WorkerHandler extends UnitHandler {
         return harvestDirection;
     }
 
-    private boolean testBuildLocation(MapLocation location, Direction direction, UnitType type, HashSet<MapLocation> triedTried) {
+    private boolean testBuildLocation(MapLocation location, Direction direction, HashSet<MapLocation> triedTried) {
         boolean status = true;        
         for (int i = 0; i < Utils.directionList.size(); i++) {
             Direction tryDirection = Utils.directionList.get(i);
             MapLocation tryLocation = location.add(tryDirection);                        
-            status = status && Utils.canOccupy(gc, tryLocation, parent, type, triedTried);   
+            status = status && canOccupyBuild(gc, tryLocation, parent, triedTried);
         }        
+        return status;
+    }
+
+    public static boolean canOccupyBuild(GameController gc, MapLocation location, PlanetController parent, HashSet<MapLocation> visited) {
+        if (visited.contains(location)) {
+            return true;
+        }
+        PlanetMap map = ((EarthController)parent).map;
+        boolean status = !map.onMap(location) || map.isPassableTerrainAt(location) == 0 || !gc.hasUnitAtLocation(location) || (gc.senseUnitAtLocation(location).unitType() != UnitType.Factory && gc.senseUnitAtLocation(location).unitType() != UnitType.Rocket);
+        if (status) {
+            visited.add(location);
+        }
         return status;
     }
 }
