@@ -84,18 +84,49 @@ public class EarthController extends PlanetController
 
             llh.takeTurn();
 
+            // Workers should move early, since they'll be finishing building other units
+            // and will be harvesting more Karbonite for us earlier in the turn
+            takeTurnByType(myHandler, units, UnitType.Worker);
+
+            // Update the Factory build queues
+            updateFactoryBuildQueues(myHandler, units);
+
             takeTurnByType(myHandler, units, UnitType.Factory);
 
             takeTurnByType(myHandler, units, UnitType.Ranger);
 
             takeTurnByType(myHandler, units, UnitType.Knight);
 
-            takeTurnByType(myHandler, units, UnitType.Worker);
-
             takeTurnByType(myHandler, units, UnitType.Rocket);
 
             gc.nextTurn();
         }
+    }
+
+    private void updateFactoryBuildQueues(HashMap<Integer,UnitHandler> myHandler, VecUnit units) {
+        int workersNecessary = 3 - this.getRobotCount(UnitType.Worker);
+        // never want to get below 3 workers, have the factories URGENTLY make them
+
+        for(int i = 0; i < units.size(); i ++) {
+            Unit unit = units.get(i);
+            if(unit.unitType()!=UnitType.Factory) continue;
+            
+            FactoryHandler fh = (FactoryHandler)myHandler.get(unit.id());
+            if(workersNecessary > 0 && fh.peekBuildQueue()!=UnitType.Worker) {
+                fh.clearBuildQueue();
+                fh.addToBuildQueue(UnitType.Worker);
+                workersNecessary--;
+            }
+            if(fh.getBuildQueueSize() < FactoryHandler.MAX_BQUEUE_SIZE) {
+                fh.addToBuildQueue(this.getRandomBasePhaseUnit());
+            }
+        }
+    }
+
+    private UnitType getRandomBasePhaseUnit() {
+        double d = rng.nextDouble();
+        // pointless to make anything but rangers right now, until other code is working
+        return UnitType.Ranger;
     }
 
     private void refreshTargets(VecUnit units) {
@@ -117,16 +148,34 @@ public class EarthController extends PlanetController
         }
     }
 
+    // For now, only does Rangers/Workers/Rockets, and only takes us to Round 625
     private void queueResearch() {        
-        gc.queueResearch(UnitType.Ranger);
-        gc.queueResearch(UnitType.Worker);
-        gc.queueResearch(UnitType.Rocket);
-        gc.queueResearch(UnitType.Ranger);
-        gc.queueResearch(UnitType.Rocket);
-        gc.queueResearch(UnitType.Rocket);
-        gc.queueResearch(UnitType.Worker);
-        gc.queueResearch(UnitType.Worker);
-        gc.queueResearch(UnitType.Worker);
+        gc.queueResearch(UnitType.Ranger); // Ranger I (25)
+        // completed by round 25
+
+        gc.queueResearch(UnitType.Worker); // Worker I (25)
+        // completed by round 50
+
+        gc.queueResearch(UnitType.Rocket); // Rocket I (50)
+        // completed by round 100
+
+        gc.queueResearch(UnitType.Ranger); // Ranger II (100)
+        // completed by round 200
+
+        gc.queueResearch(UnitType.Rocket); // Rocket II (100)
+        // completed by round 300
+
+        gc.queueResearch(UnitType.Rocket); // Rocket III (100)
+        // completed by round 400
+
+        gc.queueResearch(UnitType.Worker); // Worker II (75)
+        // completed by round 475
+
+        gc.queueResearch(UnitType.Worker); // Worker III (75)
+        // completed by round 550
+
+        gc.queueResearch(UnitType.Worker); // Worker IV (75)
+        // completed by round 625
     }
 
     public void initializeTMTargets() {

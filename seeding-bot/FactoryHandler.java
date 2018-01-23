@@ -16,6 +16,10 @@ public class FactoryHandler extends UnitHandler {
         buildQueue = new LinkedList<UnitType>();
     }
 
+    public UnitType peekBuildQueue() {
+        return buildQueue.peek();
+    }
+
     public boolean addToBuildQueue(UnitType ut) {
     	if(buildQueue.size() >= MAX_BQUEUE_SIZE)
     		return false;
@@ -55,7 +59,7 @@ public class FactoryHandler extends UnitHandler {
     	if(myParent.isSavingForFactory) usableKarbonite -= bc.bcUnitTypeBlueprintCost(UnitType.Factory);
     	if(myParent.isSavingForRocket)  usableKarbonite -= bc.bcUnitTypeBlueprintCost(UnitType.Rocket);
 
-    	if(usableKarbonite > bc.bcUnitTypeFactoryCost(buildQueue.peek())) {
+    	if(gc.canProduceRobot(this.id, buildQueue.peek()) && usableKarbonite > bc.bcUnitTypeFactoryCost(buildQueue.peek())) {
     		// now we can build this guy
     		gc.produceRobot(this.id, buildQueue.poll());
     	}
