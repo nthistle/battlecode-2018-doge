@@ -65,7 +65,7 @@ public class RangerHandler extends UnitHandler {
         if (target != null) {
             if (focusEnemy == null) {
                 if (tm.initial.contains(target.toJson())) {
-                    Utils.tryMoveRotate(gc, id, getRandomDirection(mapLocation, target, pm));
+                    Utils.tryMoveRotate(gc, id, pm.getPathFieldWithCache(target).getDirectionAtPoint(mapLocation));
                 } else {
                     Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));   
                 }                
