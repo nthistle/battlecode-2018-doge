@@ -133,7 +133,7 @@ public class EarthController extends PlanetController
         }
         Collections.shuffle(nunits);
         int curFac = 0;
-        for(int i = 0; i < units.size(); i ++) {
+        for(int i = 0; i < nunits.size(); i ++) {
             sameRegion.get(curFac).addToBuildQueue(nunits.get(i));
             curFac = (curFac+1)%sameRegion.size();
         }
@@ -263,10 +263,12 @@ public class EarthController extends PlanetController
 
     public void takeTurnByType(HashMap<Integer,UnitHandler> myHandler, VecUnit units, UnitType unitType) {
         Unit unit;
+        UnitHandler uh;
         for(int i = 0; i < units.size(); i ++) {
             unit = units.get(i);
             if(unit.unitType() == unitType) {
-                myHandler.get(unit.id()).takeTurn(unit);
+                uh = myHandler.get(unit.id());
+                if(uh != null) uh.takeTurn(unit);
             }
         }
     }
@@ -280,6 +282,8 @@ public class EarthController extends PlanetController
             if(unit.unitType()!=UnitType.Rocket) continue;
 
             rh = (RocketHandler)myHandler.get(unit.id());
+            if(rh==null)
+                continue;
             if(!this.pm.isConnected(ml, unit.location().mapLocation()))
                 continue;
             if(rh.stillNeeded.get(ut) > 0) return rh;

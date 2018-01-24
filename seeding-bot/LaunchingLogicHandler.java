@@ -67,7 +67,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		}
 		return this.firstContactLandingPoint = this.calculateOptimalLandingLocationFightingTroops();
 	}
-		
+
 	private MapLocation calculateOptimalLandingLocationFightingTroops() {
 		Collections.sort(this.zoneMap, Comparators.VecMapLocComp);
 		for(int i = 0; i < this.zoneMap.size(); i++) {
@@ -143,8 +143,8 @@ public class LaunchingLogicHandler extends UnitHandler  {
 						}catch(Exception e) {}
 					}
 				}
-				if(marsMap.isPassableTerrainAt(new MapLocation(Planet.Mars, j, i)) != 0) 
-					values[i][j] += (int)marsMap.initialKarboniteAt(new MapLocation(Planet.Mars, j, i));
+//				if(Utils.canOccupyMars(gc, new MapLocation(Planet.Mars, j, i))) 
+//					values[i][j] += (int)gc.karboniteAt(new MapLocation(Planet.Mars, j, i));
 			}
 		}
 		List<ArrayList<MapLocation>> ret = new ArrayList<ArrayList<MapLocation>>(zone);
@@ -163,7 +163,6 @@ public class LaunchingLogicHandler extends UnitHandler  {
 				}
 			}
 		}
-		
 		return ret;
 	}
 	
