@@ -1,5 +1,5 @@
 import bc.*;
-import java.util.Random;
+import java.util.*;
 
 public class MarsRangerHandler extends UnitHandler {
 
@@ -61,6 +61,25 @@ public class MarsRangerHandler extends UnitHandler {
         Unit nearestAlly;
         long nearestDist;
         
+        //run like a bitch
+    	RocketLandingInfo rli = gc.rocketLandings();
+    	List<MapLocation> bad = new LinkedList<MapLocation>();
+    	//peep next ten rounds
+    	for(int i = (int)gc.round(); i < (int)gc.round() + 10; i++) {
+    		VecRocketLanding landings = rli.landingsOn(i);
+    		for(int j = 0; j < landings.size(); j++) {
+    			bad.add(landings.get(j).getDestination());
+    		}
+    	}
+    	
+    	MapLocation badPlace = null;
+    	for(MapLocation loc : bad) {
+    		if(myLocation.distanceSquaredTo(loc) <= 2) badPlace = loc; //oh shit run away
+    	}
+    	if(badPlace != null) {
+    		Utils.tryMoveRotate(gc, this.id, badPlace.directionTo(myLocation)); //go away
+    	}
+        
         nearby = gc.senseNearbyUnitsByTeam(unit.location().mapLocation(), 10, this.enemy); // immediate range
         nearestEnemy = null;
         nearestDist = Integer.MAX_VALUE;
@@ -73,31 +92,31 @@ public class MarsRangerHandler extends UnitHandler {
         }
         if(nearestEnemy != null) {
             System.out.println("Moving away from enemy who is "+nearestDist+" away");
-            Utils.tryMoveWiggle(this.gc, this.id, nearestEnemy.location().mapLocation().directionTo(myLocation));
+            Utils.tryMoveRotate(this.gc, this.id, nearestEnemy.location().mapLocation().directionTo(myLocation));
             return;
         }
         
-        //move to closest friendly worker nearby
+        //move to closest friendly ranger nearby
         
         nearby = gc.senseNearbyUnitsByTeam(unit.location().mapLocation(), 50, gc.team());
         nearestAlly = null;
         nearestDist = Long.MAX_VALUE;
         for(int i = 0; i < nearby.size(); i++) {
         	if(nearestAlly == null
-        			|| nearby.get(i).unitType() == UnitType.Worker && myLocation.distanceSquaredTo(nearby.get(i).location().mapLocation()) < nearestDist) {
+        			|| nearby.get(i).unitType() == UnitType.Ranger && myLocation.distanceSquaredTo(nearby.get(i).location().mapLocation()) < nearestDist) {
         		nearestAlly = nearby.get(i);
         		nearestDist = myLocation.distanceSquaredTo(nearby.get(i).location().mapLocation());
         	}
         }
         if(nearestAlly != null) {
         	System.out.println("Moving towards friendly who is "+nearestDist+" away");
-        	Utils.tryMoveWiggle(this.gc, this.id, myLocation.directionTo( nearestAlly.location().mapLocation()));
+        	Utils.tryMoveRotate(this.gc, this.id, myLocation.directionTo( nearestAlly.location().mapLocation()));
             return;
         }
         
         // no close enemies and no close allies, how about far enemies?
         
-        nearby = gc.senseNearbyUnitsByTeam(unit.location().mapLocation(), 70, this.enemy); // immediate range
+        nearby = gc.senseNearbyUnitsByTeam(unit.location().mapLocation(), Long.MAX_VALUE, this.enemy); // immediate range
         nearestEnemy = null;
         nearestDist = Integer.MAX_VALUE;
         for(int i = 0; i < nearby.size(); i ++) {
@@ -109,7 +128,7 @@ public class MarsRangerHandler extends UnitHandler {
         }
         if(nearestEnemy != null) {
             System.out.println("Moving towards enemy who is "+nearestDist+" away");
-            Utils.tryMoveWiggle(this.gc, this.id, myLocation.directionTo(nearestEnemy.location().mapLocation()));
+            Utils.tryMoveRotate(this.gc, this.id, myLocation.directionTo(nearestEnemy.location().mapLocation()));
             return;
         }
         

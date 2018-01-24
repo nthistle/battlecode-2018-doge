@@ -50,8 +50,8 @@ public class MiningMaster {
 
 	private void generateIntialKarboniteLocations() {
 		PlanetMap initialMap = this.parentController.gc.startingMap(this.parentController.getPlanet());
-		this.initialKarboniteLocations = new int[(int) initialMap.getHeight()][(int) initialMap.getWidth()];
-		this.initialKarboniteLocationsOriginal = new int[(int) initialMap.getHeight()][(int) initialMap.getWidth()];
+		this.initialKarboniteLocations = new int[(int) initialMap.getWidth()][(int) initialMap.getHeight()];
+		this.initialKarboniteLocationsOriginal = new int[(int) initialMap.getWidth()][(int) initialMap.getHeight()];
 		this.clusterMap = new Cluster[initialKarboniteLocations.length][initialKarboniteLocations[0].length];
 		for(int i = 0; i < this.initialKarboniteLocations.length; i++) {
 			for(int j = 0; j < this.initialKarboniteLocations[0].length; j++) {
@@ -74,7 +74,12 @@ public class MiningMaster {
 				int minDist = Integer.MAX_VALUE;
 				for(int j = 0; j < this.teamStartingPositions.size(); j++) {
 					MapLocation end = new MapLocation(this.parentController.getPlanet(), q.clusterMaxima.x, q.clusterMaxima.y);
-					int dist = this.parentController.pm.getPathFieldWithCache(end).getDistanceAtPoint(this.teamStartingPositions.get(j));
+					int dist = Integer.MAX_VALUE;
+					if(this.parentController.pm.getCachedPathField(q.clusterMaxima.x, q.clusterMaxima.y) != null) {
+						dist = this.parentController.pm.getPathFieldWithCache(end).getDistanceAtPoint(this.teamStartingPositions.get(j));
+					} else {
+						dist = Integer.MAX_VALUE;
+					}
 					if(dist < minDist)
 						minDist = dist;
 				}
@@ -216,7 +221,8 @@ public class MiningMaster {
 			//this does the pathfinding distance
 			Cluster q = needToBeFilled1.get(i);
 			MapLocation end = new MapLocation(this.parentController.getPlanet(), q.clusterMaxima.x, q.clusterMaxima.y);
-			locs.put(this.parentController.pm.getPathFieldWithCache(end).getDistanceAtPoint(current.getX(), current.getY()), needToBeFilled1.get(i));
+			if(this.parentController.pm.getCachedPathField(q.clusterMaxima.x, q.clusterMaxima.y) != null)
+				locs.put(this.parentController.pm.getPathFieldWithCache(end).getDistanceAtPoint(current.getX(), current.getY()), needToBeFilled1.get(i));
 		}
 
 		if(locs.keySet().size() > 0) {
@@ -326,7 +332,7 @@ public class MiningMaster {
 		}
 
 		//get pathfield and cache
-		for(int i = 0; i < this.MAX_PATHFIELDS; i++) {
+		for(int i = 0; i < Math.min(this.MAX_PATHFIELDS, this.clusters.size()); i++) {
 			Cluster q = this.clusters.get(i);
 			MapLocation end = new MapLocation(this.parentController.getPlanet(), q.clusterMaxima.x, q.clusterMaxima.y);
 			this.parentController.pm.getPathFieldWithCache(end);

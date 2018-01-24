@@ -77,6 +77,8 @@ public class RocketHandler extends UnitHandler {
     	if(!gc.canLaunchRocket(this.id, this.dest)) return;
     	else {
     		this.emergencyLoad();
+            this.parent.pm.clearPFCache(this.dest);
+            this.parent.amLoadingRocket --;
     		gc.launchRocket(this.id, this.dest);
     	}
     }

@@ -71,6 +71,24 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	private MapLocation calculateOptimalLandingLocationFightingTroops() {
 		Collections.sort(this.zoneMap, Comparators.VecMapLocComp);
 		for(int i = 0; i < this.zoneMap.size(); i++) {
+		Collections.sort(this.zoneMap, Comparators.VecMapLocComp);
+		for(int i = 0; i < this.zoneMap.size(); i++) {
+			if(usedZones.get(i) > 0) continue;
+			else {
+				for(MapLocation spot : this.zoneMap.get(i)) {
+					if(!usedLandingPoints.contains(spot)) {
+						this.firstContactLandingPoint = spot;
+						return spot;
+					}
+				}
+			}
+		}
+		return this.firstContactLandingPoint = this.calculateOptimalLandingLocationFightingTroops();
+	}
+	
+	private MapLocation calculateOptimalLandingLocationFightingTroops() {
+		Collections.sort(this.zoneMap, Comparators.VecMapLocComp);
+		for(int i = 0; i < this.zoneMap.size(); i++) {
 			if(usedZones.get(i) == 0) continue;
 			else {
 				for(MapLocation spot : this.zoneMap.get(i)) {
@@ -143,8 +161,8 @@ public class LaunchingLogicHandler extends UnitHandler  {
 						}catch(Exception e) {}
 					}
 				}
-//				if(Utils.canOccupyMars(gc, new MapLocation(Planet.Mars, j, i))) 
-//					values[i][j] += (int)gc.karboniteAt(new MapLocation(Planet.Mars, j, i));
+				if(marsMap.isPassableTerrainAt(new MapLocation(Planet.Mars, j, i)) != 0) 
+					values[i][j] += (int)marsMap.initialKarboniteAt(new MapLocation(Planet.Mars, j, i));
 			}
 		}
 		List<ArrayList<MapLocation>> ret = new ArrayList<ArrayList<MapLocation>>(zone);
@@ -163,6 +181,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 				}
 			}
 		}
+		
 		return ret;
 	}
 	
