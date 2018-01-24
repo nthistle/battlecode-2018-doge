@@ -20,7 +20,7 @@ public class MarsController extends PlanetController
     
         System.out.println("Mars Controller initiated");
     
-        HashMap<Integer,UnitHandler> myHandler = new HashMap<Integer,UnitHandler>();
+        HashMap<Integer,UnitHandler> myHandler = new HashMap<Integer, UnitHandler>();
 
         while (true) {
         
@@ -36,11 +36,9 @@ public class MarsController extends PlanetController
                 }
             }
 
-            takeTurnByType(myHandler, units, UnitType.Factory);
+            takeTurnByType(myHandler, units, UnitType.Rocket);
 
             takeTurnByType(myHandler, units, UnitType.Ranger);
-
-            takeTurnByType(myHandler, units, UnitType.Knight);
 
             takeTurnByType(myHandler, units, UnitType.Worker);
 
@@ -62,18 +60,14 @@ public class MarsController extends PlanetController
         UnitHandler newHandler = null;
         
         switch(unit.unitType()) {
-            case Factory:
-                newHandler = new FactoryHandler(this, gc, unit.id(), rng);
-                break;
-            case Knight:
-                newHandler = new KnightHandler(this, gc, unit.id(), rng);
-                break;
             case Ranger:
-                newHandler = new RangerHandler(this, gc, unit.id(), rng);
+                newHandler = new MarsRangerHandler(this, gc, unit.id(), rng);
                 break;
             case Worker:
-                newHandler = new WorkerHandler(this, gc, unit.id(), rng);
+                newHandler = new MarsWorkerHandler(this, gc, unit.id(), rng);
                 break;
+            case Rocket:
+            	newHandler = new MarsRocketHandler(this, gc, unit.id(), rng);
             default:
                 break;
         }

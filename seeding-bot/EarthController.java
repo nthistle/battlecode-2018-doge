@@ -52,9 +52,6 @@ public class EarthController extends PlanetController
         
         llh = new LaunchingLogicHandler(this, gc, -1, rng);
 
-        VecUnit allUnits, units;
-        Unit uu;
-
         while (true) {
         
             System.out.println("Round #" + gc.round() + ", (" + gc.getTimeLeftMs() + " ms left)");
@@ -62,12 +59,14 @@ public class EarthController extends PlanetController
             System.runFinalization();
             System.gc();
 
-            allUnits = gc.units();
-            units = gc.myUnits();
+            VecUnit allUnits = gc.units();
+            VecUnit units = gc.myUnits();
+
+            noEnemies = true;
 
             for(int i = 0; i < allUnits.size(); i ++) {
                 // this is probably going to clog targetingmaster to high hell but who cares rn
-                uu = allUnits.get(i);
+                Unit uu = allUnits.get(i);
                 if(uu.team() == enemyTeam && !uu.location().isInGarrison() && !uu.location().isInSpace() && uu.location().isOnPlanet(Planet.Earth)) {
                     tm.addTarget(uu.location().mapLocation());
                     break;
@@ -102,6 +101,8 @@ public class EarthController extends PlanetController
             takeTurnByType(myHandler, units, UnitType.Ranger);
 
             takeTurnByType(myHandler, units, UnitType.Knight);
+            
+            takeTurnByType(myHandler, units, UnitType.Healer);
 
             takeTurnByType(myHandler, units, UnitType.Rocket);
 
@@ -110,8 +111,9 @@ public class EarthController extends PlanetController
     }
 
     private void updateFactoryBuildQueues(HashMap<Integer,UnitHandler> myHandler, VecUnit units) {
-        if(noEnemies && (getRobotCount(UnitType.Ranger) + getRobotCount(UnitType.Healer)) > maxUnits)
+        if (noEnemies && getRobotCount(UnitType.Ranger) + getRobotCount(UnitType.Healer) > maxUnits) {
             return;
+        }
 
         int workersNecessary = 3 - this.getRobotCount(UnitType.Worker);
         // never want to get below 3 workers, have the factories URGENTLY make them
@@ -137,7 +139,8 @@ public class EarthController extends PlanetController
     private UnitType getRandomBasePhaseUnit() {
         double d = rng.nextDouble();
         // pointless to make anything but rangers right now, until other code is working
-        return UnitType.Ranger;
+        if(d < 0.2 && gc.round() > 150 && getRobotCount(UnitType.Ranger) > 10) return UnitType.Healer;
+        else return UnitType.Ranger;
     }
 
     private void refreshTargets(VecUnit units) {
@@ -256,6 +259,9 @@ public class EarthController extends PlanetController
             case Rocket:
                 newHandler = new RocketHandler(this, gc, unit.id(), rng, this.llh, RocketHandler.FIRST_CONTACT_CREW);
                 break;
+            case Healer:
+            	newHandler = new HealerHandler(this, gc, unit.id(), rng);
+            	break;
             default:
                 break;
         }
