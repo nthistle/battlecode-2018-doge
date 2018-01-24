@@ -13,11 +13,12 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	protected static int[][] adjacentSquares;
 	protected static List<Integer> kryptoniteTotals;
 	protected static List<Integer> usedZones;
+
 	public LaunchingLogicHandler(PlanetController parent, GameController gc, int id, Random rng) {
 		super(parent, gc, id, rng);
         this.zoneMap = this.getZones();
-        System.out.println(Arrays.deepToString(label));
-        System.out.println(this.zoneMap);
+        //System.out.println(Arrays.deepToString(label));
+        //System.out.println(this.zoneMap);
         this.usedLandingPoints = new ArrayList<MapLocation>();
 	}
 	
@@ -113,8 +114,8 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	
 	private List<ArrayList<MapLocation>> getZones() {
 		PlanetMap marsMap = gc.startingMap(Planet.Mars);
-		System.out.println(marsMap.getHeight());
-		System.out.println(marsMap.getWidth());
+		//System.out.println(marsMap.getHeight());
+		//System.out.println(marsMap.getWidth());
 		values = new int[(int)marsMap.getHeight()][(int)marsMap.getWidth()];
 		label = new int[(int)marsMap.getHeight()][(int)marsMap.getWidth()];
 		adjacentSquares = new int[(int)marsMap.getHeight()][(int)marsMap.getWidth()];
@@ -128,7 +129,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		}
 		for(int i = 0; i < marsMap.getHeight(); i++) {
 			for(int j = 0; j < marsMap.getWidth(); j++) {
-				System.out.println(i + ", " + j);
+				//System.out.println(i + ", " + j);
 				if(!Utils.canOccupyMars(gc, new MapLocation(Planet.Mars, j, i))) {
 					label[i][j] = -1; //impassable point
 				}

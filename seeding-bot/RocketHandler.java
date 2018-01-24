@@ -27,8 +27,8 @@ public class RocketHandler extends UnitHandler {
         this.firstContact = manifest[0] > 0;
         
         //parse the manifestj
-        this.targetManifest = new HashMap<UnitType, Integer>();
-        this.stillNeeded = new HashMap<UnitType, Integer>();
+        this.targetManifest = new EnumMap<UnitType, Integer>(UnitType.class);
+        this.stillNeeded = new EnumMap<UnitType, Integer>(UnitType.class);
 
         this.targetManifest.put(UnitType.Worker, (int) (gc.unit(this.id).structureMaxCapacity() * manifest[0]));
         this.targetManifest.put(UnitType.Ranger, (int) (gc.unit(this.id).structureMaxCapacity() * manifest[1]));
@@ -45,6 +45,7 @@ public class RocketHandler extends UnitHandler {
         this.dest = gc.unit(this.id).location().mapLocation();
         this.llh = llh;
 
+        // System.out.println("Caching path field for " + this.dest + " (" + this.dest.getX() + "," + this.dest.getY() + ")");
         this.parent.pm.getAndCachePathField(this.dest);
         // this path field gets un-cached on takeoff
         // AstronautHandlers will reassign themselves naturally if they see it uncached (i.e. it grabs another unit of the
@@ -102,6 +103,12 @@ public class RocketHandler extends UnitHandler {
     public boolean shouldLaunch() {
     	// System.out.println(this.llh.optimalLaunchingTime());
     	// System.out.println(gc.round());
+        if(this.isLoaded()) System.out.println("I am loaded");
+        else {
+            for(UnitType ut : this.targetManifest.keySet()) {
+                System.out.println(ut + ": " + targetManifest.get(ut));
+            }
+        }
     	if(this.isLoaded() && this.llh.optimalLaunchingTime() == gc.round()) return true;
     	else if(gc.unit(this.id).health() <= 150) return true;
     	//TODO: expand list of cases to include damage nearby, etc. 
@@ -117,7 +124,7 @@ public class RocketHandler extends UnitHandler {
     	// System.out.println("Wanted troops: " + this.wantedTroops);
     	// System.out.println("Wanted troops size: " + this.wantedTroops.size());
         for(UnitType key : this.targetManifest.keySet()) {
-            if(this.stillNeeded.get(key) != 0) return false;
+            if(this.targetManifest.get(key) != 0) return false;
         }
         return true;
     }
@@ -147,12 +154,13 @@ public class RocketHandler extends UnitHandler {
         Unit adj;
     	for(int i = 0; i < adjacent.size(); i++) {
             adj = adjacent.get(i);
-    		if(this.stillNeeded.keySet().contains(adj.unitType())) {
+    		if(this.targetManifest.keySet().contains(adj.unitType()) && this.targetManifest.get(adj.unitType()) > 0) {
                 if(((EarthController)parent).myHandler.get(adj.id()) instanceof MiningWorkerHandler)
                     continue;
   //   			System.out.println("Loading " + adjacent.get(i).id());
     			if(this.loadTroop(adj.id())) {
-                    this.stillNeeded.put(adj.unitType(), this.stillNeeded.get(adj.unitType()) - 1);
+                    // once we're loaded, decrease from the manifest
+                    this.targetManifest.put(adj.unitType(), this.targetManifest.get(adj.unitType()) - 1);
     			}
     		}
     	}

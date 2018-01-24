@@ -30,7 +30,7 @@ public class RangerHandler extends UnitHandler {
         MapLocation mapLocation = location.mapLocation();
 
         if (location.isOnPlanet(Planet.Mars)) {
-            System.out.println("LITTINGTON_BILLINGTON");
+           // System.out.println("LITTINGTON_BILLINGTON");
             return;
         }
 
@@ -154,7 +154,7 @@ public class RangerHandler extends UnitHandler {
                 break;
             }
             if (target.isWithinRange(range - 2, requestLocation) && gc.senseNearbyUnitsByTeam(target, range, enemyTeam).size() == 0 && tm.targets.size() > 1) {
-                System.out.println("BIG_BOY" + target);
+                //System.out.println("BIG_BOY" + target);
                 tm.removeTarget(target);
                 continue;
             }

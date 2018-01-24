@@ -2,7 +2,9 @@ import bc.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -24,8 +26,8 @@ public class EarthController extends PlanetController
     public Team enemyTeam;
 
     public VecUnit units;
-    public HashMap<UnitType, Integer> robotCount = new HashMap<UnitType, Integer>();
-    public HashMap<Integer, UnitHandler> myHandler;
+    public Map<UnitType, Integer> robotCount = new EnumMap<UnitType, Integer>(UnitType.class);
+    public Map<Integer, UnitHandler> myHandler;
     public List<Queue<UnitType>> factoryBuildQueues = new ArrayList<Queue<UnitType>>();
 
     public Queue<Integer> attackQueue = new LinkedList<Integer>();
@@ -114,6 +116,7 @@ public class EarthController extends PlanetController
     }
 
     public void addRocketRequestedUnits(RocketHandler rh, Unit rocket) {
+        System.out.println("Rocket is requesting some units, adding to build queues...");
         VecUnit units = gc.myUnits(); // a little inefficient, TODO optimize
         Unit unit;
         ArrayList<FactoryHandler> sameRegion = new ArrayList<FactoryHandler>();
@@ -134,13 +137,14 @@ public class EarthController extends PlanetController
         Collections.shuffle(nunits);
         int curFac = 0;
         for(int i = 0; i < nunits.size(); i ++) {
+            System.out.println("Adding " + nunits.get(i) + " to build queue");
             sameRegion.get(curFac).addToBuildQueue(nunits.get(i));
             curFac = (curFac+1)%sameRegion.size();
         }
         amLoadingRocket ++;
     }
 
-    private void updateFactoryBuildQueues(HashMap<Integer,UnitHandler> myHandler, VecUnit units) {
+    private void updateFactoryBuildQueues(Map<Integer,UnitHandler> myHandler, VecUnit units) {
         if (noEnemies && getRobotCount(UnitType.Ranger) + getRobotCount(UnitType.Healer) > maxUnits) {
             return;
         }
@@ -163,6 +167,7 @@ public class EarthController extends PlanetController
             if(fh.getBuildQueueSize() < FactoryHandler.IDEAL_BQUEUE_SIZE) {
                 fh.addToBuildQueue(this.getRandomBasePhaseUnit());
             }
+            // System.out.println("Factory ID#"+i+" has build queue of length " + fh.getBuildQueueSize());
         }
     }
 
@@ -261,12 +266,12 @@ public class EarthController extends PlanetController
         maxUnits = (long)(Math.max((int)map.getHeight(), (int)map.getWidth()) * 3.5);
     }
 
-    public void takeTurnByType(HashMap<Integer,UnitHandler> myHandler, VecUnit units, UnitType unitType) {
+    public void takeTurnByType(Map<Integer,UnitHandler> myHandler, VecUnit units, UnitType unitType) {
         Unit unit;
         UnitHandler uh;
         for(int i = 0; i < units.size(); i ++) {
             unit = units.get(i);
-            if(unit.unitType() == unitType) {
+            if(unit.unitType() == unitType && !unit.location().isInGarrison() && !unit.location().isInSpace()) {
                 uh = myHandler.get(unit.id());
                 if(uh != null) uh.takeTurn(unit);
             }
@@ -277,30 +282,37 @@ public class EarthController extends PlanetController
         VecUnit units = gc.myUnits();
         Unit unit;
         RocketHandler rh;
+        // System.out.println("Considering Unit Type " + ut);
         for(int i = 0; i < units.size(); i ++) {
             unit = units.get(i);
             if(unit.unitType()!=UnitType.Rocket) continue;
 
             rh = (RocketHandler)myHandler.get(unit.id());
+            // System.out.println("Rocket #" + i);
             if(rh==null)
                 continue;
             if(!this.pm.isConnected(ml, unit.location().mapLocation()))
+                continue;
+            if(!rh.stillNeeded.keySet().contains(ut))
                 continue;
             if(rh.stillNeeded.get(ut) > 0) return rh;
         }
         return null;
     }
 
-    public void assignHandler(HashMap<Integer,UnitHandler> myHandler, Unit unit) {
+    public void assignHandler(Map<Integer,UnitHandler> myHandler, Unit unit) {
 
         UnitHandler newHandler = null;
 
         if(unit.location().isInGarrison()) return;
 
         if(amLoadingRocket > 0) {
+            // System.out.println("Loading a rocket, does it need?");
             RocketHandler neededBy = doesRocketNeed(unit.unitType(), unit.location().mapLocation());
             if(neededBy != null) {
+                System.out.println("NEW ASTRONAUT U HOE, it's a " + unit.unitType());
                 newHandler = new AstronautHandler(this, gc, unit.id(), rng, gc.unit(neededBy.id).location().mapLocation());
+                neededBy.stillNeeded.put(unit.unitType(), neededBy.stillNeeded.get(unit.unitType()) - 1);
                 myHandler.put(unit.id(), newHandler);
                 return;
             }

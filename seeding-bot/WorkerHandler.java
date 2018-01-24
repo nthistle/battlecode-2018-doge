@@ -2,6 +2,7 @@ import bc.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -43,7 +44,7 @@ public class WorkerHandler extends UnitHandler {
         // references to parent 
         EarthController earthParent = (EarthController)parent;
         PlanetMap map = earthParent.map;
-        HashMap<UnitType, Integer> robotCount = earthParent.robotCount;        
+        Map<UnitType, Integer> robotCount = earthParent.robotCount;        
         
         // status markers        
         boolean busy = false;
