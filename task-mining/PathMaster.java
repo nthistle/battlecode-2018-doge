@@ -1,17 +1,23 @@
 import bc.*;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.HashMap;
 import java.util.ArrayList;
+import java.awt.Point;
 
 public class PathMaster
 {
 	protected PlanetMap basemap;
+	protected HashMap<Point,PathField> limitedCache;
+	protected int cacheCount;
 	protected int[][] labels;
 	
 	public PathMaster(PlanetMap basemap) {
 		this.basemap = basemap;
 		// this.pathFieldCache = new PathField[(int)basemap.getWidth()][(int)basemap.getHeight()];
 		this.labels = this.generateLabels();
+		this.limitedCache = new HashMap<Point,PathField>();
+		this.cacheCount = 0;
 	}
 	
 	public boolean isConnected(MapLocation a, MapLocation b) {
@@ -57,6 +63,18 @@ public class PathMaster
 		}
 	}
 
+	// warning, this method WILL cache the path that you ask for
+	public PathField getPathFieldWithCache(MapLocation target) {
+		PathField cachedPf = getCachedPathField(target.getX(), target.getY());
+		if(cachedPf == null)
+			return getAndCachePathField(target);
+		return cachedPf;
+	}
+
+	public void clearPFCache(MapLocation target) {
+		this.limitedCache.remove(new Point(target.getX(), target.getY()));
+	}
+
 	public PathField getPathField(MapLocation target) {
 		int x = target.getX();
 		int y = target.getY();
@@ -65,6 +83,20 @@ public class PathMaster
 		// }
 		return generatePathField(target);
 		// return this.pathFieldCache[x][y];
+	}
+
+	public void cachePathField(int x, int y, PathField pf) {
+		limitedCache.put(new Point(x,y), pf);
+	}
+
+	public PathField getCachedPathField(int x, int y) {
+		return limitedCache.get(new Point(x,y));
+	}
+
+	public PathField getAndCachePathField(MapLocation target) {
+		PathField pf = this.generatePathField(target);
+		this.cachePathField(target.getX(), target.getY(), pf);
+		return pf;
 	}
 
 	public PathField generatePathField(MapLocation target) {
