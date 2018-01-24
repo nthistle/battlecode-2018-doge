@@ -44,6 +44,11 @@ public class RocketHandler extends UnitHandler {
         
         this.dest = gc.unit(this.id).location().mapLocation();
         this.llh = llh;
+
+        this.parent.pm.getAndCachePathField(this.dest);
+        // this path field gets un-cached on takeoff
+        // AstronautHandlers will reassign themselves naturally if they see it uncached (i.e. it grabs another unit of the
+        // same type instead of the one that was going to it)
     }
     
     public void takeTurn() {
