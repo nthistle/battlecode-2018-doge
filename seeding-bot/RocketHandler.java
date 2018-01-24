@@ -27,8 +27,8 @@ public class RocketHandler extends UnitHandler {
         this.firstContact = manifest[0] > 0;
         
         //parse the manifestj
-        this.targetManifest = new HashMap<UnitType, Integer>();
-        this.stillNeeded = new HashMap<UnitType, Integer>();
+        this.targetManifest = new EnumMap<UnitType, Integer>(UnitType.class);
+        this.stillNeeded = new EnumMap<UnitType, Integer>(UnitType.class);
 
         this.targetManifest.put(UnitType.Worker, (int) (gc.unit(this.id).structureMaxCapacity() * manifest[0]));
         this.targetManifest.put(UnitType.Ranger, (int) (gc.unit(this.id).structureMaxCapacity() * manifest[1]));
@@ -45,6 +45,7 @@ public class RocketHandler extends UnitHandler {
         this.dest = gc.unit(this.id).location().mapLocation();
         this.llh = llh;
 
+        // System.out.println("Caching path field for " + this.dest + " (" + this.dest.getX() + "," + this.dest.getY() + ")");
         this.parent.pm.getAndCachePathField(this.dest);
         // this path field gets un-cached on takeoff
         // AstronautHandlers will reassign themselves naturally if they see it uncached (i.e. it grabs another unit of the

@@ -24,7 +24,7 @@ public class PathMaster
 	}
 
 	public int getRegion(MapLocation ml) {
-		return getRegion(ml.getX(), ml.getY());
+		return getRegion(ml.getY(), ml.getX());
 	}
 	
 	public boolean isConnected(MapLocation a, MapLocation b) {
@@ -103,7 +103,7 @@ public class PathMaster
 	}
 
 	public boolean isCached(int x, int y) {
-		return getCachedPathField(x, y) == null;
+		return getCachedPathField(x, y) != null;
 	}
 
 	public boolean isCached(MapLocation ml) {

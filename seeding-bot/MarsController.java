@@ -49,7 +49,7 @@ public class MarsController extends PlanetController
     public void takeTurnByType(HashMap<Integer,UnitHandler> myHandler, VecUnit units, UnitType unitType) {
         for(int i = 0; i < units.size(); i ++) {
             Unit unit = units.get(i);
-            if(unit.unitType() == unitType) {
+            if(unit.unitType() == unitType && !unit.location().isInGarrison() && !unit.location().isInSpace()) {
                 myHandler.get(unit.id()).takeTurn(unit);
             }
         }
