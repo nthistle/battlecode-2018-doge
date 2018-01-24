@@ -40,7 +40,7 @@ public class RangerHandler extends UnitHandler {
         Team enemyTeam = earthParent.enemyTeam;
         TargetingMaster tm = earthParent.tm;        
         PathMaster pm = earthParent.pm;
-        Queue<Integer> attackQueue = earthParent.attackQueue;
+        // Queue<Integer> attackQueue = earthParent.attackQueue;
         
         VecUnit nearby = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), gc.team());
         ArrayList<Unit> nearbyAttackers = new ArrayList<Unit>();
@@ -64,7 +64,11 @@ public class RangerHandler extends UnitHandler {
 
         if (target != null) {
             if (focusEnemy == null) {
-                Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));
+                if (tm.initial.contains(target.toJson())) {
+                    Utils.tryMoveRotate(gc, id, getRandomDirection(mapLocation, target, pm));
+                } else {
+                    Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));   
+                }                
             } else {
                 MapLocation enemyLocation = focusEnemy.location().mapLocation();
                 if (mapLocation.distanceSquaredTo(enemyLocation) < 42) {
@@ -79,14 +83,19 @@ public class RangerHandler extends UnitHandler {
                     }
                 }                
             }
-        } else if (focusEnemy != null && gc.isAttackReady(id)) {
-            if (gc.canAttack(id, focusEnemy.id())) {
-                gc.attack(id, focusEnemy.id());
-            }
+        } else if (focusEnemy != null) {
             MapLocation enemyLocation = focusEnemy.location().mapLocation();
             if (mapLocation.distanceSquaredTo(enemyLocation) < 42) {
-                Utils.tryMoveWiggleRecur(gc, id, enemyLocation.directionTo(mapLocation), null);                
-            }
+                if (gc.isAttackReady(id) && gc.canAttack(id, focusEnemy.id())) {
+                    gc.attack(id, focusEnemy.id());
+                }
+                Utils.tryMoveWiggleRecur(gc, id, enemyLocation.directionTo(mapLocation), null);
+            } else {                
+                Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));
+                if (gc.isAttackReady(id) && gc.canAttack(id, focusEnemy.id())) {
+                    gc.attack(id, focusEnemy.id());
+                }
+            }                
         }
     }
 
@@ -143,7 +152,8 @@ public class RangerHandler extends UnitHandler {
             if (target == null) {
                 break;
             }
-            if (target.isWithinRange(range - 5, requestLocation) && gc.senseNearbyUnitsByTeam(target, range, enemyTeam).size() == 0) {
+            if (target.isWithinRange(range - 2, requestLocation) && gc.senseNearbyUnitsByTeam(target, range, enemyTeam).size() == 0 && tm.targets.size() > 1) {
+                System.out.println("BIG_BOY" + target);
                 tm.removeTarget(target);
                 continue;
             }

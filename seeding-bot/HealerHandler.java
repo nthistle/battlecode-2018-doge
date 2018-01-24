@@ -40,7 +40,7 @@ public class HealerHandler extends UnitHandler {
         Team enemyTeam = earthParent.enemyTeam;
         TargetingMaster tm = earthParent.tm;        
         PathMaster pm = earthParent.pm;
-        Queue<Integer> attackTargets = earthParent.attackTargets;
+        // Queue<Integer> attackTargets = earthParent.attackTargets;
         
     	VecUnit nearby = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), gc.team()); //only those that i can help... 
         ArrayList<Unit> nearbyAttackers = new ArrayList<Unit>();
