@@ -302,12 +302,7 @@ public class MiningMaster {
 		System.out.println("We have " + this.clusters.size() + " clusters of karbonite on the map");
 
 		Collections.sort(this.clusters, Comparators.clusterComparator);
-
-		String topChoices = "";
-		for(int i = 0; i < 3; i++) {
-			topChoices += this.clusters.get(i).clusterMaxima + " ";
-		}
-
+		
 		Iterator<Cluster> it = this.clusters.iterator();
 		while(it.hasNext()) {
 			Cluster q = it.next();
