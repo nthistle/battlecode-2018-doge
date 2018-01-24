@@ -15,7 +15,7 @@ public class MovementHandler extends UnitHandler {
     public boolean recurMove() {
     	visited.add(this.id);
     	for(Direction c : Direction.values()) {
-    		System.out.println(gc.unit(this.id));
+    		//System.out.println(gc.unit(this.id));
     		if(gc.canMove(this.id, c) && gc.isMoveReady(this.id)) {
     			gc.moveRobot(this.id, c);
     			return true;

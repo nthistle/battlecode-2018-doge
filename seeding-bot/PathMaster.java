@@ -117,6 +117,7 @@ public class PathMaster
 	}
 
 	public PathField generatePathField(MapLocation target) {
+		System.out.println("Generate PF called!");
 		// Does BFS, assigning directions back at each location
 		Queue<BFSLocation> queue = new LinkedList<BFSLocation>();
 		BFSLocation cur = fromMapLocation(target);
