@@ -30,6 +30,8 @@ public class EarthController extends PlanetController
 
     public Queue<Integer> attackTargets = new LinkedList<Integer>();
 
+    public int amLoadingRocket = 0;
+
     public boolean noEnemies = true;
     public long maxUnits = Integer.MAX_VALUE;
 
@@ -135,6 +137,7 @@ public class EarthController extends PlanetController
             sameRegion.get(curFac).addToBuildQueue(units.get(i));
             curFac = (curFac+1)%sameRegion.size();
         }
+        amLoadingRocket ++;
     }
 
     private void updateFactoryBuildQueues(HashMap<Integer,UnitHandler> myHandler, VecUnit units) {
@@ -266,9 +269,33 @@ public class EarthController extends PlanetController
         }
     }
 
+    public RocketHandler doesRocketNeed(UnitType ut, MapLocation ml) {
+        VecUnit units = gc.myUnits();
+        RocketHandler rh;
+        for(int i = 0; i < units.size(); i ++) {
+            unit = units.get(i);
+            if(unit.unitType()!=UnitType.Rocket) continue;
+
+            rh = (RocketHandler)myHandler.get(unit.id());
+            if(!this.pm.isConnected(ml, unit.location().mapLocation()))
+                continue;
+            if(rh.stillNeeded.get(ut) > 0) return rh;
+        }
+        return null;
+    }
+
     public void assignHandler(HashMap<Integer,UnitHandler> myHandler, Unit unit) {
 
         UnitHandler newHandler = null;
+
+        if(amLoadingRocket > 0 && ) {
+            RocketHandler neededBy = doesRocketNeed(unit.unitType());
+            if(neededBy != null) {
+                newHandler = new AstronautHandler(this, gc, unit.id(), rng, neededBy.location().mapLocation());
+                myHandler.put(unit.id(), newHandler);
+                return;
+            }
+        }
         
         switch(unit.unitType()) {
             case Factory:
