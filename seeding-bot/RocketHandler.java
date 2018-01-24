@@ -59,7 +59,6 @@ public class RocketHandler extends UnitHandler {
     public void takeTurn(Unit unit) {
     	if(unit.structureIsBuilt() != 0) {
     		this.load();
-    		this.makeRequests();
             this.setDestination(llh.optimalLandingLocation(this.firstContact));
     		// System.out.println("Dest: " + this.getDestination());
     		if(this.shouldLaunch() && gc.canLaunchRocket(this.id, this.dest)) {
@@ -67,16 +66,6 @@ public class RocketHandler extends UnitHandler {
     			llh.addUsedMapLocation(this.getDestination());
     		}
     	}
-    }
-    
-    // NOT WORKING
-    public void makeRequests() {
-    	/*for(String type : this.wantedTroops) {
-    		if(this.canRequest.get(type)) {
-        		parent.buildQueue.add(new ManufactureRequest(UnitType.valueOf(type), gc.unit(this.id).location().mapLocation(), true));
-        		this.canRequest.put(type, false);
-    		}
-    	}*/
     }
     
     /**

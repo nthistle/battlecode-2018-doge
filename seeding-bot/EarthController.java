@@ -236,6 +236,10 @@ public class EarthController extends PlanetController
         }
     }
 
+    public void addRocketRequestedUnits(RocketHandler rh) {
+
+    }
+
     public void assignHandler(HashMap<Integer,UnitHandler> myHandler, Unit unit) {
 
         UnitHandler newHandler = null;
@@ -255,6 +259,7 @@ public class EarthController extends PlanetController
                 break;
             case Rocket:
                 newHandler = new RocketHandler(this, gc, unit.id(), rng, this.llh, RocketHandler.FIRST_CONTACT_CREW);
+                addRocketRequestedUnits((RocketHandler)newHandler);
                 break;
             default:
                 break;
