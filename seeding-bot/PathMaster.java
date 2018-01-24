@@ -90,6 +90,14 @@ public class PathMaster
 		return limitedCache.get(new Point(x,y));
 	}
 
+	public boolean isCached(int x, int y) {
+		return getCachedPathField(x, y) == null;
+	}
+
+	public boolean isCached(MapLocation ml) {
+		return isCached(ml.getX(), ml.getY());
+	}
+
 	public PathField getAndCachePathField(MapLocation target) {
 		PathField pf = this.generatePathField(target);
 		this.cachePathField(target.getX(), target.getY(), pf);
