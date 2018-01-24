@@ -282,6 +282,8 @@ public class EarthController extends PlanetController
             if(unit.unitType()!=UnitType.Rocket) continue;
 
             rh = (RocketHandler)myHandler.get(unit.id());
+            if(rh==null)
+                continue;
             if(!this.pm.isConnected(ml, unit.location().mapLocation()))
                 continue;
             if(rh.stillNeeded.get(ut) > 0) return rh;
