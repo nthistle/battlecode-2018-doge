@@ -9,11 +9,11 @@ public class RocketHandler extends UnitHandler {
 	public static final double[] FIRST_CONTACT_CREW = new double[] {0.5, 0.5, 0, 0, 0};
 	public static final double[] ARTISTIC_CREW = new double[] {0, 0, 0, 0.5, 0.5}; //send in the wierder, more niche troops
 	
-	private Map<String, Integer> targetManifest;
-	private Set<String> wantedTroops;
+	private Map<UnitType, Integer> targetManifest;
+    private Map<UnitType, Integer> stillNeeded;
 	private MapLocation dest;
 	private LaunchingLogicHandler llh;
-	private Map<String, Boolean> canRequest;
+    public final boolean firstContact; 
 	
 	/**
 	 * generate a rocket handler for a rocket
@@ -24,33 +24,31 @@ public class RocketHandler extends UnitHandler {
     public RocketHandler(PlanetController parent, GameController gc, int id, Random rng, LaunchingLogicHandler llh, double[] manifest) {
         super(parent, gc, id, rng);
         
+        this.firstContact = manifest[0] > 0;
+        
         //parse the manifestj
-        this.canRequest = new HashMap<String, Boolean>();
-        this.targetManifest = new HashMap<String, Integer>();
-        this.wantedTroops = new HashSet<String>();
-        this.targetManifest.put(UnitType.Worker.toString(), (int) (gc.unit(this.id).structureMaxCapacity() * manifest[0]));
-        this.targetManifest.put(UnitType.Ranger.toString(), (int) (gc.unit(this.id).structureMaxCapacity() * manifest[1]));
-        this.targetManifest.put(UnitType.Knight.toString(), (int) (gc.unit(this.id).structureMaxCapacity() * manifest[2]));
-        this.targetManifest.put(UnitType.Mage.toString()  , (int) (gc.unit(this.id).structureMaxCapacity() * manifest[3]));
-        this.targetManifest.put(UnitType.Healer.toString(), (int) (gc.unit(this.id).structureMaxCapacity() * manifest[4]));
-        int sum = 0;
-        // System.out.println(this.targetManifest);
-        for(String key : this.targetManifest.keySet()) {
-        	sum += this.targetManifest.get(key);
-        	if(this.targetManifest.get(key) > 0) {
-        		this.wantedTroops.add(key);
-        		this.canRequest.put(key, true);
-        	}
-        }
-        if(sum < gc.unit(this.id).structureMaxCapacity()) {
-        	this.targetManifest.put(UnitType.Ranger.toString(), (int) (this.targetManifest.get(UnitType.Ranger.toString()) + gc.unit(this.id).structureMaxCapacity() - sum));        
-        	this.wantedTroops.add(UnitType.Ranger.toString());
+        this.targetManifest = new HashMap<UnitType, Integer>();
+        this.stillNeeded = new HashMap<UnitType, Integer>();
+
+        this.targetManifest.put(UnitType.Worker, (int) (gc.unit(this.id).structureMaxCapacity() * manifest[0]));
+        this.targetManifest.put(UnitType.Ranger, (int) (gc.unit(this.id).structureMaxCapacity() * manifest[1]));
+        this.targetManifest.put(UnitType.Knight, (int) (gc.unit(this.id).structureMaxCapacity() * manifest[2]));
+        this.targetManifest.put(UnitType.Mage  , (int) (gc.unit(this.id).structureMaxCapacity() * manifest[3]));
+        this.targetManifest.put(UnitType.Healer, (int) (gc.unit(this.id).structureMaxCapacity() * manifest[4]));
+
+        for(UnitType key : this.targetManifest.keySet()) {
+            this.stillNeeded.put(key, this.targetManifest.get(key));
         }
         //basically, the above transforms one of the static final double troop frequency tables into an actual manifest
         //when all the terms in the manifest go to zero, the rocket is ready to fire up and blast off!
         
         this.dest = gc.unit(this.id).location().mapLocation();
         this.llh = llh;
+
+        this.parent.pm.getAndCachePathField(this.dest);
+        // this path field gets un-cached on takeoff
+        // AstronautHandlers will reassign themselves naturally if they see it uncached (i.e. it grabs another unit of the
+        // same type instead of the one that was going to it)
     }
     
     public void takeTurn() {
@@ -61,24 +59,13 @@ public class RocketHandler extends UnitHandler {
     public void takeTurn(Unit unit) {
     	if(unit.structureIsBuilt() != 0) {
     		this.load();
-    		this.makeRequests();
-    		this.setDestination(llh.optimalLandingLocation());
+            this.setDestination(llh.optimalLandingLocation(this.firstContact));
     		// System.out.println("Dest: " + this.getDestination());
     		if(this.shouldLaunch() && gc.canLaunchRocket(this.id, this.dest)) {
     			this.blastOff();
     			llh.addUsedMapLocation(this.getDestination());
     		}
     	}
-    }
-    
-    // NOT WORKING
-    public void makeRequests() {
-    	/*for(String type : this.wantedTroops) {
-    		if(this.canRequest.get(type)) {
-        		parent.buildQueue.add(new ManufactureRequest(UnitType.valueOf(type), gc.unit(this.id).location().mapLocation(), true));
-        		this.canRequest.put(type, false);
-    		}
-    	}*/
     }
     
     /**
@@ -131,7 +118,10 @@ public class RocketHandler extends UnitHandler {
     public boolean isLoaded() {
     	// System.out.println("Wanted troops: " + this.wantedTroops);
     	// System.out.println("Wanted troops size: " + this.wantedTroops.size());
-    	return this.wantedTroops.size() == 0;
+        for(UnitType key : this.targetManifest.keySet()) {
+            if(this.stillNeeded.get(key) != 0) return false;
+        }
+        return true;
     }
     
     /**
@@ -153,23 +143,21 @@ public class RocketHandler extends UnitHandler {
     public void load() {
   //   	System.out.println("Loading...");
 		// System.out.println("what i want: " + this.targetManifest);
-  //   	MapLocation myLocation = gc.unit(this.id).location().mapLocation();
-  //   	VecUnit adjacent = gc.senseNearbyUnitsByTeam(myLocation, 2, gc.team());
+    	MapLocation myLocation = gc.unit(this.id).location().mapLocation();
+    	VecUnit adjacent = gc.senseNearbyUnitsByTeam(myLocation, 2, gc.team());
   //   	System.out.println(this.wantedTroops);
-  //   	for(int i = 0; i < adjacent.size(); i++) {
-  //   		if(this.wantedTroops.contains(adjacent.get(i).unitType().toString()) && parent.handlerManager.get(adjacent.get(i).id()).isRocketBound()) {
+        Unit adj;
+    	for(int i = 0; i < adjacent.size(); i++) {
+            adj = adjacent.get(i);
+    		if(this.stillNeeded.contains(adj.unitType())) {
+                if(parent.myHandler.get(adj.id()) instanceof MiningWorkerHandler)
+                    continue;
   //   			System.out.println("Loading " + adjacent.get(i).id());
-  //   			if(this.loadTroop(adjacent.get(i).id())) {
-  //   				this.targetManifest.put(adjacent.get(i).unitType().toString(), this.targetManifest.get(adjacent.get(i).unitType().toString()) - 1);
-  //   				if(this.targetManifest.get(adjacent.get(i).unitType().toString()) == 0) {
-  //   					this.wantedTroops.remove(adjacent.get(i).unitType().toString());
-  //   				}
-  //   				else {
-  //   					this.canRequest.put(adjacent.get(i).unitType().toString(), true);
-  //   				}
-  //   			}
-  //   		}
-  //   	}
+    			if(this.loadTroop(adj.id())) {
+                    this.stillNeeded.put(adj.unitType(), this.stillNeeded.get(adj.unitType()) - 1);
+    			}
+    		}
+    	}
     }
     
     /**

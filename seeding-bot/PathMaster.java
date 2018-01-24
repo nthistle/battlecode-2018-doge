@@ -18,6 +18,14 @@ public class PathMaster
 		this.limitedCache = new HashMap<Point,PathField>();
 		this.cacheCount = 0;
 	}
+
+	public int getRegion(int x, int y) {
+		return labels[x][y];
+	}
+
+	public int getRegion(MapLocation ml) {
+		return getRegion(ml.getX(), ml.getY());
+	}
 	
 	public boolean isConnected(MapLocation a, MapLocation b) {
 		int i1 = a.getY(), j1 = a.getX(), i2 = b.getY(), j2 = b.getX();
@@ -88,6 +96,14 @@ public class PathMaster
 
 	public PathField getCachedPathField(int x, int y) {
 		return limitedCache.get(new Point(x,y));
+	}
+
+	public boolean isCached(int x, int y) {
+		return getCachedPathField(x, y) == null;
+	}
+
+	public boolean isCached(MapLocation ml) {
+		return isCached(ml.getX(), ml.getY());
 	}
 
 	public PathField getAndCachePathField(MapLocation target) {
