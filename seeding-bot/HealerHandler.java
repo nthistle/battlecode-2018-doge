@@ -47,7 +47,7 @@ public class HealerHandler extends UnitHandler {
         ArrayList<Unit> nearbyPassive = new ArrayList<Unit>();
         load(nearby, nearbyAttackers, nearbyPassive);        
         
-        if(gc.isAttackReady(this.id)) { //heal nearest unit    
+        if(gc.isHealReady(this.id)) { //heal nearest unit    
             Unit healTarget = getMostHurt(nearbyAttackers, unit.attackRange());
             
         	if(healTarget != null && gc.canHeal(this.id, healTarget.id())) {
