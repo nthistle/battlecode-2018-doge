@@ -23,6 +23,7 @@ public class EarthController extends PlanetController
         MiningMaster mm = new MiningMaster(this);
         mm.generate();
     
+        System.out.println(mm.shouldMine());
         //mm.printKarboniteMap();
 
         Unit firstWorker = gc.myUnits().get(0);
