@@ -67,25 +67,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		}
 		return this.firstContactLandingPoint = this.calculateOptimalLandingLocationFightingTroops();
 	}
-	
-	private MapLocation calculateOptimalLandingLocationFightingTroops() {
-		Collections.sort(this.zoneMap, Comparators.VecMapLocComp);
-		for(int i = 0; i < this.zoneMap.size(); i++) {
-		Collections.sort(this.zoneMap, Comparators.VecMapLocComp);
-		for(int i = 0; i < this.zoneMap.size(); i++) {
-			if(usedZones.get(i) > 0) continue;
-			else {
-				for(MapLocation spot : this.zoneMap.get(i)) {
-					if(!usedLandingPoints.contains(spot)) {
-						this.firstContactLandingPoint = spot;
-						return spot;
-					}
-				}
-			}
-		}
-		return this.firstContactLandingPoint = this.calculateOptimalLandingLocationFightingTroops();
-	}
-	
+		
 	private MapLocation calculateOptimalLandingLocationFightingTroops() {
 		Collections.sort(this.zoneMap, Comparators.VecMapLocComp);
 		for(int i = 0; i < this.zoneMap.size(); i++) {
