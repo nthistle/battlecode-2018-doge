@@ -310,7 +310,9 @@ public class EarthController extends PlanetController
             // System.out.println("Loading a rocket, does it need?");
             RocketHandler neededBy = doesRocketNeed(unit.unitType(), unit.location().mapLocation());
             if(neededBy != null) {
+                System.out.println("NEW ASTRONAUT U HOE, it's a " + unit.unitType());
                 newHandler = new AstronautHandler(this, gc, unit.id(), rng, gc.unit(neededBy.id).location().mapLocation());
+                neededBy.stillNeeded.put(unit.unitType(), neededBy.stillNeeded.get(unit.unitType()) - 1);
                 myHandler.put(unit.id(), newHandler);
                 return;
             }

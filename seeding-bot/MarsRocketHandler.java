@@ -39,7 +39,7 @@ public class MarsRocketHandler extends UnitHandler {
     public boolean unload() {
     	boolean ret = true;
     	VecUnitID garrison = gc.unit(this.id).structureGarrison();
-    	System.out.println(garrison);
+    	// System.out.println(garrison);
     	if(garrison.size() <= 0) return true;
     	else {
     		for(int i = 0; i < garrison.size(); i++) {
@@ -60,7 +60,7 @@ public class MarsRocketHandler extends UnitHandler {
         			visited.add(this.id);
         			MovementHandler move = new MovementHandler(this.parent, this.gc, gc.senseUnitAtLocation(itsLocation).id(), this.rng, visited);
         			placed = move.recurMove();
-        			if(placed) {
+        			if(placed && gc.canUnload(this.id, itsDirection)) {
         				gc.unload(this.id, itsDirection);
         				break;
         			}
