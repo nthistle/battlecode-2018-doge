@@ -9,10 +9,10 @@ public class RocketHandler extends UnitHandler {
 	public static final double[] FIRST_CONTACT_CREW = new double[] {0.5, 0.5, 0, 0, 0};
 	public static final double[] ARTISTIC_CREW = new double[] {0, 0, 0, 0.5, 0.5}; //send in the wierder, more niche troops
 	
-	private Map<UnitType, Integer> targetManifest;
-    private Map<UnitType, Integer> stillNeeded;
-	private MapLocation dest;
-	private LaunchingLogicHandler llh;
+	public Map<UnitType, Integer> targetManifest;
+    public Map<UnitType, Integer> stillNeeded;
+	public MapLocation dest;
+	public LaunchingLogicHandler llh;
     public final boolean firstContact; 
 	
 	/**
@@ -78,7 +78,7 @@ public class RocketHandler extends UnitHandler {
     	else {
     		this.emergencyLoad();
             this.parent.pm.clearPFCache(this.dest);
-            this.parent.amLoadingRocket --;
+            ((EarthController)this.parent).amLoadingRocket --;
     		gc.launchRocket(this.id, this.dest);
     	}
     }
@@ -86,12 +86,8 @@ public class RocketHandler extends UnitHandler {
     public void setLogicHandler(LaunchingLogicHandler llh) {
     	this.llh = llh;
     }
-
-    public Set<String> getWantedTroops() {
-    	return this.wantedTroops;
-    }
     
-    public Map<String, Integer> getCurrentManifest() {
+    public Map<UnitType, Integer> getCurrentManifest() {
     	return this.targetManifest;
     }
     
@@ -151,8 +147,8 @@ public class RocketHandler extends UnitHandler {
         Unit adj;
     	for(int i = 0; i < adjacent.size(); i++) {
             adj = adjacent.get(i);
-    		if(this.stillNeeded.contains(adj.unitType())) {
-                if(parent.myHandler.get(adj.id()) instanceof MiningWorkerHandler)
+    		if(this.stillNeeded.keySet().contains(adj.unitType())) {
+                if(((EarthController)parent).myHandler.get(adj.id()) instanceof MiningWorkerHandler)
                     continue;
   //   			System.out.println("Loading " + adjacent.get(i).id());
     			if(this.loadTroop(adj.id())) {

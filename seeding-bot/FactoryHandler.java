@@ -5,7 +5,8 @@ import java.util.Random;
 
 public class FactoryHandler extends UnitHandler {
 
-	public static final int MAX_BQUEUE_SIZE = 5;
+    public static final int MAX_BQUEUE_SIZE = 5;
+    public static final int IDEAL_BQUEUE_SIZE = 3;
 
 	protected Queue<UnitType> buildQueue;
 	protected EarthController myParent;

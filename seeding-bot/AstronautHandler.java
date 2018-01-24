@@ -18,7 +18,7 @@ public class AstronautHandler extends UnitHandler {
     public void takeTurn(Unit unit) {
     	if(!this.parent.pm.isCached(this.myRocketTarget)) {
     		// means that our rocket took off without us, so let's just reassign ourselves
-    		this.parent.myHandler.remove(this.id);
+    		((EarthController)this.parent).myHandler.remove(this.id);
     		return;
     	}
     	if(!gc.isMoveReady(this.id))

@@ -122,19 +122,19 @@ public class EarthController extends PlanetController
             unit = units.get(i);
             if(unit.unitType()!=UnitType.Factory) continue;
             if(this.pm.getRegion(unit.location().mapLocation()) == targetRegion) {
-                sameRegion.add(myHandler.get(unit.id()));
+                sameRegion.add((FactoryHandler)myHandler.get(unit.id()));
             }
         }
-        ArrayList<UnitType> units = new ArrayList<UnitType>();
+        ArrayList<UnitType> nunits = new ArrayList<UnitType>();
         for(UnitType key : rh.stillNeeded.keySet()) {
             for(int i = 0; i < rh.stillNeeded.get(key).intValue(); i ++) {
-                units.add(key);
+                nunits.add(key);
             }
         }
-        Collections.shuffle(units);
+        Collections.shuffle(nunits);
         int curFac = 0;
         for(int i = 0; i < units.size(); i ++) {
-            sameRegion.get(curFac).addToBuildQueue(units.get(i));
+            sameRegion.get(curFac).addToBuildQueue(nunits.get(i));
             curFac = (curFac+1)%sameRegion.size();
         }
         amLoadingRocket ++;
@@ -271,6 +271,7 @@ public class EarthController extends PlanetController
 
     public RocketHandler doesRocketNeed(UnitType ut, MapLocation ml) {
         VecUnit units = gc.myUnits();
+        Unit unit;
         RocketHandler rh;
         for(int i = 0; i < units.size(); i ++) {
             unit = units.get(i);
@@ -288,10 +289,12 @@ public class EarthController extends PlanetController
 
         UnitHandler newHandler = null;
 
-        if(amLoadingRocket > 0 && ) {
-            RocketHandler neededBy = doesRocketNeed(unit.unitType());
+        if(unit.location().isInGarrison()) return;
+
+        if(amLoadingRocket > 0) {
+            RocketHandler neededBy = doesRocketNeed(unit.unitType(), unit.location().mapLocation());
             if(neededBy != null) {
-                newHandler = new AstronautHandler(this, gc, unit.id(), rng, neededBy.location().mapLocation());
+                newHandler = new AstronautHandler(this, gc, unit.id(), rng, gc.unit(neededBy.id).location().mapLocation());
                 myHandler.put(unit.id(), newHandler);
                 return;
             }
