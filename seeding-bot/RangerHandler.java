@@ -40,7 +40,7 @@ public class RangerHandler extends UnitHandler {
         Team enemyTeam = earthParent.enemyTeam;
         TargetingMaster tm = earthParent.tm;        
         PathMaster pm = earthParent.pm;
-        Queue<Integer> attackTargets = earthParent.attackTargets;
+        // Queue<Integer> attackQueue = earthParent.attackQueue;
         
         VecUnit nearby = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), gc.team());
         ArrayList<Unit> nearbyAttackers = new ArrayList<Unit>();
@@ -54,7 +54,49 @@ public class RangerHandler extends UnitHandler {
 
         MapLocation target = getTarget(mapLocation, unit.visionRange(), enemyTeam, tm);
 
-        Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));
+        Unit focusEnemy = getClosestEnemy(nearbyEnemyAttackers, mapLocation);
+        if (focusEnemy != null && focusEnemy.location().mapLocation().distanceSquaredTo(mapLocation) > 12) {
+            focusEnemy = getWeakestEnemy(nearbyEnemyAttackers, mapLocation);
+        }
+        if (focusEnemy == null) {
+            focusEnemy = getClosestEnemy(nearbyEnemyPassive, mapLocation);
+        }
+
+        if (target != null) {
+            if (focusEnemy == null) {
+                if (tm.initial.contains(target.toJson())) {
+                    Utils.tryMoveRotate(gc, id, getRandomDirection(mapLocation, target, pm));
+                } else {
+                    Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));   
+                }                
+            } else {
+                MapLocation enemyLocation = focusEnemy.location().mapLocation();
+                if (mapLocation.distanceSquaredTo(enemyLocation) < 42) {
+                    if (gc.isAttackReady(id) && gc.canAttack(id, focusEnemy.id())) {
+                        gc.attack(id, focusEnemy.id());
+                    }
+                    Utils.tryMoveWiggleRecur(gc, id, enemyLocation.directionTo(mapLocation), null);
+                } else {                
+                    Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));
+                    if (gc.isAttackReady(id) && gc.canAttack(id, focusEnemy.id())) {
+                        gc.attack(id, focusEnemy.id());
+                    }
+                }                
+            }
+        } else if (focusEnemy != null) {
+            MapLocation enemyLocation = focusEnemy.location().mapLocation();
+            if (mapLocation.distanceSquaredTo(enemyLocation) < 42) {
+                if (gc.isAttackReady(id) && gc.canAttack(id, focusEnemy.id())) {
+                    gc.attack(id, focusEnemy.id());
+                }
+                Utils.tryMoveWiggleRecur(gc, id, enemyLocation.directionTo(mapLocation), null);
+            } else {                
+                Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));
+                if (gc.isAttackReady(id) && gc.canAttack(id, focusEnemy.id())) {
+                    gc.attack(id, focusEnemy.id());
+                }
+            }                
+        }
     }
 
     public Direction getRandomDirection(MapLocation mapLocation, MapLocation targetLocation, PathMaster pm) {
@@ -73,6 +115,21 @@ public class RangerHandler extends UnitHandler {
             }
         }
     }
+
+    private Unit getWeakestEnemy(ArrayList<Unit> nearbyEnemies, MapLocation mapLocation) {
+        Unit closestEnemy = null;
+        long closestDistance = Long.MAX_VALUE;
+        for (int i = 0; i < nearbyEnemies.size(); i++) {            
+            Unit nearbyUnit = nearbyEnemies.get(i);            
+            long distance = nearbyUnit.health();
+            if (distance < closestDistance) {
+                closestEnemy = nearbyUnit;
+                closestDistance = distance;
+            }
+        }
+        return closestEnemy;
+    }
+
 
     private Unit getClosestEnemy(ArrayList<Unit> nearbyEnemies, MapLocation mapLocation) {
         Unit closestEnemy = null;
@@ -95,7 +152,8 @@ public class RangerHandler extends UnitHandler {
             if (target == null) {
                 break;
             }
-            if (target.isWithinRange(range, requestLocation) && gc.senseNearbyUnitsByTeam(target, range, enemyTeam).size() == 0) {
+            if (target.isWithinRange(range - 2, requestLocation) && gc.senseNearbyUnitsByTeam(target, range, enemyTeam).size() == 0 && tm.targets.size() > 1) {
+                System.out.println("BIG_BOY" + target);
                 tm.removeTarget(target);
                 continue;
             }

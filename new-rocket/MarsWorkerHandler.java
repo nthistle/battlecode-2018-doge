@@ -1,5 +1,5 @@
 import bc.*;
-import java.util.Random;
+import java.util.*;
 
 public class MarsWorkerHandler extends UnitHandler {
 
@@ -23,22 +23,32 @@ public class MarsWorkerHandler extends UnitHandler {
     	//3. Move
     	
     	boolean didStuff = false;
-    	curReplicateCooldown--;
     	
     	//run like a bitch
     	RocketLandingInfo rli = gc.rocketLandings();
     	List<MapLocation> bad = new LinkedList<MapLocation>();
     	//peep next ten rounds
     	for(int i = (int)gc.round(); i < (int)gc.round() + 10; i++) {
-    		
+    		VecRocketLanding landings = rli.landingsOn(i);
+    		for(int j = 0; j < landings.size(); j++) {
+    			bad.add(landings.get(j).getDestination());
+    		}
+    	}
+    	MapLocation myLocation = unit.location().mapLocation();
+    	
+    	MapLocation badPlace = null;
+    	for(MapLocation loc : bad) {
+    		if(myLocation.distanceSquaredTo(loc) <= 2) badPlace = loc; //oh shit run away
+    	}
+    	if(badPlace != null) {
+    		Utils.tryMoveRotate(gc, this.id, badPlace.directionTo(myLocation)); //go away
     	}
     	
     	//replicate
-    	if(gc.karbonite() > 250) {
+    	if((gc.karbonite() > 250 && gc.round() < 750) || (gc.round() >= 750 && gc.karbonite() >= 30)) { //before, seldom replicate. After, spam that shit. 
     		for(Direction c : Direction.values()) {
     			if(gc.canReplicate(this.id, c)) {
     				gc.replicate(this.id, c);
-    				this.curReplicateCooldown += REPLICATE_COOLDOWN;
     				didStuff |= true;
     				break;
     			}

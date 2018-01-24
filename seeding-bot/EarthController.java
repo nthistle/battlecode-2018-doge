@@ -28,7 +28,7 @@ public class EarthController extends PlanetController
     public HashMap<Integer, UnitHandler> myHandler;
     public List<Queue<UnitType>> factoryBuildQueues = new ArrayList<Queue<UnitType>>();
 
-    public Queue<Integer> attackTargets = new LinkedList<Integer>();
+    public Queue<Integer> attackQueue = new LinkedList<Integer>();
 
     public int amLoadingRocket = 0;
 
@@ -185,7 +185,7 @@ public class EarthController extends PlanetController
     }
 
     private void rocketStatus() {
-        if (gc.researchInfo().getLevel(UnitType.Rocket) >= 1 && (rocketsBuilt < (int)(gc.round() / 150) || gc.getTimeLeftMs() < 1500 || (gc.round() > 200 && gc.units().size() - gc.myUnits().size() > gc.myUnits().size() * 2))) {
+        if (gc.researchInfo().getLevel(UnitType.Rocket) >= 1 && (rocketsBuilt < (int)(gc.round() / 150) || (gc.getTimeLeftMs() < 1500 && getRobotCount(UnitType.Rocket) < 1) || (gc.round() > 200 && gc.units().size() - gc.myUnits().size() > gc.myUnits().size() * 2))) {
             isSavingForRocket = true;            
             rocketRequestRound = gc.round();
         }        
@@ -228,7 +228,9 @@ public class EarthController extends PlanetController
         VecUnit startingUnits = gc.startingMap(gc.planet()).getInitial_units();
         for(int i = 0; i < startingUnits.size(); i ++) {
             if(startingUnits.get(i).team() == enemyTeam) {
-                tm.addTarget(startingUnits.get(i).location().mapLocation());
+                MapLocation temp = startingUnits.get(i).location().mapLocation();
+                tm.initial.add(temp.toJson());
+                tm.addTarget(temp);
             }
         }
     }
@@ -256,7 +258,7 @@ public class EarthController extends PlanetController
     private void globalValues() {
         enemyTeam = Utils.getOtherTeam(gc.team());
         map = gc.startingMap(Planet.Earth);        
-        maxUnits = Math.max((int)map.getHeight(), (int)map.getWidth()) * 4;
+        maxUnits = (long)(Math.max((int)map.getHeight(), (int)map.getWidth()) * 3.5);
     }
 
     public void takeTurnByType(HashMap<Integer,UnitHandler> myHandler, VecUnit units, UnitType unitType) {
