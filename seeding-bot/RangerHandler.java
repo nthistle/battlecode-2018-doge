@@ -65,7 +65,8 @@ public class RangerHandler extends UnitHandler {
         if (target != null) {
             if (focusEnemy == null) {
                 if (tm.initial.contains(target.toJson())) {
-                    Utils.tryMoveRotate(gc, id, pm.getPathFieldWithCache(target).getDirectionAtPoint(mapLocation));
+                    // Utils.tryMoveRotate(gc, id, pm.getPathFieldWithCache(target).getDirectionAtPoint(mapLocation));
+                    Utils.tryMoveRotate(gc, id, getRandomDirection(mapLocation, target, pm));
                 } else {
                     Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));   
                 }                
@@ -100,8 +101,9 @@ public class RangerHandler extends UnitHandler {
     }
 
     public Direction getRandomDirection(MapLocation mapLocation, MapLocation targetLocation, PathMaster pm) {
-        Direction[] dirs = pm.getPathFieldWithCache(targetLocation).getDirectionsAtPoint(mapLocation);
-        return dirs[rng.nextInt(dirs.length)];
+        PathField pf = pm.getPathFieldWithCache(targetLocation);
+        PathField.PathPoint pp = pf.getPoint(mapLocation);
+        return pp.dirs[rng.nextInt(pp.numDirs)];
     }
 
     private void load(VecUnit all, ArrayList<Unit> attackers, ArrayList<Unit> passive) {
