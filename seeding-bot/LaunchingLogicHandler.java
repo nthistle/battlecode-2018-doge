@@ -4,7 +4,8 @@ import java.util.*;
 
 public class LaunchingLogicHandler extends UnitHandler  {
 	protected List<ArrayList<MapLocation>> zoneMap; 
-	protected MapLocation landingPoint;
+	protected MapLocation firstContactLandingPoint;
+	protected MapLocation fightingTroopLandingPoint;
 	protected static List<MapLocation> usedLandingPoints;
 	protected long launchingTime;
 	protected static int[][] values;
@@ -15,8 +16,8 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	public LaunchingLogicHandler(PlanetController parent, GameController gc, int id, Random rng) {
 		super(parent, gc, id, rng);
         this.zoneMap = this.getZones();
-        // System.out.println(Arrays.deepToString(label));
-        // System.out.println(this.zoneMap);
+        System.out.println(Arrays.deepToString(label));
+        System.out.println(this.zoneMap);
         this.usedLandingPoints = new ArrayList<MapLocation>();
 	}
 	
@@ -25,30 +26,62 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	}
 
 	public void recalculate() {
-		calculateOptimalLandingLocation();
+		calculateOptimalLandingLocationFirstContact();
+		calculateOptimalLandingLocationFightingTroops();
 		calculateOptimalLaunchingTime();
 	}
 	
-	public MapLocation optimalLandingLocation() {
-		return this.landingPoint;
+	public MapLocation optimalLandingLocation(boolean firstContact) {
+		if(firstContact) {
+			return this.firstContactLandingPoint;
+		}
+		else {
+			return this.fightingTroopLandingPoint;
+		}
+	}
+	
+	public MapLocation optimalFirstContactLandingLocation() {
+		return this.firstContactLandingPoint;
+	}
+	
+	public MapLocation optimalFightingTroopLandingLocation() {
+		return this.fightingTroopLandingPoint;
 	}
 	
 	public long optimalLaunchingTime() {
 		return this.launchingTime;
 	}
 	
-	private void calculateOptimalLandingLocation() {
+	private MapLocation calculateOptimalLandingLocationFirstContact() {
 		Collections.sort(this.zoneMap, Comparators.VecMapLocComp);
-		for(ArrayList<MapLocation> zone : this.zoneMap) {
-			Collections.sort(zone, Comparators.MapLocComp);
-			for(MapLocation spot : zone) {
-				if(!usedLandingPoints.contains(spot)) {
-					// System.out.println("The perfect spot: " + spot);
-					this.landingPoint = spot;
-					return;
+		for(int i = 0; i < this.zoneMap.size(); i++) {
+			if(usedZones.get(i) > 0) continue;
+			else {
+				for(MapLocation spot : this.zoneMap.get(i)) {
+					if(!usedLandingPoints.contains(spot)) {
+						this.firstContactLandingPoint = spot;
+						return spot;
+					}
 				}
 			}
 		}
+		return this.firstContactLandingPoint = this.calculateOptimalLandingLocationFightingTroops();
+	}
+	
+	private MapLocation calculateOptimalLandingLocationFightingTroops() {
+		Collections.sort(this.zoneMap, Comparators.VecMapLocComp);
+		for(int i = 0; i < this.zoneMap.size(); i++) {
+			if(usedZones.get(i) == 0) continue;
+			else {
+				for(MapLocation spot : this.zoneMap.get(i)) {
+					if(!usedLandingPoints.contains(spot)) {
+						this.fightingTroopLandingPoint = spot;
+						return spot;
+					}
+				}
+			}
+		}
+		return this.fightingTroopLandingPoint = this.calculateOptimalLandingLocationFirstContact();
 	}
 	
 	private void calculateOptimalLaunchingTime() {
@@ -80,8 +113,8 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	
 	private List<ArrayList<MapLocation>> getZones() {
 		PlanetMap marsMap = gc.startingMap(Planet.Mars);
-		// System.out.println(marsMap.getHeight());
-		// System.out.println(marsMap.getWidth());
+		System.out.println(marsMap.getHeight());
+		System.out.println(marsMap.getWidth());
 		values = new int[(int)marsMap.getHeight()][(int)marsMap.getWidth()];
 		label = new int[(int)marsMap.getHeight()][(int)marsMap.getWidth()];
 		adjacentSquares = new int[(int)marsMap.getHeight()][(int)marsMap.getWidth()];
@@ -95,7 +128,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		}
 		for(int i = 0; i < marsMap.getHeight(); i++) {
 			for(int j = 0; j < marsMap.getWidth(); j++) {
-				// System.out.println(i + ", " + j);
+				System.out.println(i + ", " + j);
 				if(!Utils.canOccupyMars(gc, new MapLocation(Planet.Mars, j, i))) {
 					label[i][j] = -1; //impassable point
 				}
@@ -159,7 +192,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 			public int compare(ArrayList<MapLocation> a, ArrayList<MapLocation> b) { //select the objectively better zone
 				int totA = kryptoniteTotals.get(label[(int)a.get(0).getY()][(int)a.get(0).getX()]-1);
 				int totB = kryptoniteTotals.get(label[(int)b.get(0).getY()][(int)b.get(0).getX()]-1);
-				return (totB + 100 * b.size() - 25 * usedZones.get(label[(int)b.get(0).getY()][(int)b.get(0).getX()]-1)) - (totA + 100 * a.size() - 25 * usedZones.get(label[(int)a.get(0).getY()][(int)a.get(0).getX()]-1));
+				return (totB + 100 * b.size() - 100 * usedZones.get(label[(int)b.get(0).getY()][(int)b.get(0).getX()]-1)) - (totA + 100 * a.size() - 100 * usedZones.get(label[(int)a.get(0).getY()][(int)a.get(0).getX()]-1));
 			}
 		};
 		

@@ -10,6 +10,7 @@ import java.util.ListIterator;
 import java.util.Random;
 import java.util.TreeMap;
 import java.util.Queue;
+import java.util.Collections;
 
 public class EarthController extends PlanetController
 {
@@ -110,6 +111,32 @@ public class EarthController extends PlanetController
         }
     }
 
+    public void addRocketRequestedUnits(RocketHandler rh, Unit rocket) {
+        VecUnit units = gc.myUnits(); // a little inefficient, TODO optimize
+        Unit unit;
+        ArrayList<FactoryHandler> sameRegion = new ArrayList<FactoryHandler>();
+        int targetRegion = this.pm.getRegion(rocket.location().mapLocation());
+        for(int i = 0; i < units.size(); i ++) {
+            unit = units.get(i);
+            if(unit.unitType()!=UnitType.Factory) continue;
+            if(this.pm.getRegion(unit.location().mapLocation()) == targetRegion) {
+                sameRegion.add(myHandler.get(unit.id()));
+            }
+        }
+        ArrayList<UnitType> units = new ArrayList<UnitType>();
+        for(UnitType key : rh.stillNeeded.keySet()) {
+            for(int i = 0; i < rh.stillNeeded.get(key).intValue(); i ++) {
+                units.add(key);
+            }
+        }
+        Collections.shuffle(units);
+        int curFac = 0;
+        for(int i = 0; i < units.size(); i ++) {
+            sameRegion.get(curFac).addToBuildQueue(units.get(i));
+            curFac = (curFac+1)%sameRegion.size();
+        }
+    }
+
     private void updateFactoryBuildQueues(HashMap<Integer,UnitHandler> myHandler, VecUnit units) {
         if (noEnemies && getRobotCount(UnitType.Ranger) + getRobotCount(UnitType.Healer) > maxUnits) {
             return;
@@ -130,7 +157,7 @@ public class EarthController extends PlanetController
                 fh.addToBuildQueue(UnitType.Worker);
                 workersNecessary--;
             }
-            if(fh.getBuildQueueSize() < FactoryHandler.MAX_BQUEUE_SIZE) {
+            if(fh.getBuildQueueSize() < FactoryHandler.IDEAL_BQUEUE_SIZE) {
                 fh.addToBuildQueue(this.getRandomBasePhaseUnit());
             }
         }
@@ -241,10 +268,6 @@ public class EarthController extends PlanetController
         }
     }
 
-    public void addRocketRequestedUnits(RocketHandler rh) {
-
-    }
-
     public void assignHandler(HashMap<Integer,UnitHandler> myHandler, Unit unit) {
 
         UnitHandler newHandler = null;
@@ -264,7 +287,7 @@ public class EarthController extends PlanetController
                 break;
             case Rocket:
                 newHandler = new RocketHandler(this, gc, unit.id(), rng, this.llh, RocketHandler.FIRST_CONTACT_CREW);
-                addRocketRequestedUnits((RocketHandler)newHandler);
+                addRocketRequestedUnits((RocketHandler)newHandler, unit);
                 break;
             case Healer:
             	newHandler = new HealerHandler(this, gc, unit.id(), rng);
