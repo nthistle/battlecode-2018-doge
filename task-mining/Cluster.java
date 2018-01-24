@@ -52,7 +52,9 @@ public class Cluster {
 		return true;
 	}
 
-	public void update(Point location, int minedAmount) {
+
+	//returns true if there is still karbonite left in the cluster, returns false if there is no more karbonite left in the cluster
+	public boolean update(Point location, int minedAmount) {
 		Iterator<Point> it = this.members.iterator();
 		this.maxPoint = this.members.get(0);
 		while(it.hasNext()) {
@@ -76,7 +78,15 @@ public class Cluster {
 		if(this.members.size() == 0) {
 			System.out.println("We don't have anything else in this cluster at [" + clusterMaxima.x + "," + clusterMaxima.y + "]");
 			this.maxPoint = null;
+			Iterator<Cluster> clusterIt = m.clusters.iterator();
+			while(clusterIt.hasNext()) {
+				Cluster q = clusterIt.next();
+				if(q.clusterMaxima.equals(this.clusterMaxima))
+					clusterIt.remove();
+			}
+			return false;
 		}
+		return true;
 	}
 
 	public static int heuristic(Cluster a) {
@@ -91,7 +101,7 @@ public class Cluster {
 		return nearestDist * -1000 + a.members.size() * 2 + Cluster.value(a) * 1000; 
 	}
 
-	private static int value(Cluster a) {
+	public static int value(Cluster a) {
 		int val = 0;
 		for(Point b : a.members) {
 			val += a.m.initialKarboniteLocationsOriginal[b.x][b.y];

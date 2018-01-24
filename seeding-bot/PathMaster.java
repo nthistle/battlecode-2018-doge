@@ -40,7 +40,7 @@ public class PathMaster
 				if(this.basemap.isPassableTerrainAt(new MapLocation(this.basemap.getPlanet(), j, i)) == 0) {
 					ret[i][j] = -1;
 				} else if(ret[i][j] == 0) {
-					recur(ret, i, j, zone++);
+					recur(ret, i, j, ++zone);
 				}
 			}
 		}
