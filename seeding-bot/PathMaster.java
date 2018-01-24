@@ -14,7 +14,6 @@ public class PathMaster
 	
 	public PathMaster(PlanetMap basemap) {
 		this.basemap = basemap;
-		// this.pathFieldCache = new PathField[(int)basemap.getWidth()][(int)basemap.getHeight()];
 		this.labels = this.generateLabels();
 		this.limitedCache = new HashMap<Point,PathField>();
 		this.cacheCount = 0;
@@ -32,10 +31,8 @@ public class PathMaster
 			for(int j = 0; j < ret[i].length; j++) {
 				if(this.basemap.isPassableTerrainAt(new MapLocation(this.basemap.getPlanet(), j, i)) == 0) {
 					ret[i][j] = -1;
-				}
-				else if(ret[i][j] == 0) {
-					zone++;
-					recur(ret, i, j, zone);
+				} else if(ret[i][j] == 0) {
+					recur(ret, i, j, zone++);
 				}
 			}
 		}
@@ -91,6 +88,14 @@ public class PathMaster
 
 	public PathField getCachedPathField(int x, int y) {
 		return limitedCache.get(new Point(x,y));
+	}
+
+	public boolean isCached(int x, int y) {
+		return getCachedPathField(x, y) == null;
+	}
+
+	public boolean isCached(MapLocation ml) {
+		return isCached(ml.getX(), ml.getY());
 	}
 
 	public PathField getAndCachePathField(MapLocation target) {
