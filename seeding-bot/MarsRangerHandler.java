@@ -91,7 +91,7 @@ public class MarsRangerHandler extends UnitHandler {
             }
         }
         if(nearestEnemy != null) {
-            System.out.println("Moving away from enemy who is "+nearestDist+" away");
+            // System.out.println("Moving away from enemy who is "+nearestDist+" away");
             Utils.tryMoveRotate(this.gc, this.id, nearestEnemy.location().mapLocation().directionTo(myLocation));
             return;
         }
@@ -109,7 +109,7 @@ public class MarsRangerHandler extends UnitHandler {
         	}
         }
         if(nearestAlly != null) {
-        	System.out.println("Moving towards friendly who is "+nearestDist+" away");
+        	// System.out.println("Moving towards friendly who is "+nearestDist+" away");
         	Utils.tryMoveRotate(this.gc, this.id, myLocation.directionTo( nearestAlly.location().mapLocation()));
             return;
         }
@@ -127,7 +127,7 @@ public class MarsRangerHandler extends UnitHandler {
             }
         }
         if(nearestEnemy != null) {
-            System.out.println("Moving towards enemy who is "+nearestDist+" away");
+            // System.out.println("Moving towards enemy who is "+nearestDist+" away");
             Utils.tryMoveRotate(this.gc, this.id, myLocation.directionTo(nearestEnemy.location().mapLocation()));
             return;
         }

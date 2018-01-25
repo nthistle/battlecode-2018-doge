@@ -116,7 +116,7 @@ public class EarthController extends PlanetController
     }
 
     public void addRocketRequestedUnits(RocketHandler rh, Unit rocket) {
-        System.out.println("Rocket is requesting some units, adding to build queues...");
+        // System.out.println("Rocket is requesting some units, adding to build queues...");
         VecUnit units = gc.myUnits(); // a little inefficient, TODO optimize
         Unit unit;
         ArrayList<FactoryHandler> sameRegion = new ArrayList<FactoryHandler>();
@@ -135,10 +135,12 @@ public class EarthController extends PlanetController
             }
         }
         Collections.shuffle(nunits);
+        if(sameRegion.size() == 0) return;
         int curFac = 0;
         for(int i = 0; i < nunits.size(); i ++) {
-            System.out.println("Adding " + nunits.get(i) + " to build queue");
-            sameRegion.get(curFac).addToBuildQueue(nunits.get(i));
+            // System.out.println("Adding " + nunits.get(i) + " to build queue");
+            // sameRegion.get(curFac).addToBuildQueue(nunits.get(i));
+            sameRegion.get(curFac).forceAddPriorityBuildQueue(nunits.get(i));
             curFac = (curFac+1)%sameRegion.size();
         }
         amLoadingRocket ++;
@@ -310,7 +312,7 @@ public class EarthController extends PlanetController
             // System.out.println("Loading a rocket, does it need?");
             RocketHandler neededBy = doesRocketNeed(unit.unitType(), unit.location().mapLocation());
             if(neededBy != null) {
-                System.out.println("NEW ASTRONAUT U HOE, it's a " + unit.unitType());
+                // System.out.println("NEW ASTRONAUT U HOE, it's a " + unit.unitType());
                 newHandler = new AstronautHandler(this, gc, unit.id(), rng, gc.unit(neededBy.id).location().mapLocation());
                 neededBy.stillNeeded.put(unit.unitType(), neededBy.stillNeeded.get(unit.unitType()) - 1);
                 myHandler.put(unit.id(), newHandler);

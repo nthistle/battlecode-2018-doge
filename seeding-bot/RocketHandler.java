@@ -103,12 +103,12 @@ public class RocketHandler extends UnitHandler {
     public boolean shouldLaunch() {
     	// System.out.println(this.llh.optimalLaunchingTime());
     	// System.out.println(gc.round());
-        if(this.isLoaded()) System.out.println("I am loaded");
-        else {
-            for(UnitType ut : this.targetManifest.keySet()) {
-                System.out.println(ut + ": " + targetManifest.get(ut));
-            }
-        }
+        // if(this.isLoaded()) System.out.println("I am loaded");
+        // else {
+            // for(UnitType ut : this.targetManifest.keySet()) {
+                // System.out.println(ut + ": " + targetManifest.get(ut));
+            // }
+        // }
     	if(this.isLoaded() && this.llh.optimalLaunchingTime() == gc.round()) return true;
     	else if(gc.unit(this.id).health() <= 150) return true;
     	//TODO: expand list of cases to include damage nearby, etc. 

@@ -1,14 +1,14 @@
 import bc.*;
-import java.util.Queue;
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Random;
 
 public class FactoryHandler extends UnitHandler {
 
-    public static final int MAX_BQUEUE_SIZE = 5;
+    public static final int MAX_BQUEUE_SIZE = 7;
     public static final int IDEAL_BQUEUE_SIZE = 3;
 
-	protected Queue<UnitType> buildQueue;
+	protected Deque<UnitType> buildQueue;
 	protected EarthController myParent;
 
     public FactoryHandler(PlanetController parent, GameController gc, int id, Random rng) {
@@ -19,6 +19,10 @@ public class FactoryHandler extends UnitHandler {
 
     public UnitType peekBuildQueue() {
         return buildQueue.peek();
+    }
+
+    public boolean forceAddPriorityBuildQueue(UnitType ut) {
+        return this.buildQueue.offerFirst(ut);
     }
 
     public boolean addToBuildQueue(UnitType ut) {
