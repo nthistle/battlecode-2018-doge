@@ -157,7 +157,7 @@ public class MarsRangerHandler extends UnitHandler {
             if (target == null) {
                 break;
             }
-            if ((target.isWithinRange(range - 2, requestLocation) && gc.senseNearbyUnitsByTeam(target, range, enemyTeam).size() == 0) || target.isWithinRange(2, requestLocation)) && tm.targets.size() > 1) {                                    
+            if (((target.isWithinRange(range - 2, requestLocation) && gc.senseNearbyUnitsByTeam(target, range, enemyTeam).size() == 0) || target.isWithinRange(2, requestLocation)) && tm.targets.size() > 1) {                                    
                 //System.out.println("BIG_BOY" + target);
                 tm.removeTarget(target);
                 continue;
