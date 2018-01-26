@@ -1,5 +1,6 @@
 import bc.*;
 import java.util.Random;
+import java.util.Map;
 
 /**
  * Controls all actions just as Player would, but on a specific planet
