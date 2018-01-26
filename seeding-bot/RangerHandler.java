@@ -10,8 +10,11 @@ import java.util.Queue;
 
 public class RangerHandler extends UnitHandler {
 
+    private Bug bug;
+
     public RangerHandler(PlanetController parent, GameController gc, int id, Random rng) {
         super(parent, gc, id, rng);
+        bug = new Bug(gc, id, ((EarthController)parent).map);
     }
 
     public void takeTurn() {
@@ -42,12 +45,12 @@ public class RangerHandler extends UnitHandler {
         PathMaster pm = earthParent.pm;
         // Queue<Integer> attackQueue = earthParent.attackQueue;
         
-        VecUnit nearby = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), gc.team());
-        ArrayList<Unit> nearbyAttackers = new ArrayList<Unit>();
-        ArrayList<Unit> nearbyPassive = new ArrayList<Unit>();
-        load(nearby, nearbyAttackers, nearbyPassive);
+        // VecUnit nearby = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), gc.team());
+        // ArrayList<Unit> nearbyAttackers = new ArrayList<Unit>();
+        // ArrayList<Unit> nearbyPassive = new ArrayList<Unit>();
+        // load(nearby, nearbyAttackers, nearbyPassive);
 
-        VecUnit nearbyEnemies = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), earthParent.enemyTeam);        
+        VecUnit nearbyEnemies = gc.senseNearbyUnitsByTeam(mapLocation, unit.attackRange(), earthParent.enemyTeam);        
         ArrayList<Unit> nearbyEnemyAttackers = new ArrayList<Unit>();
         ArrayList<Unit> nearbyEnemyPassive = new ArrayList<Unit>();
         load(nearbyEnemies, nearbyEnemyAttackers, nearbyEnemyPassive);        
@@ -64,10 +67,11 @@ public class RangerHandler extends UnitHandler {
 
         if (target != null) {
             if (focusEnemy == null) {
-                if (tm.initial.contains(target.toJson())) {
+                if (tm.initial.contains(target.toJson()) && pm.getPathFieldWithCache(target).isPointSet(mapLocation)) {
                     Utils.tryMoveRotate(gc, id, getRandomDirection(mapLocation, target, pm));
                 } else {
-                    Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));   
+                    bug.bugMove(mapLocation, target);
+                    // Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));   
                 }                
             } else {
                 MapLocation enemyLocation = focusEnemy.location().mapLocation();
@@ -77,7 +81,8 @@ public class RangerHandler extends UnitHandler {
                     }
                     Utils.tryMoveWiggleRecur(gc, id, enemyLocation.directionTo(mapLocation), null);
                 } else {                
-                    Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));
+                    bug.bugMove(mapLocation, target);
+                    // Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));
                     if (gc.isAttackReady(id) && gc.canAttack(id, focusEnemy.id())) {
                         gc.attack(id, focusEnemy.id());
                     }
@@ -91,7 +96,8 @@ public class RangerHandler extends UnitHandler {
                 }
                 Utils.tryMoveWiggleRecur(gc, id, enemyLocation.directionTo(mapLocation), null);
             } else {                
-                Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));
+                bug.bugMove(mapLocation, target);
+                // Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));
                 if (gc.isAttackReady(id) && gc.canAttack(id, focusEnemy.id())) {
                     gc.attack(id, focusEnemy.id());
                 }

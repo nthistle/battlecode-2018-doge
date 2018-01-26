@@ -193,6 +193,21 @@ public class Utils
         return directions;   
     }
 
+    public static boolean trySmallMoveRotate(GameController gc, int id, Direction direction) {
+        if (!gc.isMoveReady(id)) {
+            return false;   
+        }
+        int index = directionList.indexOf(direction);
+        for (int i = 0; i < smallRotation.length; i++) {
+            Direction tryDirection = directionList.get((8 + index + smallRotation[i]) % 8);
+            if (gc.canMove(id, tryDirection)) {
+                gc.moveRobot(id, tryDirection);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static boolean tryMoveRotate(GameController gc, int id, Direction direction) {
         if (!gc.isMoveReady(id)) {
             return false;   

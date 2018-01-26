@@ -11,6 +11,7 @@ public class PathMaster
 	protected HashMap<Point,PathField> limitedCache;
 	protected int cacheCount;
 	protected int[][] labels;
+	private int generateCount = 1;
 	
 	public PathMaster(PlanetMap basemap) {
 		this.basemap = basemap;
@@ -117,7 +118,7 @@ public class PathMaster
 	}
 
 	public PathField generatePathField(MapLocation target) {
-		System.out.println("Generate PF called!");
+		System.out.println("Generate PF called: " + generateCount++);
 		// Does BFS, assigning directions back at each location
 		Queue<BFSLocation> queue = new LinkedList<BFSLocation>();
 		BFSLocation cur = fromMapLocation(target);
@@ -180,5 +181,4 @@ public class PathMaster
 			return fromMapLocation(new MapLocation(Planet.Earth, this.x, this.y).add(dir), Utils.reverseDirection(dir), this.dist+1);
 		}
 	}
-
 }

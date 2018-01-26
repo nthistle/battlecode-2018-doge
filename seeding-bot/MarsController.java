@@ -24,7 +24,10 @@ public class MarsController extends PlanetController
 
         while (true) {
         
-            System.out.println("Round #"+gc.round());
+            System.out.println("Round #" + gc.round() + ", (" + gc.getTimeLeftMs() + " ms left)");
+
+            System.runFinalization();
+            System.gc();            
             
             VecUnit units = gc.myUnits();
             
