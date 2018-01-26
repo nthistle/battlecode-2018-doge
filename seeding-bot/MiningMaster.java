@@ -51,8 +51,8 @@ public class MiningMaster {
 
 	private void generateIntialKarboniteLocations() {
 		PlanetMap initialMap = this.parentController.gc.startingMap(this.parentController.getPlanet());
-		this.initialKarboniteLocations = new int[(int) initialMap.getHeight()][(int) initialMap.getWidth()];
-		this.initialKarboniteLocationsOriginal = new int[(int) initialMap.getHeight()][(int) initialMap.getWidth()];
+		this.initialKarboniteLocations = new int[(int) initialMap.getWidth()][(int) initialMap.getHeight()];
+		this.initialKarboniteLocationsOriginal = new int[(int) initialMap.getWidth()][(int) initialMap.getHeight()];
 		this.clusterMap = new Cluster[initialKarboniteLocations.length][initialKarboniteLocations[0].length];
 		for(int i = 0; i < this.initialKarboniteLocations.length; i++) {
 			for(int j = 0; j < this.initialKarboniteLocations[0].length; j++) {
@@ -139,7 +139,7 @@ public class MiningMaster {
 	//returns true if the new miner has a target, return false if he doesnt
 	public boolean convertToMiner(int id) {
 		UnitHandler newHandler = new MiningWorkerHandler(this.parentController, this.parentController.gc, id, this.parentController.rng, this);
-		((EarthController) this.parentController).myHandler.put(id, newHandler);
+		this.parentController.myHandler.put(id, newHandler);
 		return assignTarget((MiningWorkerHandler) newHandler);
 	}
 
