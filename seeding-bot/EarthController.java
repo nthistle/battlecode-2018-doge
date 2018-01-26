@@ -72,6 +72,8 @@ public class EarthController extends PlanetController
         	}
         }
 
+        initialAssign();
+
         while (true) {
         
             System.out.println("Round #" + gc.round() + ", (" + gc.getTimeLeftMs() + " ms left)");
@@ -129,6 +131,10 @@ public class EarthController extends PlanetController
 
             gc.nextTurn();
         }
+    }
+
+    public void initialAssign() {
+        
     }
 
     public void addRocketRequestedUnits(RocketHandler rh, Unit rocket) {
