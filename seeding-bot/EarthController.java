@@ -20,6 +20,9 @@ public class EarthController extends PlanetController
         super(gc, rng);
     }
 
+    public static final int AUTO_ROCKET_FLIP = 30;
+    public static final int AUTO_FACTORY_FLIP = 30;
+
     protected LaunchingLogicHandler llh;
     protected MiningMaster mm;
     
@@ -81,6 +84,7 @@ public class EarthController extends PlanetController
             }
 
             rocketStatus();
+            factoryStatus();
             
             refreshRobotCount(units);
 
@@ -153,7 +157,7 @@ public class EarthController extends PlanetController
             return;
         }
 
-        int workersNecessary = 3 - this.getRobotCount(UnitType.Worker);
+        int workersNecessary = 3 - this.getEWorkerCount();
         // never want to get below 3 workers, have the factories URGENTLY make them
 
         Unit unit;
@@ -202,12 +206,23 @@ public class EarthController extends PlanetController
     }
 
     private void rocketStatus() {
-        if (gc.researchInfo().getLevel(UnitType.Rocket) >= 1 && ((getRobotCount(UnitType.Worker) >= 2 && (rocketsBuilt < (int)(gc.round() / 125) || (gc.getTimeLeftMs() < 1500 && getRobotCount(UnitType.Rocket) < 1))) || (getRobotCount(UnitType.Worker) >= 1 && (gc.round() > 200 && gc.units().size() - gc.myUnits().size() > gc.myUnits().size() * 2)))) {
-            isSavingForRocket = true;            
+        if (gc.researchInfo().getLevel(UnitType.Rocket) >= 1 && ((getRobotCount(UnitType.Worker) >= 2 && (rocketsBuilt < (int)(gc.round() / 125)
+            || (gc.getTimeLeftMs() < 1500 && getRobotCount(UnitType.Rocket) < 1)))
+            || (getRobotCount(UnitType.Worker) >= 1 && (gc.round() > 200 && gc.units().size() - gc.myUnits().size() > gc.myUnits().size() * 2)))) {
+
+            isSavingForRocket = true;
             rocketRequestRound = gc.round();
-        }        
-        if (gc.round() > rocketRequestRound + 40) {
+        }
+        if (gc.round() > rocketRequestRound + AUTO_ROCKET_FLIP) {
             isSavingForRocket = false;
+        }
+    }
+
+    private void factoryStatus() {
+        // logic here to scale up factories
+        // BIG TODO
+        if (gc.round() > factoryRequestRound + AUTO_FACTORY_FLIP) {
+            isSavingForFactory = false;
         }
     }
 
@@ -250,6 +265,10 @@ public class EarthController extends PlanetController
                 tm.addTarget(temp);
             }
         }
+    }
+
+    public void incrementEWorkerCount() {
+        this.eworkerCount ++;
     }
 
     public int getEWorkerCount() {
@@ -321,9 +340,10 @@ public class EarthController extends PlanetController
 
     public void assignHandler(Map<Integer,UnitHandler> myHandler, Unit unit) {
 
-        UnitHandler newHandler = null;
+        if(myHandler.containsKey(unit.id())) return; // if someone else already assigned this id, don't reassign it
+        if(unit.location().isInGarrison()) return; // we like to wait until our factory/rockets unload these things to assign
 
-        if(unit.location().isInGarrison()) return;
+        UnitHandler newHandler = null;
 
         if(amLoadingRocket > 0) {
             // System.out.println("Loading a rocket, does it need?");
@@ -348,7 +368,10 @@ public class EarthController extends PlanetController
                 newHandler = new RangerHandler(this, gc, unit.id(), rng);
                 break;
             case Worker:
-                newHandler = new WorkerHandler(this, gc, unit.id(), rng);
+                if(this.getEWorkerCount() < 3)
+                    newHandler = new WorkerHandler(this, gc, unit.id(), rng);
+                else
+                    newHandler = new MiningWorkerHandler(this, gc, unit.id(), rng, this.mm);
                 break;
             case Rocket:
                 newHandler = new RocketHandler(this, gc, unit.id(), rng, this.llh, llh.nextManifest());
