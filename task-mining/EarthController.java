@@ -55,9 +55,11 @@ public class EarthController extends PlanetController
                     
                     myHandler.put(unit.id(), newHandler);
                 }
+                /*
                 if(myHandler.get(unit.id()) instanceof MiningWorkerHandler) {
                     mm.assignTarget((MiningWorkerHandler) myHandler.get(unit.id()));
                 }
+                */
                 myHandler.get(unit.id()).takeTurn(unit);             
             }
 
