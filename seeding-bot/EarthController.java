@@ -31,6 +31,8 @@ public class EarthController extends PlanetController
     
     public Map<UnitType, Integer> robotCount = new EnumMap<UnitType, Integer>(UnitType.class);
     public List<Queue<UnitType>> factoryBuildQueues = new ArrayList<Queue<UnitType>>();
+    
+    public Direction[][] rocketWarning; 
 
     // public Queue<Integer> attackQueue = new LinkedList<Integer>();
 
@@ -61,6 +63,14 @@ public class EarthController extends PlanetController
         llh = new LaunchingLogicHandler(this, gc, -1, rng);
         mm = new MiningMaster(this);
         mm.generate();
+        
+        rocketWarning = new Direction[(int)this.map.getWidth()][(int)this.map.getHeight()];
+        
+        for(int i = 0; i < rocketWarning.length; i++) {
+        	for(int j = 0; j < rocketWarning[i].length; j++) {
+        		rocketWarning[i][j] = Direction.Center;
+        	}
+        }
 
         while (true) {
         

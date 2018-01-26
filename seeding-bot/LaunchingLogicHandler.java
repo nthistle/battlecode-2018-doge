@@ -72,7 +72,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	
 	public double[] nextManifest() {
 		this.rocketsLoaded++;
-		if(this.rocketsLoaded < Math.max(3, this.zoneMap.size() / 10)) return RocketHandler.FIRST_CONTACT_CREW;
+		if(this.rocketsLoaded <= Math.max(3, this.zoneMap.size() / 10)) return RocketHandler.FIRST_CONTACT_CREW;
 		else if(this.rocketsLoaded % 4 == 0) return RocketHandler.FIRST_CONTACT_CREW;
 		else return RocketHandler.RANGER_CREW;
 	}
