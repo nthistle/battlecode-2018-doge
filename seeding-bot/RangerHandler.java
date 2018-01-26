@@ -96,7 +96,7 @@ public class RangerHandler extends UnitHandler {
                 }
                 Utils.tryMoveWiggleRecur(gc, id, enemyLocation.directionTo(mapLocation), null);
             } else {                
-                bug.bugMove(mapLocation, target);
+                bug.bugMove(mapLocation, enemyLocation);                
                 // Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));
                 if (gc.isAttackReady(id) && gc.canAttack(id, focusEnemy.id())) {
                     gc.attack(id, focusEnemy.id());
@@ -159,7 +159,7 @@ public class RangerHandler extends UnitHandler {
             if (target == null) {
                 break;
             }
-            if (target.isWithinRange(range - 2, requestLocation) && gc.senseNearbyUnitsByTeam(target, range, enemyTeam).size() == 0 && tm.targets.size() > 1) {
+            if ((target.isWithinRange(range - 2, requestLocation) && gc.senseNearbyUnitsByTeam(target, range, enemyTeam).size() == 0) || target.isWithinRange(2, requestLocation)) && tm.targets.size() > 1) {
                 //System.out.println("BIG_BOY" + target);
                 tm.removeTarget(target);
                 continue;

@@ -24,13 +24,12 @@ public class EarthController extends PlanetController
     
     public PlanetMap map;
     public Team enemyTeam;
-
-    public VecUnit units;
+    
     public Map<UnitType, Integer> robotCount = new EnumMap<UnitType, Integer>(UnitType.class);
     public Map<Integer, UnitHandler> myHandler;
     public List<Queue<UnitType>> factoryBuildQueues = new ArrayList<Queue<UnitType>>();
 
-    public Queue<Integer> attackQueue = new LinkedList<Integer>();
+    // public Queue<Integer> attackQueue = new LinkedList<Integer>();
 
     public int amLoadingRocket = 0;
 
@@ -192,7 +191,7 @@ public class EarthController extends PlanetController
     }
 
     private void rocketStatus() {
-        if (gc.researchInfo().getLevel(UnitType.Rocket) >= 1 && ((getRobotCount(UnitType.Worker) >= 2 && (rocketsBuilt < (int)(gc.round() / 150) || (gc.getTimeLeftMs() < 1500 && getRobotCount(UnitType.Rocket) < 1))) || (getRobotCount(UnitType.Worker) >= 1 && (gc.round() > 200 && gc.units().size() - gc.myUnits().size() > gc.myUnits().size() * 2)))) {
+        if (gc.researchInfo().getLevel(UnitType.Rocket) >= 1 && ((getRobotCount(UnitType.Worker) >= 2 && (rocketsBuilt < (int)(gc.round() / 125) || (gc.getTimeLeftMs() < 1500 && getRobotCount(UnitType.Rocket) < 1))) || (getRobotCount(UnitType.Worker) >= 1 && (gc.round() > 200 && gc.units().size() - gc.myUnits().size() > gc.myUnits().size() * 2)))) {
             isSavingForRocket = true;            
             rocketRequestRound = gc.round();
         }        
