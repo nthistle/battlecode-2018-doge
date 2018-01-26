@@ -21,12 +21,12 @@ public class EarthController extends PlanetController
     }
 
     protected LaunchingLogicHandler llh;
+    protected MiningMaster mm;
     
     public PlanetMap map;
     public Team enemyTeam;
     
     public Map<UnitType, Integer> robotCount = new EnumMap<UnitType, Integer>(UnitType.class);
-    public Map<Integer, UnitHandler> myHandler;
     public List<Queue<UnitType>> factoryBuildQueues = new ArrayList<Queue<UnitType>>();
 
     // public Queue<Integer> attackQueue = new LinkedList<Integer>();
@@ -55,6 +55,8 @@ public class EarthController extends PlanetController
         queueResearch();
         
         llh = new LaunchingLogicHandler(this, gc, -1, rng);
+        mm = new MiningMaster(this);
+        mm.generate();
 
         while (true) {
         
@@ -173,10 +175,17 @@ public class EarthController extends PlanetController
     }
 
     private UnitType getRandomBasePhaseUnit() {
-        double d = rng.nextDouble();
+        double d;
+        d = rng.nextDouble();
         // pointless to make anything but rangers right now, until other code is working
         if(d < 0.2 && gc.round() > 150 && getRobotCount(UnitType.Ranger) > 10) return UnitType.Healer;
-        else return UnitType.Ranger;
+        else {
+            d = rng.nextDouble();
+            if(d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) < 6) {
+                return UnitType.Worker;
+            }
+            return UnitType.Ranger;
+        }
     }
 
     private void refreshTargets(VecUnit units) {
