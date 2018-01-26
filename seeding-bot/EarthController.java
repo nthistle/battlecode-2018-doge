@@ -268,12 +268,12 @@ public class EarthController extends PlanetController
         this.eworkerCount = 0;
         for(UnitType ut : UnitType.values()) {
             robotCount.put(ut, 0);
-            if(ut == UnitType.Worker && myHandler.get(ut.id()) instanceof WorkerHandler)
-                this.eworkerCount ++;
         }
         UnitType ut;
         for(int i = 0; i < units.size(); i ++) {
             ut = units.get(i).unitType();
+            if(ut == UnitType.Worker && myHandler.get(units.get(i).id()) != null && myHandler.get(units.get(i).id()) instanceof WorkerHandler)
+                this.eworkerCount ++;
             incrementRobotCount(ut);
         }
     }

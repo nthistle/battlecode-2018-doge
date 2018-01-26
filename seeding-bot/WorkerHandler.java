@@ -17,6 +17,7 @@ public class WorkerHandler extends UnitHandler {
 
     private Bug bug;    
     private EarthController earthParent;
+    private MapLocation previousLocation;
 
     public WorkerHandler(PlanetController parent, GameController gc, int id, Random rng) {
         super(parent, gc, id, rng);
@@ -240,7 +241,7 @@ public class WorkerHandler extends UnitHandler {
     }
 
     private void quickTurn(Map<Integer, UnitHandler> myHandler, Unit unit) {
-        earthParent.pm.assignHandler(myHandler, unit);
+        earthParent.assignHandler(myHandler, unit);
         myHandler.get(id).takeTurn(unit);        
     }
 
