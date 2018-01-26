@@ -2,6 +2,7 @@
 *.bc18r
 *.bc18z
 *.bc18t
+*.bc18log
 install_viewer.py
 viewer_latest
 viewer_currentInstall.json

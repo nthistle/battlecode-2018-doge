@@ -72,7 +72,7 @@ public class HealerHandler extends UnitHandler {
 
         MapLocation target = getTarget(mapLocation, unit.visionRange(), enemyTeam, tm);
 
-        Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));
+        if(target != null) Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));
     }
 
     public Direction getRandomDirection(MapLocation mapLocation, MapLocation targetLocation, PathMaster pm) {
