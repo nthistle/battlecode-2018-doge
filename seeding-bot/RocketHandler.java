@@ -12,10 +12,16 @@ public class RocketHandler extends UnitHandler {
 	public static final double[] META_CREW_2 = new double[] {0, 0, 0.5, 0, 0.5};
 	public static final double[] META_CREW_3 = new double[] {0, 0, 0, 0.5, 0.5};
 	
+	public static final int TAKEOFF_COUNTDOWN = 3; 
+	
 	public Map<UnitType, Integer> targetManifest;
     public Map<UnitType, Integer> stillNeeded;
 	public MapLocation dest;
 	public LaunchingLogicHandler llh;
+	public int launchCountDown = Integer.MAX_VALUE;
+	public Direction[][] warningMatrix;
+	public MapLocation myLocation;
+	public PlanetMap map;
 	
 	/**
 	 * generate a rocket handler for a rocket
@@ -44,6 +50,9 @@ public class RocketHandler extends UnitHandler {
         
         this.dest = gc.unit(this.id).location().mapLocation();
         this.llh = llh;
+        this.warningMatrix = ((EarthController)parent).rocketWarning;
+        this.myLocation = gc.unit(this.id).location().mapLocation();
+        this.map = ((EarthController)parent).map;
 
         // System.out.println("Caching path field for " + this.dest + " (" + this.dest.getX() + "," + this.dest.getY() + ")");
         this.parent.pm.getAndCachePathField(this.dest);
@@ -62,7 +71,32 @@ public class RocketHandler extends UnitHandler {
     		this.load();
             this.setDestination(llh.optimalLandingLocation());
     		// System.out.println("Dest: " + this.getDestination());
-    		if(this.shouldLaunch() && gc.canLaunchRocket(this.id, this.dest)) {
+            if(this.launchCountDown != Integer.MAX_VALUE) 
+            	this.launchCountDown--;
+    		if(this.launchCountDown == Integer.MAX_VALUE && this.willLaunch()) {
+//    			this.blastOff();
+//    			llh.addUsedMapLocation(this.getDestination());
+    			this.launchCountDown = TAKEOFF_COUNTDOWN;
+    			for(int di = -1; di <= 1; di++) {
+    				for(int dj = -1; dj <= 1; dj++) {
+    					if(di == 0 && dj == 0) continue;
+    					int i = myLocation.getX() + di, j = myLocation.getY() + dj;
+    					MapLocation thatLocation = new MapLocation(Planet.Earth, i, j);
+    					if(map.onMap(thatLocation) && map.isPassableTerrainAt(thatLocation) != 0) {
+    						this.warningMatrix[i][j] = myLocation.directionTo(thatLocation);
+    					}
+    				}
+    			}
+    		}
+    		if(this.launchCountDown <= 0 && gc.canLaunchRocket(this.id, this.dest)) {
+    			int i = myLocation.getX(), j = myLocation.getY();
+    			for(int di = -1; di <= 1; di++) {
+    				for(int dj = -1; dj <= 1; dj++) {
+    					try {
+    						this.warningMatrix[i+di][j+dj] = Direction.CENTER;
+    					}catch(Exception e){}
+    				}
+    			}
     			this.blastOff();
     			llh.addUsedMapLocation(this.getDestination());
     		}
@@ -113,6 +147,10 @@ public class RocketHandler extends UnitHandler {
     	else if(gc.unit(this.id).health() <= 150) return true;
     	//TODO: expand list of cases to include damage nearby, etc. 
     	else return false;
+    }
+    
+    public boolean willLaunch() {
+    	return this.shouldLaunch() && gc.canLaunchRocket(this.id, this.dest);
     }
     
     /**
