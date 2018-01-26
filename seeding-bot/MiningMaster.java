@@ -19,7 +19,6 @@ public class MiningMaster {
 	protected int[][] initialKarboniteLocationsOriginal;
 	protected List<Cluster> clusters;
 	protected int totalValue;
-	private int[] miningWorkerHandlers;
 	public static final int KARBONITE_THRESHOLD = 5;
 	public static final int KARBONITE_THRESHOLD_CLUSTER = 2;
 	public static final int MAX_CLUSTERS_VISIT = 3;

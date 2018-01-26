@@ -198,8 +198,14 @@ public class RocketHandler extends UnitHandler {
     	for(int i = 0; i < adjacent.size(); i++) {
             adj = adjacent.get(i);
     		if(this.targetManifest.keySet().contains(adj.unitType()) && this.targetManifest.get(adj.unitType()) > 0) {
-                if(((EarthController)parent).myHandler.get(adj.id()) instanceof MiningWorkerHandler)
+                if(parent.myHandler.get(adj.id()) instanceof WorkerHandler) {
                     continue;
+                }
+                if(parent.myHandler.get(adj.id()) instanceof MiningWorkerHandler) {
+                    Cluster jaunt = ((EarthController)parent).mm.clusterMap[adj.location().mapLocation().getX()][adj.location().mapLocation().getY()];
+                    if(jaunt != null)
+                        jaunt.minersAt--;
+                }
   //   			System.out.println("Loading " + adjacent.get(i).id());
     			if(this.loadTroop(adj.id())) {
                     // once we're loaded, decrease from the manifest

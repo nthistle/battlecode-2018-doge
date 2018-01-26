@@ -137,7 +137,10 @@ public class EarthController extends PlanetController
         
     }
 
+    public static int ROCKET_LOADING_THRESH_DIST = 12;
+
     public void addRocketRequestedUnits(RocketHandler rh, Unit rocket) {
+        System.out.println("Rocket is adding requested units!...");
         // System.out.println("Rocket is requesting some units, adding to build queues...");
         VecUnit units = gc.myUnits(); // a little inefficient, TODO optimize
         Unit unit;
@@ -147,7 +150,12 @@ public class EarthController extends PlanetController
             unit = units.get(i);
             if(unit.unitType()!=UnitType.Factory) continue;
             if(this.pm.getRegion(unit.location().mapLocation()) == targetRegion) {
-                sameRegion.add((FactoryHandler)myHandler.get(unit.id()));
+                // we're in the same region
+                // but are we a reasonable distance?
+                if(this.pm.isCached(rocket.location().mapLocation()) &&
+                    this.pm.getCachedPathField(rocket.location().mapLocation()).getDistanceAtPoint(unit.location().mapLocation()) < ROCKET_LOADING_THRESH_DIST) {
+                    sameRegion.add((FactoryHandler)myHandler.get(unit.id()));
+                }
             }
         }
         ArrayList<UnitType> nunits = new ArrayList<UnitType>();
@@ -156,6 +164,7 @@ public class EarthController extends PlanetController
                 nunits.add(key);
             }
         }
+        System.out.println("  Same region size: " + sameRegion.size());
         Collections.shuffle(nunits);
         if(sameRegion.size() == 0) return;
         int curFac = 0;
@@ -346,6 +355,10 @@ public class EarthController extends PlanetController
             if(rh==null)
                 continue;
             if(!this.pm.isConnected(ml, unit.location().mapLocation()))
+                continue;
+            if(!this.pm.isCached(unit.location().mapLocation()))
+                continue;
+            if(this.pm.getCachedPathField(unit.location().mapLocation()).getDistanceAtPoint(ml) >= ROCKET_LOADING_THRESH_DIST)
                 continue;
             if(!rh.stillNeeded.keySet().contains(ut))
                 continue;
