@@ -194,6 +194,17 @@ public class Utils
         return directions;   
     }
 
+    public static boolean tryMove(GameController gc, int id, Direction direction) {
+        if (!gc.isMoveReady(id)) {
+            return false;   
+        }
+        if (gc.canMove(id, direction)) {
+            gc.moveRobot(id, direction);
+            return true;
+        }        
+        return false;
+    }
+
     public static boolean trySmallMoveRotate(GameController gc, int id, Direction direction) {
         if (!gc.isMoveReady(id)) {
             return false;   
