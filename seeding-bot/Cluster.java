@@ -89,6 +89,10 @@ public class Cluster {
 		return true;
 	}
 
+	public int value() {
+		return Cluster.value(this);
+	}
+
 	public static int heuristic(Cluster a) {
 		MapLocation nearestTeam = null;
         int nearestDist = Integer.MAX_VALUE;
