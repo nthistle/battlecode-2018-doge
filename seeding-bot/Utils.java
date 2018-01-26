@@ -2,6 +2,7 @@ import bc.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -222,19 +223,6 @@ public class Utils
         }
         return false;
     }
-
-    public static boolean tryReplicateRotate(GameController gc, int id, Direction direction) {
-        int index = directionList.indexOf(direction);
-        for (int i = 0; i < bigRotation.length; i++) {
-            Direction tryDirection = directionList.get((8 + index + bigRotation[i]) % 8);
-            if (gc.canReplicate(id, tryDirection)) {
-                gc.replicate(id, tryDirection);
-                return true;
-            }
-        }
-        return false;
-    }
-
 
     public static boolean canOccupy(GameController gc, MapLocation location, PlanetController parent, HashSet<MapLocation> visited) {
         if (visited.contains(location)) {

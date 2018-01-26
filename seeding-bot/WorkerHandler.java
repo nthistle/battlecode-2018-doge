@@ -14,11 +14,14 @@ import java.util.Random;
 // Mars
 
 public class WorkerHandler extends UnitHandler {
-    
-    private MapLocation previousLocation = null; // temporary feature, will be removed
+
+    private Bug bug;    
+    private EarthController earthParent;
 
     public WorkerHandler(PlanetController parent, GameController gc, int id, Random rng) {
         super(parent, gc, id, rng);
+        earthParent = (EarthController)parent;
+        bug = new Bug(gc, id, earthParent.map);
     }
     
     public void takeTurn() {
@@ -36,14 +39,16 @@ public class WorkerHandler extends UnitHandler {
 
         MapLocation mapLocation = location.mapLocation();
 
-        if (location.isOnPlanet(Planet.Mars)) {
-            System.out.println("LITTINGTON_BILLINGTON");
+        if (location.isOnPlanet(Planet.Mars)) {            
             return;
-        }
+        }        
 
         // references to parent 
-        EarthController earthParent = (EarthController)parent;
         PlanetMap map = earthParent.map;
+        Team enemyTeam = earthParent.enemyTeam;
+        TargetingMaster tm = earthParent.tm;        
+        PathMaster pm = earthParent.pm;
+        Map<Integer, UnitHandler> myHandler = earthParent.myHandler;
         Map<UnitType, Integer> robotCount = earthParent.robotCount;        
         
         // status markers        
@@ -51,7 +56,7 @@ public class WorkerHandler extends UnitHandler {
         boolean done = false;
 
         VecUnit nearbyAllies = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), gc.team());
-        VecUnit nearbyEnemies = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), earthParent.enemyTeam);        
+        VecUnit nearbyEnemies = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), enemyTeam);        
         ArrayList<Unit> nearbyStructures = new ArrayList<Unit>(); // ally only                
 
         // count certain robots in vision range for ratio purposes
@@ -77,7 +82,7 @@ public class WorkerHandler extends UnitHandler {
                 long distance;
                 PathField path = null;
                 if (gc.round() < 50) {
-                    path = earthParent.pm.getPathFieldWithCache(tryLocation);
+                    path = pm.getPathFieldWithCache(tryLocation);
                     if (!path.isPointSet(mapLocation)) {
                         continue;
                     }
@@ -98,13 +103,14 @@ public class WorkerHandler extends UnitHandler {
         }
 
         // if building commit and replicate until 3 workers are present at site
-        if (nearbyStructures.size() > 0 && nearbyWorkerCount < 3) {
-            if (nearestStructure != null && Utils.tryReplicateRotate(gc, id, mapLocation.directionTo(nearestStructure))) {
+        if (gc.karbonite() >= 60 && nearbyStructures.size() > 0 && nearbyWorkerCount < 3) {
+            if (nearestStructure != null && tryReplicateRotate(gc, unit, mapLocation.directionTo(nearestStructure), myHandler)) {
                 earthParent.incrementRobotCount(UnitType.Worker);
             } else {
                 for (Direction d : Utils.directions()) {
                     if (gc.canReplicate(id, d)) {
                         gc.replicate(id, d);     
+                        quickTurn(myHandler, unit);
                         earthParent.incrementRobotCount(UnitType.Worker);
                         break;
                     }
@@ -231,6 +237,24 @@ public class WorkerHandler extends UnitHandler {
                 previousLocation = mapLocation;
             }                                    
         }
+    }
+
+    private void quickTurn(Map<Integer, UnitHandler> myHandler, Unit unit) {
+        earthParent.pm.assignHandler(myHandler, unit);
+        myHandler.get(id).takeTurn(unit);        
+    }
+
+    private boolean tryReplicateRotate(GameController gc, Unit unit, Direction direction, Map<Integer, UnitHandler> myHandler) {
+        int index = Utils.directionList.indexOf(direction);
+        for (int i = 0; i < Utils.bigRotation.length; i++) {
+            Direction tryDirection = Utils.directionList.get((8 + index + Utils.bigRotation[i]) % 8);
+            if (gc.canReplicate(id, tryDirection)) {
+                gc.replicate(id, tryDirection);
+                quickTurn(myHandler, unit);
+                return true;
+            }
+        }
+        return false;
     }
 
     private Direction findMoveDirection(Unit unit) {        
