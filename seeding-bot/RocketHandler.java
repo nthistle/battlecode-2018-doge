@@ -82,15 +82,15 @@ public class RocketHandler extends UnitHandler {
     					if(di == 0 && dj == 0) continue;
     					int i = myLocation.getX() + di, j = myLocation.getY() + dj;
     					MapLocation thatLocation = new MapLocation(Planet.Earth, i, j);
-    					System.out.println(thatLocation);
+    					// System.out.println(thatLocation);
     					if(map.onMap(thatLocation) && map.isPassableTerrainAt(thatLocation) != 0) {
     						Direction newDir = myLocation.directionTo(thatLocation);
-    						System.out.println(newDir);
+    						// System.out.println(newDir);
     						this.warningMatrix[i][j] = newDir;
     					}
     				}
     			}
-    			System.out.println(Arrays.deepToString(this.warningMatrix));
+    			// System.out.println(Arrays.deepToString(this.warningMatrix));
     		}
     		if(this.launchCountDown <= 0 && gc.canLaunchRocket(this.id, this.dest)) {
     			int i = myLocation.getX(), j = myLocation.getY();
@@ -101,7 +101,7 @@ public class RocketHandler extends UnitHandler {
     					}catch(Exception e){}
     				}
     			}
-    			System.out.println(Arrays.deepToString(this.warningMatrix));
+    			// System.out.println(Arrays.deepToString(this.warningMatrix));
     			this.blastOff();
     			llh.addUsedMapLocation(this.getDestination());
     		}
