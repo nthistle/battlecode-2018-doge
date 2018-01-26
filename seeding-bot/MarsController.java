@@ -46,7 +46,7 @@ public class MarsController extends PlanetController
             for(int i = 0; i < allUnits.size(); i ++) {
                 // this is probably going to clog targetingmaster to high hell but who cares rn
                 Unit uu = allUnits.get(i);
-                if(uu.team() == enemyTeam && !uu.location().isInGarrison() && !uu.location().isInSpace() && uu.location().isOnPlanet(Planet.Earth)) {
+                if(uu.team() == enemyTeam && !uu.location().isInGarrison() && !uu.location().isInSpace() && uu.location().isOnPlanet(Planet.Mars)) {
                     tm.addTarget(uu.location().mapLocation());
                     break;
                 }
