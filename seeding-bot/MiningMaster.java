@@ -18,6 +18,7 @@ public class MiningMaster {
 	protected int[][] initialKarboniteLocations;
 	protected int[][] initialKarboniteLocationsOriginal;
 	protected List<Cluster> clusters;
+	protected int totalValue;
 	private int[] miningWorkerHandlers;
 	public static final int KARBONITE_THRESHOLD = 5;
 	public static final int KARBONITE_THRESHOLD_CLUSTER = 2;
@@ -327,6 +328,10 @@ public class MiningMaster {
 			this.parentController.pm.getPathFieldWithCache(end);
 		}
 
+		for(Cluster c : this.clusters) {
+			this.totalValue += c.value();
+		}
+
 		/*
 		System.out.println("Our top choices are " + topChoices);
 		System.out.println(Cluster.heuristic(this.clusters.get(0)));
@@ -338,6 +343,10 @@ public class MiningMaster {
 			System.out.println();
 		}
 		*/
+	}
+
+	public int totalValue() {
+		return this.totalValue;
 	}
 
 	public static class Comparators {
