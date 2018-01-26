@@ -41,6 +41,7 @@ public class EarthController extends PlanetController
     public boolean isSavingForRocket = false;
     public long rocketRequestRound = 0;
     public long rocketsBuilt = 0;
+    public int eworkerCount = 0;
 
     public void control() {
     
@@ -178,8 +179,9 @@ public class EarthController extends PlanetController
         double d;
         d = rng.nextDouble();
         // pointless to make anything but rangers right now, until other code is working
-        if(d < 0.2 && gc.round() > 150 && getRobotCount(UnitType.Ranger) > 10) return UnitType.Healer;
-        else {
+        if(d < 0.2 && gc.round() > 150 && getRobotCount(UnitType.Ranger) > 10) {
+            return UnitType.Healer;
+        } else {
             d = rng.nextDouble();
             if(d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) < 6) {
                 return UnitType.Worker;
@@ -249,6 +251,10 @@ public class EarthController extends PlanetController
             }
         }
     }
+
+    public int getEWorkerCount() {
+        return this.eworkerCount;
+    }
         
     public int getRobotCount(UnitType type) {
         return this.robotCount.get(type);
@@ -259,8 +265,11 @@ public class EarthController extends PlanetController
     }
 
     private void refreshRobotCount(VecUnit units) {
+        this.eworkerCount = 0;
         for(UnitType ut : UnitType.values()) {
             robotCount.put(ut, 0);
+            if(ut == UnitType.Worker && myHandler.get(ut.id()) instanceof WorkerHandler)
+                this.eworkerCount ++;
         }
         UnitType ut;
         for(int i = 0; i < units.size(); i ++) {
