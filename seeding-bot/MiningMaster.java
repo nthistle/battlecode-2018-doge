@@ -332,6 +332,10 @@ public class MiningMaster {
 			this.totalValue += c.value();
 		}
 
+		System.out.println("MiningMaster Status Update: ");
+		System.out.println(" Total Value: " + this.totalValue);
+		System.out.println(" # Clusters: " + this.clusters.size());
+
 		/*
 		System.out.println("Our top choices are " + topChoices);
 		System.out.println(Cluster.heuristic(this.clusters.get(0)));
