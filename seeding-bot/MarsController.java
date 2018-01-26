@@ -21,9 +21,7 @@ public class MarsController extends PlanetController
     }
 
     public PlanetMap map;
-    public Team enemyTeam;    
-
-    public HashMap<Integer, UnitHandler> myHandler;
+    public Team enemyTeam;
     
     public void control() {
     

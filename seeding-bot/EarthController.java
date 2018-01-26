@@ -26,7 +26,6 @@ public class EarthController extends PlanetController
     public Team enemyTeam;
     
     public Map<UnitType, Integer> robotCount = new EnumMap<UnitType, Integer>(UnitType.class);
-    public Map<Integer, UnitHandler> myHandler;
     public List<Queue<UnitType>> factoryBuildQueues = new ArrayList<Queue<UnitType>>();
 
     // public Queue<Integer> attackQueue = new LinkedList<Integer>();

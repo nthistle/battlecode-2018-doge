@@ -17,6 +17,8 @@ public abstract class PlanetController
     public final PathMaster pm;
     public final TargetingMaster tm;
 
+    public Map<Integer, UnitHandler> myHandler;
+
     public PlanetController(GameController gc, Random rng) {
         this.gc = gc;
         this.rng = rng;
