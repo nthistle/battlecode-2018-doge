@@ -195,7 +195,7 @@ public class EarthController extends PlanetController
             isSavingForRocket = true;            
             rocketRequestRound = gc.round();
         }        
-        if (gc.round() > rocketRequestRound + 15) {
+        if (gc.round() > rocketRequestRound + 40) {
             isSavingForRocket = false;
         }
     }
@@ -333,7 +333,7 @@ public class EarthController extends PlanetController
                 newHandler = new WorkerHandler(this, gc, unit.id(), rng);
                 break;
             case Rocket:
-                newHandler = new RocketHandler(this, gc, unit.id(), rng, this.llh, RocketHandler.FIRST_CONTACT_CREW);
+                newHandler = new RocketHandler(this, gc, unit.id(), rng, this.llh, llh.nextManifest());
                 addRocketRequestedUnits((RocketHandler)newHandler, unit);
                 break;
             case Healer:

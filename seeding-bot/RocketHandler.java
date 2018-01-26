@@ -8,12 +8,14 @@ public class RocketHandler extends UnitHandler {
 	public static final double[] TANKY_CREW = new double[] {0, 0.5, 0.5, 0, 0};
 	public static final double[] FIRST_CONTACT_CREW = new double[] {0.5, 0.5, 0, 0, 0};
 	public static final double[] ARTISTIC_CREW = new double[] {0, 0, 0, 0.5, 0.5}; //send in the wierder, more niche troops
+	public static final double[] META_CREW_1 = new double[] {0, 0.5, 0, 0, 0.5};
+	public static final double[] META_CREW_2 = new double[] {0, 0, 0.5, 0, 0.5};
+	public static final double[] META_CREW_3 = new double[] {0, 0, 0, 0.5, 0.5};
 	
 	public Map<UnitType, Integer> targetManifest;
     public Map<UnitType, Integer> stillNeeded;
 	public MapLocation dest;
 	public LaunchingLogicHandler llh;
-    public final boolean firstContact; 
 	
 	/**
 	 * generate a rocket handler for a rocket
@@ -24,17 +26,15 @@ public class RocketHandler extends UnitHandler {
     public RocketHandler(PlanetController parent, GameController gc, int id, Random rng, LaunchingLogicHandler llh, double[] manifest) {
         super(parent, gc, id, rng);
         
-        this.firstContact = manifest[0] > 0;
-        
         //parse the manifestj
         this.targetManifest = new EnumMap<UnitType, Integer>(UnitType.class);
         this.stillNeeded = new EnumMap<UnitType, Integer>(UnitType.class);
 
-        this.targetManifest.put(UnitType.Worker, (int) (gc.unit(this.id).structureMaxCapacity() * manifest[0]));
-        this.targetManifest.put(UnitType.Ranger, (int) (gc.unit(this.id).structureMaxCapacity() * manifest[1]));
-        this.targetManifest.put(UnitType.Knight, (int) (gc.unit(this.id).structureMaxCapacity() * manifest[2]));
-        this.targetManifest.put(UnitType.Mage  , (int) (gc.unit(this.id).structureMaxCapacity() * manifest[3]));
-        this.targetManifest.put(UnitType.Healer, (int) (gc.unit(this.id).structureMaxCapacity() * manifest[4]));
+        this.targetManifest.put(UnitType.Worker, (int)(gc.unit(this.id).structureMaxCapacity() * manifest[0]));
+        this.targetManifest.put(UnitType.Ranger, (int)(gc.unit(this.id).structureMaxCapacity() * manifest[1]));
+        this.targetManifest.put(UnitType.Knight, (int)(gc.unit(this.id).structureMaxCapacity() * manifest[2]));
+        this.targetManifest.put(UnitType.Mage  , (int)(gc.unit(this.id).structureMaxCapacity() * manifest[3]));
+        this.targetManifest.put(UnitType.Healer, (int)(gc.unit(this.id).structureMaxCapacity() * manifest[4]));
 
         for(UnitType key : this.targetManifest.keySet()) {
             this.stillNeeded.put(key, this.targetManifest.get(key));
@@ -60,7 +60,7 @@ public class RocketHandler extends UnitHandler {
     public void takeTurn(Unit unit) {
     	if(unit.structureIsBuilt() != 0) {
     		this.load();
-            this.setDestination(llh.optimalLandingLocation(this.firstContact));
+            this.setDestination(llh.optimalLandingLocation());
     		// System.out.println("Dest: " + this.getDestination());
     		if(this.shouldLaunch() && gc.canLaunchRocket(this.id, this.dest)) {
     			this.blastOff();
