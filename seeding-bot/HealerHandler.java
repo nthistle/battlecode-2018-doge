@@ -56,7 +56,7 @@ public class HealerHandler extends UnitHandler {
         		gc.heal(this.id, healTarget.id());
             }
         }
-        
+        System.out.println(myLocation);
         if(gc.isMoveReady(this.id)) {        	
         	Direction runAwayDir = getRunAwayDirection(gc.senseNearbyUnitsByTeam(myLocation, 50, enemy));
         	System.out.println(this.id + ": " + runAwayDir);
@@ -74,6 +74,7 @@ public class HealerHandler extends UnitHandler {
         		}
         	}
         }
+        System.out.println(unit.location().mapLocation());
     }
 
     public Direction getRandomDirection(MapLocation mapLocation, MapLocation targetLocation, PathMaster pm) {
@@ -117,6 +118,7 @@ public class HealerHandler extends UnitHandler {
     			}
     		}
     	}
+    	System.out.println(threatMap);
     	Direction ret = Direction.Center;
     	int maxIncomingDmg = 0;
     	for(Direction dir : threatMap.keySet()) {
