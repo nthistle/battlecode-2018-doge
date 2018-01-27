@@ -26,4 +26,10 @@ public abstract class UnitHandler {
     public void takeTurn(Unit unit) {
         this.takeTurn();
     }
+
+    // subclasses muts override this method, although usually it will
+    // be empty; this is for units that set various flags in the
+    // planet controller and need to set them back after they die 
+    // NB: this is called the round AFTER a unit dies
+    public abstract void handleDeath();
 }

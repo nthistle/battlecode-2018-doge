@@ -449,4 +449,6 @@ public class WorkerHandler extends UnitHandler {
         }
         return status;
     }
+
+    public void handleDeath() {}
 }

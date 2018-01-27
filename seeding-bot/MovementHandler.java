@@ -31,4 +31,6 @@ public class MovementHandler extends UnitHandler {
     	}
     	return false;
     }
+
+    public void handleDeath() {}
 }

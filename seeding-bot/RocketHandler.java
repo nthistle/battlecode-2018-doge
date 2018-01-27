@@ -228,8 +228,6 @@ public class RocketHandler extends UnitHandler {
     		else this.loadTroop(adjacent.get(i).id());
     	}
     }
-    
-   
-    
-    
+
+    public void handleDeath() {}
 }

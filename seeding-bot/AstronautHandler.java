@@ -42,4 +42,6 @@ public class AstronautHandler extends UnitHandler {
 	    	}
 	    }
     }
+
+    public void handleDeath() {}
 }

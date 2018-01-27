@@ -71,8 +71,6 @@ public class MarsRocketHandler extends UnitHandler {
     	}
     	return ret;
     }
-   
-    
-    
-    
+
+    public void handleDeath() {}
 }
