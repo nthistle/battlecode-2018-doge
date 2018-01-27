@@ -75,18 +75,18 @@ public class WorkerHandler extends UnitHandler {
             if (unitType == UnitType.Worker && myHandler.containsKey(allyUnit.id()) && myHandler.get(allyUnit.id()) instanceof WorkerHandler) {
                 nearbyWorkerCount++;
             } else if (unitType == UnitType.Factory || unitType == UnitType.Rocket) {                
+                MapLocation tryLocation = allyUnit.location().mapLocation();
+                if (!pm.isConnected(tryLocation, mapLocation)) {
+                    continue;
+                }
                 if (allyUnit.structureIsBuilt() == 1) {
                     nearbyBuiltStructureCount++;
                     continue;
-                }
-                nearbyStructures.add(allyUnit);
-                MapLocation tryLocation = allyUnit.location().mapLocation();
+                }                
+                nearbyStructures.add(allyUnit);                
                 long distance;                
                 if (gc.round() < 50) {
                     PathField path = pm.getPathFieldWithCache(tryLocation);
-                    if (!path.isPointSet(mapLocation)) {
-                        continue;
-                    }
                     distance = path.getDistanceAtPoint(mapLocation);
                 } else {
                     distance = mapLocation.distanceSquaredTo(tryLocation);

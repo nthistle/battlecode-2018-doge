@@ -38,8 +38,7 @@ public class EarthController extends PlanetController
 
     public int amLoadingRocket = 0;
 
-    public boolean noEnemies = true;
-    public long maxUnits = Integer.MAX_VALUE;
+    public boolean noEnemies = true;    
 
     public boolean isSavingForFactory = false;
     public long factoryRequestRound = 0;
@@ -223,7 +222,7 @@ public class EarthController extends PlanetController
     }
 
     private void updateFactoryBuildQueues(Map<Integer,UnitHandler> myHandler, VecUnit units) {
-        if (noEnemies && getRobotCount(UnitType.Ranger) + getRobotCount(UnitType.Healer) > maxUnits) {
+        if (noEnemies && tm.targets.size() <= 1) {
             return;
         }
 
@@ -252,7 +251,6 @@ public class EarthController extends PlanetController
     private UnitType getRandomBasePhaseUnit() {
         double d;
         d = rng.nextDouble();
-        // pointless to make anything but rangers right now, until other code is working
         if(d < 0.35 && gc.round() > 150 && getRobotCount(UnitType.Ranger) > 10) {
             return UnitType.Healer;
         } else {
@@ -369,8 +367,7 @@ public class EarthController extends PlanetController
     // initialize global values
     private void globalValues() {
         enemyTeam = Utils.getOtherTeam(gc.team());
-        map = gc.startingMap(Planet.Earth);        
-        maxUnits = (long)(Math.max((int)map.getHeight(), (int)map.getWidth()) * 3.5);
+        map = gc.startingMap(Planet.Earth);                
     }
 
     public void takeTurnByType(Map<Integer,UnitHandler> myHandler, VecUnit units, UnitType unitType) {
@@ -378,10 +375,9 @@ public class EarthController extends PlanetController
         UnitHandler uh;
         for(int i = 0; i < units.size(); i ++) {
             unit = units.get(i);
-            if (unitType ==UnitType.Worker) {
-            System.out.println(unitType + " " + unit.id());
-                
-            }
+            // if (unitType == UnitType.Worker) {
+            //     System.out.println(unitType + " " + unit.id());
+            // }
             if(unit.unitType() == unitType && !unit.location().isInGarrison() && !unit.location().isInSpace()) {
                 uh = myHandler.get(unit.id());
                 if(uh != null) uh.takeTurn(unit);
