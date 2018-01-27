@@ -1,12 +1,11 @@
 import bc.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 public class TargetingMaster
 {
 	private GameController gc;
 	public ArrayList<MapLocation> targets;
-	public HashSet<String> initial = new HashSet<String>();
+	public ArrayList<String> initial = new ArrayList<String>();
 
 	public TargetingMaster(GameController gc) {
 		this.gc = gc;
