@@ -41,8 +41,7 @@ public class MiningWorkerHandler extends UnitHandler {
         //TODO change if necessary
         if(!hasTarget()) {
             m.assignTarget(this);
-        }
-        
+        }        
 
         MapLocation mapLocation = unit.location().mapLocation();
         if(this.target != null) {
@@ -70,7 +69,7 @@ public class MiningWorkerHandler extends UnitHandler {
         } 
 
         if(this.target == null)
-            return;
+            return;        
 
         boolean didHarvest = doHarvest(unit);
         Cluster c = m.clusterMap[target.getX()][target.getY()];
@@ -78,7 +77,15 @@ public class MiningWorkerHandler extends UnitHandler {
         if(!didHarvest && f != null && f.clusterMaxima.equals(c.clusterMaxima)) {
             Cluster a = this.m.clusterMap[mapLocation.getX()][mapLocation.getY()];
             //WE WANT TO MOVE TO A RANDOM JOINT IN THE CLUSTER
-            //FIXXXXXX
+            //FIXXXXXX            
+            if (a.members.size() == 1) {
+                Point last = a.members.get(0);
+                int money = (int)gc.karboniteAt(new MapLocation(parent.getPlanet(), last.x, last.y));
+                if (money == 0) {
+                    m.initialKarboniteLocationsOriginal[last.x][last.y] = 0;
+                    m.updateIndividual(last, money);
+                }
+            }
             if(a.members.size() == 0) {
                 System.out.println("Line 83: We don't have any more members in cluster");
                 Point oldCluster = this.m.clusterMap[mapLocation.getX()][mapLocation.getY()].clusterMaxima;

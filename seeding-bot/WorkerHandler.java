@@ -19,6 +19,8 @@ public class WorkerHandler extends UnitHandler {
     private EarthController earthParent;
     private MapLocation previousLocation;
 
+    public boolean solo = false;
+
     public WorkerHandler(PlanetController parent, GameController gc, int id, Random rng) {
         super(parent, gc, id, rng);
         earthParent = (EarthController)parent;
@@ -49,8 +51,8 @@ public class WorkerHandler extends UnitHandler {
         Team enemyTeam = earthParent.enemyTeam;
         TargetingMaster tm = earthParent.tm;        
         PathMaster pm = earthParent.pm;
-        Map<Integer, UnitHandler> myHandler = earthParent.myHandler;
-        Map<UnitType, Integer> robotCount = earthParent.robotCount;        
+        MiningMaster mm = earthParent.mm;
+        Map<Integer, UnitHandler> myHandler = earthParent.myHandler;        
         
         // status markers        
         boolean busy = false;
@@ -64,29 +66,27 @@ public class WorkerHandler extends UnitHandler {
         // store them as well as precompute nearest
         int nearbyBuiltStructureCount = 0;
         int nearbyWorkerCount = 0;
-        int nearbyTroopCount = 0;
-        PathField structurePath = null;
+        int nearbyTroopCount = 0;        
         MapLocation nearestStructure = null;
         long nearestDistance = Long.MAX_VALUE;
         for (int i = 0; i < nearbyAllies.size(); i++) {
             Unit allyUnit = nearbyAllies.get(i);
             UnitType unitType = allyUnit.unitType();
-            if (unitType == UnitType.Worker) {
+            if (unitType == UnitType.Worker && myHandler.containsKey(allyUnit.id()) && myHandler.get(allyUnit.id()) instanceof WorkerHandler) {
                 nearbyWorkerCount++;
             } else if (unitType == UnitType.Factory || unitType == UnitType.Rocket) {                
+                MapLocation tryLocation = allyUnit.location().mapLocation();
+                if (!pm.isConnected(tryLocation, mapLocation)) {
+                    continue;
+                }
                 if (allyUnit.structureIsBuilt() == 1) {
                     nearbyBuiltStructureCount++;
                     continue;
-                }
-                nearbyStructures.add(allyUnit);
-                MapLocation tryLocation = allyUnit.location().mapLocation();
-                long distance;
-                PathField path = null;
+                }                
+                nearbyStructures.add(allyUnit);                
+                long distance;                
                 if (gc.round() < 50) {
-                    path = pm.getPathFieldWithCache(tryLocation);
-                    if (!path.isPointSet(mapLocation)) {
-                        continue;
-                    }
+                    PathField path = pm.getPathFieldWithCache(tryLocation);
                     distance = path.getDistanceAtPoint(mapLocation);
                 } else {
                     distance = mapLocation.distanceSquaredTo(tryLocation);
@@ -94,29 +94,42 @@ public class WorkerHandler extends UnitHandler {
                 if (nearestStructure == null || distance < nearestDistance) {
                     nearestStructure = tryLocation;
                     nearestDistance = distance;
-                    if (gc.round() < 50) {
-                        structurePath = path;   
-                    }                    
                 }                    
-            } else {
+            } else if (unitType != UnitType.Worker) {
                 nearbyTroopCount++;
             }
         }
-
-        // if building commit and replicate until 3 workers are present at site
-        if (gc.karbonite() >= 60 && nearbyStructures.size() > 0 && nearbyWorkerCount < 3) {
-            if (nearestStructure != null && tryReplicateRotate(gc, unit, mapLocation.directionTo(nearestStructure), myHandler)) {
-                earthParent.incrementRobotCount(UnitType.Worker);
-            } else {
-                for (Direction d : Utils.directions()) {
-                    if (gc.canReplicate(id, d)) {
-                        gc.replicate(id, d);     
-                        quickTurn(myHandler, unit);
-                        earthParent.incrementRobotCount(UnitType.Worker);
-                        break;
-                    }
+        
+        if (gc.karbonite() >= 60 && solo) {
+            for (Direction d : Utils.directions()) {
+                if (gc.canReplicate(id, d)) {
+                    gc.replicate(id, d);     
+                    quickTurn(gc, myHandler, mapLocation.add(d), true, mm);
+                    earthParent.incrementRobotCount(UnitType.Worker);
+                    done = true;
+                    solo = false;
+                    break;
                 }
             }
+        }
+
+        if (gc.karbonite() >= 60 
+            && (((!solo && nearbyBuiltStructureCount == 0 
+                && ((earthParent.getEWorkerCount() < 3) 
+                || (earthParent.getEWorkerCount() == 3 && nearbyWorkerCount < 3) 
+                || (earthParent.getEWorkerCount() == 4 && nearbyWorkerCount == 2)))
+            || (nearbyStructures.size() >= 1 && nearbyWorkerCount < 5)))) {
+            // || (earthParent.getRobotCount(UnitType.Factory) >= 4 && nearbyWorkerCount < 3))) {                         
+            for (Direction d : Utils.directions()) {                
+                if (gc.canReplicate(id, d)) {
+                    gc.replicate(id, d);     
+                    quickTurn(gc, myHandler, mapLocation.add(d), false, mm);
+                    earthParent.incrementEWorkerCount();
+                    earthParent.incrementRobotCount(UnitType.Worker);
+                    done = true;
+                    break;
+                }
+            }            
         }
     
         // potential balancing needed here: stop committing to build if completely outnumbered
@@ -154,20 +167,24 @@ public class WorkerHandler extends UnitHandler {
 
         // if within attack range of enemy
         // don't try to assist in building and run in opposite direction
-        if (!busy && nearestThreat != null && robotCount.get(UnitType.Factory) != 0 && Utils.tryMoveRotate(gc, id, nearestThreat.directionTo(mapLocation))) {
+        if (!busy && nearestThreat != null && earthParent.getRobotCount(UnitType.Factory) != 0 && Utils.tryMoveRotate(gc, id, nearestThreat.directionTo(mapLocation))) {
             busy = true;            
             previousLocation = mapLocation;
         }
 
         // if cannot build but there are nearby structures move towards them
-        if (!busy && nearestStructure != null) {
-            if (gc.round() < 50 && Utils.tryMoveRotate(gc, id, structurePath.getDirectionAtPoint(mapLocation))) {
-                busy = true;
-                previousLocation = mapLocation;
-            } else if (Utils.tryMoveRotate(gc, id, mapLocation.directionTo(nearestStructure))) {
-                busy = true;
-                previousLocation = mapLocation;
+        if (!busy && nearestStructure != null && gc.isMoveReady(id)) {
+            // System.out.println(nearestStructure);
+            if (pm.isCached(nearestStructure)) {
+                PathField structurePath = pm.getPathFieldWithCache(nearestStructure);
+                if (structurePath.isPointSet(mapLocation)) {
+                    Utils.tryMoveRotate(gc, id, structurePath.getDirectionAtPoint(mapLocation));
+                }
+            } else {
+                bug.bugMove(mapLocation, nearestStructure);
             }
+            busy = true;
+            previousLocation = mapLocation;
         }
 
         // simple rocket build code
@@ -183,9 +200,8 @@ public class WorkerHandler extends UnitHandler {
             }                    
         }        
 
-        // if conditions are appropriate blueprint factory
-        long totalStructures = nearbyStructures.size() + nearbyBuiltStructureCount;
-        if (!busy && gc.karbonite() >= 200 && (earthParent.getRobotCount(UnitType.Factory) == 0 || (earthParent.getRobotCount(UnitType.Factory) < 3 && nearbyWorkerCount > 1) || (earthParent.getRobotCount(UnitType.Factory) >= 3 && totalStructures == 0) || totalStructures > 0)) {
+        // if conditions are appropriate blueprint factory        
+        if (!busy && gc.karbonite() >= 200 && nearbyStructures.size() == 0 && (earthParent.getRobotCount(UnitType.Factory) == 0 || (earthParent.getRobotCount(UnitType.Factory) < 3 && nearbyWorkerCount >= 3) || (earthParent.getRobotCount(UnitType.Factory) >= 3 && nearbyBuiltStructureCount == 0))) {
             Direction buildDirection = findBuildDirection(unit);
             if (buildDirection != null && gc.canBlueprint(id, UnitType.Factory, buildDirection)) {
                 gc.blueprint(id, UnitType.Factory, buildDirection);
@@ -194,7 +210,20 @@ public class WorkerHandler extends UnitHandler {
                 busy = true;
                 done = true;                
             }
-        }                
+        }
+
+        if (!busy && gc.isMoveReady(id)) {
+            int total = 0;
+            int startX = mapLocation.getX() - 7;
+            int startY = mapLocation.getY() - 7;
+            int endX = startX + 14;
+            int endY = startY + 14;
+            for (int x = startX; x <= endX; x++) {
+                for (int y = startY; y <= endY; y++) {
+                                        
+                }
+            }
+        }
 
         if (!done) {
             Direction harvestDirection = null;            
@@ -233,37 +262,43 @@ public class WorkerHandler extends UnitHandler {
 
         // if has nothing to do move to most empty areas
         if (!busy) {            
-            Direction moveDirection = findMoveDirection(unit);
+            Direction moveDirection = findMoveDirection(mapLocation);
             if (moveDirection != null && Utils.tryMoveRotate(gc, id, moveDirection)) {
                 previousLocation = mapLocation;
             }                                    
         }
     }
 
-    private void quickTurn(Map<Integer, UnitHandler> myHandler, Unit unit) {
-        earthParent.assignHandler(myHandler, unit);
-        myHandler.get(id).takeTurn(unit);        
+    private void quickTurn(GameController gc, Map<Integer, UnitHandler> myHandler, MapLocation newLocation, boolean mining, MiningMaster mm) {
+        Unit newWorker = gc.senseUnitAtLocation(newLocation);
+        int newId = newWorker.id();        
+        if (mining) {
+            myHandler.put(newId, new MiningWorkerHandler(earthParent, gc, newId, rng, mm));
+        } else {
+            myHandler.put(newId, new WorkerHandler(earthParent, gc, newId, rng));
+        }        
+        myHandler.get(newId).takeTurn(newWorker);
     }
 
-    private boolean tryReplicateRotate(GameController gc, Unit unit, Direction direction, Map<Integer, UnitHandler> myHandler) {
-        int index = Utils.directionList.indexOf(direction);
-        for (int i = 0; i < Utils.bigRotation.length; i++) {
-            Direction tryDirection = Utils.directionList.get((8 + index + Utils.bigRotation[i]) % 8);
-            if (gc.canReplicate(id, tryDirection)) {
-                gc.replicate(id, tryDirection);
-                quickTurn(myHandler, unit);
-                return true;
-            }
-        }
-        return false;
-    }
+    // private boolean tryReplicateRotate(GameController gc, MapLocation mapLocation, Direction direction, Map<Integer, UnitHandler> myHandler) {
+    //     int index = Utils.directionList.indexOf(direction);
+    //     for (int i = 0; i < Utils.bigRotation.length; i++) {
+    //         Direction tryDirection = Utils.directionList.get((8 + index + Utils.bigRotation[i]) % 8);
+    //         if (gc.canReplicate(id, tryDirection)) {
+    //             gc.replicate(id, tryDirection);
+    //             quickTurn(gc, myHandler, mapLocation.add(tryDirection));
+    //             return true;
+    //         }
+    //     }
+    //     return false;
+    // }
 
-    private Direction findMoveDirection(Unit unit) {        
+    private Direction findMoveDirection(MapLocation mapLocation) {
         HashSet<MapLocation> tried = new HashSet<MapLocation>();
-        Direction harvestDirection = null;
+        Direction tryDirection = null;
         int mostEmpty = 0;
         for (Direction d : Utils.directionList) {                        
-            MapLocation tryLocation = unit.location().mapLocation().add(d);
+            MapLocation tryLocation = mapLocation.add(d);
             if (previousLocation != null && tryLocation.equals(previousLocation)) {
                 continue;
             }
@@ -275,19 +310,19 @@ public class WorkerHandler extends UnitHandler {
                         empty++;
                     }
                 }                
-                if (harvestDirection == null || (empty > mostEmpty || (empty == mostEmpty && rng.nextBoolean()))) {
-                    harvestDirection = d;
+                if (tryDirection == null || (empty > mostEmpty || (empty == mostEmpty && rng.nextBoolean()))) {
+                    tryDirection = d;
                     mostEmpty = empty;
                 }
             }            
         }
-        return harvestDirection;
+        return tryDirection;
     }
 
     private Direction findBuildDirection(Unit unit) {
         HashSet<MapLocation> tried = new HashSet<MapLocation>();
         HashSet<MapLocation> triedTried = new HashSet<MapLocation>();
-        Direction harvestDirection = null;
+        Direction tryDirection = null;
         int mostEmpty = 0;                        
         for (Direction d : Utils.directionList) {
             MapLocation tryLocation = unit.location().mapLocation().add(d);
@@ -302,13 +337,13 @@ public class WorkerHandler extends UnitHandler {
                         empty++;
                     } 
                 }                
-                if (harvestDirection == null || (empty > mostEmpty || (empty == mostEmpty && rng.nextBoolean()))) {
-                    harvestDirection = d;
+                if (tryDirection == null || (empty > mostEmpty || (empty == mostEmpty && rng.nextBoolean()))) {
+                    tryDirection = d;
                     mostEmpty = empty;
                 }
             }            
         }        
-        return harvestDirection;
+        return tryDirection;
     }
 
     private boolean testBuildLocation(MapLocation location, Direction direction, HashSet<MapLocation> triedTried) {
