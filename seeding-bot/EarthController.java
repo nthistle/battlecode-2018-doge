@@ -263,14 +263,13 @@ public class EarthController extends PlanetController
 
     private UnitType getRandomBasePhaseUnit() {
         double d;
+        // d = rng.nextDouble();
+        // if(d < 0.35 && gc.round() > 150 && getRobotCount(UnitType.Ranger) > 10) {
+        //     return UnitType.Healer;
+        // } else {
         d = rng.nextDouble();
-        if(d < 0.35 && gc.round() > 150 && getRobotCount(UnitType.Ranger) > 10) {
-            return UnitType.Healer;
-        } else {
-            d = rng.nextDouble();
-            if(gc.round() < 150 && d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) - eworkerCount < 6) {
-                return UnitType.Worker;
-            }
+        if(gc.round() < 150 && d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) - eworkerCount < 6) {
+            return UnitType.Worker;
         }
         return UnitType.Ranger;
     }
