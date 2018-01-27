@@ -97,7 +97,13 @@ public class WorkerHandler extends UnitHandler {
             }
         }
         
-        if (gc.karbonite() >= 60 && (earthParent.getEWorkerCount())((nearbyWorkerCount > 1 && nearbyWorkerCount < 3 && (earthParent.getRobotCount(UnitType.Factory) == 0 || (earthParent.getRobotCount(UnitType.Factory) >= 3 && nearbyBuiltStructureCount == 0))) || (nearbyStructures.size() > 0 && nearbyWorkerCount < 5))) {
+        if (gc.karbonite() >= 60 
+            && ((earthParent.getRobotCount(UnitType.Factory) == 0 
+                && ((earthParent.getEWorkerCount() < 3) 
+                || (earthParent.getEWorkerCount() == 3 && nearbyWorkerCount < 3) 
+                || (earthParent.getEWorkerCount() == 4 && nearbyWorkerCount == 2)))
+            || (nearbyStructures.size() >= 1 && nearbyWorkerCount < 5)
+            || (earthParent.getRobotCount(UnitType.Factory) >= 4 && nearbyWorkerCount < 3))) { 
             for (Direction d : Utils.directions()) {
                 if (gc.canReplicate(id, d)) {
                     gc.replicate(id, d);     
