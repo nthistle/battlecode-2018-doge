@@ -1,26 +1,19 @@
 import bc.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.ListIterator;
-import java.util.Random;
-import java.util.Queue;
+import java.util.*;
 
 public class HealerHandler extends UnitHandler {
 	public Team enemy; 
 	public MapLocation myLocation;
-	public static final Map<Direction, Integer> threatVec;
+	public Map<Direction, Integer> threatMap;
     public HealerHandler(PlanetController parent, GameController gc, int id, Random rng) {
         super(parent, gc, id, rng);
         enemy = ((EarthController)parent).enemyTeam;
         myLocation = gc.unit(id).location().mapLocation();
-        threatVec = new EnumMap<Direction, Integer>(Direction);
+        threatMap = new EnumMap<Direction, Integer>(Direction.class);
         for(Direction dir : Direction.values()) {
         	if(dir == Direction.Center) continue;
         	else {
-        		threatVec.put(dir, 0);
+        		threatMap.put(dir, 0);
         	}
         }
     }
@@ -52,7 +45,7 @@ public class HealerHandler extends UnitHandler {
         PathMaster pm = earthParent.pm;
         // Queue<Integer> attackTargets = earthParent.attackTargets;
         
-    	VecUnit nearby = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), gc.team()); //only those that i can help... 
+    	VecUnit nearby = gc.senseNearbyUnitsByTeam(myLocation, unit.visionRange(), gc.team()); //only those that i can help... 
         ArrayList<Unit> nearbyAttackers = new ArrayList<Unit>();
         ArrayList<Unit> nearbyPassive = new ArrayList<Unit>();
         load(nearby, nearbyAttackers, nearbyPassive);        
@@ -66,17 +59,18 @@ public class HealerHandler extends UnitHandler {
         
         if(gc.isMoveReady(this.id)) {        	
         	Direction runAwayDir = getRunAwayDirection(gc.senseNearbyUnitsByTeam(myLocation, 50, enemy));
+        	System.out.println(this.id + ": " + runAwayDir);
         	if(runAwayDir != Direction.Center) 
         		Utils.tryMoveWiggleRecur(gc, id, runAwayDir, null);
         	else {
         		Unit moveTarget = getMostHurt(nearbyAttackers, unit.visionRange());
-        		Direction moveDir = moveTarget != null ? mapLocation.directionTo(moveTarget.location().mapLocation()) : null;
+        		Direction moveDir = moveTarget != null ? myLocation.directionTo(moveTarget.location().mapLocation()) : null;
         		if(moveDir != null) {
         			Utils.tryMoveWiggleRecur(gc, this.id, moveDir, null);
         		}
         		else {
-        			MapLocation target = getTarget(mapLocation, unit.visionRange(), enemyTeam, tm);
-        			if(target != null) Utils.tryMoveRotate(gc, this.id, mapLocation.directionTo(target));
+        			MapLocation target = getTarget(myLocation, unit.visionRange(), enemyTeam, tm);
+        			if(target != null) Utils.tryMoveRotate(gc, this.id, myLocation.directionTo(target));
         		}
         	}
         }
@@ -87,47 +81,47 @@ public class HealerHandler extends UnitHandler {
         return dirs[rng.nextInt(dirs.length)];
     }
     
-    public getRunAwayDirection(VecUnit threats) {
-    	for(Direction dir : threats.keySet()) {
-    		threats.put(dir, 0);
+    public Direction getRunAwayDirection(VecUnit threats) {
+    	for(Direction dir : threatMap.keySet()) {
+    		threatMap.put(dir, 0);
     	}
     	for(int i = 0; i < threats.size(); i++) {
     		Unit bih = threats.get(i);
     		MapLocation bihLoc = bih.location().mapLocation();
     		UnitType bihType = bih.unitType();
-    		int dist = myLocation.distanceSquaredTo(bihLoc);
-    		Direction attackDir = myLocation.subtract(bihLoc);
+    		int dist = (int)myLocation.distanceSquaredTo(bihLoc);
+    		Direction dir = bihLoc.directionTo(myLocation);
     		if(bihType == UnitType.Ranger) {
     			if(dist >= 10 && dist <= 50) {
-    				threats.put(dir, threats.get(dir) + 30);
+    				threatMap.put(dir, threatMap.get(dir) + 30);
     			}
     		}
     		else if(bihType == UnitType.Knight) {
     			if(dist <= 2) {
-    				threats.put(dir, threats.get(dir) + 80);
+    				threatMap.put(dir, threatMap.get(dir) + 80);
     			}
     		}
     		else if(bihType == UnitType.Mage) {
     			if(dist <= 30) {
-    				threats.put(dir, threats.get(dir) + 105); 
+    				threatMap.put(dir, threatMap.get(dir) + 105); 
     			}
     		}
     		else if(bihType == UnitType.Healer || bihType == UnitType.Worker) {
     			if(dist <= 50) {
-    				threats.put(dir, threats.get(dir) + 30); //i mean, we need to run away from enemy healers & workers, just not very fast
+    				threatMap.put(dir, threatMap.get(dir) + 30); //i mean, we need to run away from enemy healers & workers, just not very fast
     			}
     		}
     		else if(bihType == UnitType.Rocket || bihType == UnitType.Rocket) {
     			if(dist <= 50) {
-    				threats.put(dir, threats.get(dir) + 25 * () / 5); //weigh danger by distance past 30. 
+    				threatMap.put(dir, threatMap.get(dir) + 5 * (50 - dist)); //weigh danger by distance past 30 as f(dist) = 5 * (50 - dist) 
     			}
     		}
     	}
     	Direction ret = Direction.Center;
     	int maxIncomingDmg = 0;
-    	for(Direction dir : threats.keySet()) {
-    		if(threats.get(dir) > maxIncomingDmg) {
-    			maxIncomingDmg = threats.get(dir);
+    	for(Direction dir : threatMap.keySet()) {
+    		if(threatMap.get(dir) > maxIncomingDmg) {
+    			maxIncomingDmg = threatMap.get(dir);
     			ret = dir;
     		}
     	}

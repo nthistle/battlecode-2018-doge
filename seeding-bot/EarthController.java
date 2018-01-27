@@ -208,11 +208,11 @@ public class EarthController extends PlanetController
         double d;
         d = rng.nextDouble();
         // pointless to make anything but rangers right now, until other code is working
-        if(d < 0.2 && gc.round() > 150 && getRobotCount(UnitType.Ranger) > 10) {
+        if(d < 0.35 && gc.round() > 150 && getRobotCount(UnitType.Ranger) > 10) {
             return UnitType.Healer;
         } else {
             d = rng.nextDouble();
-            if(d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) < 6) {
+            if(d < 0.45 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) < 6) {
                 return UnitType.Worker;
             }
             return UnitType.Ranger;
