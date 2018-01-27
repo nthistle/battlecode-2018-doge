@@ -19,7 +19,7 @@ public class WorkerHandler extends UnitHandler {
     private EarthController earthParent;
     private MapLocation previousLocation;
 
-    public boolean isThereMoney = false;
+    public boolean solo = false;
 
     public WorkerHandler(PlanetController parent, GameController gc, int id, Random rng) {
         super(parent, gc, id, rng);
@@ -51,6 +51,7 @@ public class WorkerHandler extends UnitHandler {
         Team enemyTeam = earthParent.enemyTeam;
         TargetingMaster tm = earthParent.tm;        
         PathMaster pm = earthParent.pm;
+        MiningMaster mm = earthParent.mm;
         Map<Integer, UnitHandler> myHandler = earthParent.myHandler;        
         
         // status markers        
@@ -99,19 +100,37 @@ public class WorkerHandler extends UnitHandler {
             }
         }
         
+        // if (solo && (nearbyStructures.size() >= 1 || earthParent.getRobotCount(UnitType.Factory) >= 1)) {
+        //     solo = false;
+        // }
+
+        if (gc.karbonite() >= 60 && solo) {
+            for (Direction d : Utils.directions()) {
+                if (gc.canReplicate(id, d)) {
+                    gc.replicate(id, d);     
+                    quickTurn(gc, myHandler, mapLocation.add(d), true, mm);
+                    earthParent.incrementRobotCount(UnitType.Worker);
+                    done = true;
+                    solo = false;
+                    break;
+                }
+            }
+        }
+
         if (gc.karbonite() >= 60 
-            && ((earthParent.getRobotCount(UnitType.Factory) == 0 
+            && (((!solo && earthParent.getRobotCount(UnitType.Factory) == 0 
                 && ((earthParent.getEWorkerCount() < 3) 
                 || (earthParent.getEWorkerCount() == 3 && nearbyWorkerCount < 3) 
                 || (earthParent.getEWorkerCount() == 4 && nearbyWorkerCount == 2)))
-            || (isThereMoney && nearbyStructures.size() >= 1 && nearbyWorkerCount < 5)
-            || (earthParent.getRobotCount(UnitType.Factory) >= 4 && nearbyWorkerCount < 3))) { 
+            || (nearbyStructures.size() >= 1 && nearbyWorkerCount < 5)))) {
+            // || (earthParent.getRobotCount(UnitType.Factory) >= 4 && nearbyWorkerCount < 3))) { 
             System.out.println(nearbyWorkerCount + " " + earthParent.getRobotCount(UnitType.Worker) + " " + earthParent.getEWorkerCount());
             for (Direction d : Utils.directions()) {
                 if (gc.canReplicate(id, d)) {
                     gc.replicate(id, d);     
-                    quickTurn(gc, myHandler, mapLocation.add(d));
+                    quickTurn(gc, myHandler, mapLocation.add(d), false, mm);
                     earthParent.incrementEWorkerCount();
+                    earthParent.incrementRobotCount(UnitType.Worker);
                     done = true;
                     break;
                 }
@@ -255,25 +274,30 @@ public class WorkerHandler extends UnitHandler {
         }
     }
 
-    private void quickTurn(GameController gc, Map<Integer, UnitHandler> myHandler, MapLocation newLocation) {
+    private void quickTurn(GameController gc, Map<Integer, UnitHandler> myHandler, MapLocation newLocation, boolean mining, MiningMaster mm) {
         Unit newWorker = gc.senseUnitAtLocation(newLocation);
         int newId = newWorker.id();
-        myHandler.put(newId, new WorkerHandler(earthParent, gc, newId, rng));
+        System.out.println("replicate: " + mining);
+        if (mining) {
+            myHandler.put(newId, new MiningWorkerHandler(earthParent, gc, newId, rng, mm));
+        } else {
+            myHandler.put(newId, new WorkerHandler(earthParent, gc, newId, rng));
+        }        
         myHandler.get(newId).takeTurn(newWorker);
     }
 
-    private boolean tryReplicateRotate(GameController gc, MapLocation mapLocation, Direction direction, Map<Integer, UnitHandler> myHandler) {
-        int index = Utils.directionList.indexOf(direction);
-        for (int i = 0; i < Utils.bigRotation.length; i++) {
-            Direction tryDirection = Utils.directionList.get((8 + index + Utils.bigRotation[i]) % 8);
-            if (gc.canReplicate(id, tryDirection)) {
-                gc.replicate(id, tryDirection);
-                quickTurn(gc, myHandler, mapLocation.add(tryDirection));
-                return true;
-            }
-        }
-        return false;
-    }
+    // private boolean tryReplicateRotate(GameController gc, MapLocation mapLocation, Direction direction, Map<Integer, UnitHandler> myHandler) {
+    //     int index = Utils.directionList.indexOf(direction);
+    //     for (int i = 0; i < Utils.bigRotation.length; i++) {
+    //         Direction tryDirection = Utils.directionList.get((8 + index + Utils.bigRotation[i]) % 8);
+    //         if (gc.canReplicate(id, tryDirection)) {
+    //             gc.replicate(id, tryDirection);
+    //             quickTurn(gc, myHandler, mapLocation.add(tryDirection));
+    //             return true;
+    //         }
+    //     }
+    //     return false;
+    // }
 
     private Direction findMoveDirection(MapLocation mapLocation) {
         HashSet<MapLocation> tried = new HashSet<MapLocation>();

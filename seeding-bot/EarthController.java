@@ -137,35 +137,48 @@ public class EarthController extends PlanetController
         VecUnit units = gc.myUnits();                
         for (int i = 0; i < units.size(); i++) {            
             Unit unit = units.get(i);
-            MapLocation tempLocation = unit.location().mapLocation();
-            VecUnit nearby = gc.senseNearbyUnitsByTeam(tempLocation, unit.visionRange(), gc.team());
-            boolean finished = false;
-            for (int j = 0; j < nearby.size(); j++) {
-                if (pm.isConnected(tempLocation, nearby.get(j).location().mapLocation())) {
-                    myHandler.put(unit.id(), new WorkerHandler(this, gc, unit.id(), rng));
-                    finished = true;
-                    break;
-                }
-            }
-            if (finished) {
+            if (myHandler.containsKey(unit.id())) {
                 continue;
-            }            
+            }
+            MapLocation tempLocation = unit.location().mapLocation();            
             int startX = tempLocation.getX() - 7;
             int startY = tempLocation.getY() - 7;
             int endX = startX + 14;
             int endY = startY + 14;
+            int[][] tempMoney = mm.initialKarboniteLocationsOriginal;
+            int totalMoney = 0;            
             for (int x = startX; x <= endX; x++) {
-                for (int y = startY; y <= endY; y++) {
-                    int[][] tempMoney = mm.initialKarboniteLocationsOriginal();
+                for (int y = startY; y <= endY; y++) {                    
                     if (x >= 0 && x < tempMoney.length && y >= 0 && y < tempMoney[0].length && tempLocation.isWithinRange(unit.visionRange(), new MapLocation(Planet.Earth, x, y))) {
-                        finished = true;
-                        break;
+                        totalMoney += tempMoney[x][y];                        
                     }                    
                 }
             }
-            if (finished) {
-                continue;
-            }
+            if (totalMoney >= 50) {
+                myHandler.put(unit.id(), new WorkerHandler(this, gc, unit.id(), rng));
+            } else {
+                if (units.size() == 1) {
+                    myHandler.put(unit.id(), new WorkerHandler(this, gc, unit.id(), rng));
+                    ((WorkerHandler)myHandler.get(unit.id())).solo = true;                    
+                } else {
+                    VecUnit nearby = gc.senseNearbyUnitsByTeam(tempLocation, unit.visionRange(), gc.team());
+                    if (nearby.size() == 1) {
+                        myHandler.put(unit.id(), new MiningWorkerHandler(this, gc, unit.id(), rng, mm));
+                    } else {
+                        myHandler.put(unit.id(), new WorkerHandler(this, gc, unit.id(), rng));
+                        for (int j = 0; j < nearby.size(); j++) {
+                            Unit nearbyUnit = nearby.get(j);
+                            if (unit.id() == nearbyUnit.id()) {
+                                continue;
+                            }
+                            if (pm.isConnected(tempLocation, nearbyUnit.location().mapLocation())) {
+                                myHandler.put(nearbyUnit.id(), new MiningWorkerHandler(this, gc, unit.id(), rng, mm));
+                            }
+                        }                        
+                    }
+                }
+                            
+            }            
         }
     }
 
@@ -366,6 +379,10 @@ public class EarthController extends PlanetController
         UnitHandler uh;
         for(int i = 0; i < units.size(); i ++) {
             unit = units.get(i);
+            if (unitType ==UnitType.Worker) {
+            System.out.println(unitType + " " + unit.id());
+                
+            }
             if(unit.unitType() == unitType && !unit.location().isInGarrison() && !unit.location().isInSpace()) {
                 uh = myHandler.get(unit.id());
                 if(uh != null) uh.takeTurn(unit);
