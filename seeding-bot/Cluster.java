@@ -30,6 +30,14 @@ public class Cluster {
 		members.add(a);
 	}
 
+	public void setMaxPoint(Point a) {
+		this.maxPoint = a;
+	}
+
+	public Point getMaxPoint() {
+		return this.maxPoint;
+	}
+
 	public boolean expandCluster() {
 		List<Point> newFrontier = new ArrayList<Point>();
 		for(Point p : this.frontier) {
@@ -84,12 +92,26 @@ public class Cluster {
 				if(q.clusterMaxima.equals(this.clusterMaxima))
 					clusterIt.remove();
 			}
+			this.m.parentController.pm.clearPFCache(new MapLocation(this.m.parentController.getPlanet(), this.clusterMaxima.x, this.clusterMaxima.y));
+			for(int i = 0; i < this.m.clusters.size(); i++) {
+				Cluster q = this.m.clusters.get(i);
+				if(this.m.parentController.pm.getCachedPathField(q.clusterMaxima.x, q.clusterMaxima.y) == null) {
+					MapLocation end = new MapLocation(this.m.parentController.getPlanet(), q.clusterMaxima.x, q.clusterMaxima.y);
+					this.m.parentController.pm.getPathFieldWithCache(end);
+					break;
+				}
+			}
 			return false;
 		}
 		return true;
 	}
 
+	public int value() {
+		return Cluster.value(this);
+	}
+
 	public static int heuristic(Cluster a) {
+		
 		MapLocation nearestTeam = null;
         int nearestDist = Integer.MAX_VALUE;
 		for(int i = 0; i < a.m.teamStartingPositions.size(); i++) {
@@ -98,7 +120,9 @@ public class Cluster {
                 nearestDist = (int) Cluster.distanceSquaredTo(a.clusterMaxima, new Point(a.m.teamStartingPositions.get(i).getX(), a.m.teamStartingPositions.get(i).getY()));
             }
 		}
-		return nearestDist * -1000 + a.members.size() * 2 + Cluster.value(a) * 1000; 
+
+		return nearestDist * -10 + a.members.size() * 2 + (int) Math.pow(Cluster.value(a), 2);
+		//return a.members.size() * 2 + (int) Math.pow(Cluster.value(a), 2); 
 	}
 
 	public static int value(Cluster a) {

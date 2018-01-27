@@ -20,14 +20,19 @@ public class EarthController extends PlanetController
         super(gc, rng);
     }
 
+    public static final int AUTO_ROCKET_FLIP = 30;
+    public static final int AUTO_FACTORY_FLIP = 30;
+
     protected LaunchingLogicHandler llh;
+    protected MiningMaster mm;
     
     public PlanetMap map;
     public Team enemyTeam;
     
     public Map<UnitType, Integer> robotCount = new EnumMap<UnitType, Integer>(UnitType.class);
-    public Map<Integer, UnitHandler> myHandler;
     public List<Queue<UnitType>> factoryBuildQueues = new ArrayList<Queue<UnitType>>();
+    
+    public Direction[][] rocketWarning; 
 
     // public Queue<Integer> attackQueue = new LinkedList<Integer>();
 
@@ -41,6 +46,7 @@ public class EarthController extends PlanetController
     public boolean isSavingForRocket = false;
     public long rocketRequestRound = 0;
     public long rocketsBuilt = 0;
+    public int eworkerCount = 0;
 
     public void control() {
     
@@ -55,6 +61,18 @@ public class EarthController extends PlanetController
         queueResearch();
         
         llh = new LaunchingLogicHandler(this, gc, -1, rng);
+        mm = new MiningMaster(this);
+        mm.generate();
+        
+        rocketWarning = new Direction[(int)this.map.getWidth()][(int)this.map.getHeight()];
+        
+        for(int i = 0; i < rocketWarning.length; i++) {
+        	for(int j = 0; j < rocketWarning[i].length; j++) {
+        		rocketWarning[i][j] = Direction.Center;
+        	}
+        }
+
+        initialAssign();
 
         while (true) {
         
@@ -78,6 +96,7 @@ public class EarthController extends PlanetController
             }
 
             rocketStatus();
+            factoryStatus();
             
             refreshRobotCount(units);
 
@@ -114,7 +133,14 @@ public class EarthController extends PlanetController
         }
     }
 
+    public void initialAssign() {
+        
+    }
+
+    public static int ROCKET_LOADING_THRESH_DIST = 12;
+
     public void addRocketRequestedUnits(RocketHandler rh, Unit rocket) {
+        System.out.println("Rocket is adding requested units!...");
         // System.out.println("Rocket is requesting some units, adding to build queues...");
         VecUnit units = gc.myUnits(); // a little inefficient, TODO optimize
         Unit unit;
@@ -124,7 +150,12 @@ public class EarthController extends PlanetController
             unit = units.get(i);
             if(unit.unitType()!=UnitType.Factory) continue;
             if(this.pm.getRegion(unit.location().mapLocation()) == targetRegion) {
-                sameRegion.add((FactoryHandler)myHandler.get(unit.id()));
+                // we're in the same region
+                // but are we a reasonable distance?
+                if(this.pm.isCached(rocket.location().mapLocation()) &&
+                    this.pm.getCachedPathField(rocket.location().mapLocation()).getDistanceAtPoint(unit.location().mapLocation()) < ROCKET_LOADING_THRESH_DIST) {
+                    sameRegion.add((FactoryHandler)myHandler.get(unit.id()));
+                }
             }
         }
         ArrayList<UnitType> nunits = new ArrayList<UnitType>();
@@ -133,6 +164,7 @@ public class EarthController extends PlanetController
                 nunits.add(key);
             }
         }
+        System.out.println("  Same region size: " + sameRegion.size());
         Collections.shuffle(nunits);
         if(sameRegion.size() == 0) return;
         int curFac = 0;
@@ -150,7 +182,7 @@ public class EarthController extends PlanetController
             return;
         }
 
-        int workersNecessary = 3 - this.getRobotCount(UnitType.Worker);
+        int workersNecessary = 3 - this.getEWorkerCount();
         // never want to get below 3 workers, have the factories URGENTLY make them
 
         Unit unit;
@@ -173,10 +205,18 @@ public class EarthController extends PlanetController
     }
 
     private UnitType getRandomBasePhaseUnit() {
-        double d = rng.nextDouble();
+        double d;
+        d = rng.nextDouble();
         // pointless to make anything but rangers right now, until other code is working
-        if(d < 0.2 && gc.round() > 150 && getRobotCount(UnitType.Ranger) > 10) return UnitType.Healer;
-        else return UnitType.Ranger;
+        if(d < 0.2 && gc.round() > 150 && getRobotCount(UnitType.Ranger) > 10) {
+            return UnitType.Healer;
+        } else {
+            d = rng.nextDouble();
+            if(d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) < 6) {
+                return UnitType.Worker;
+            }
+            return UnitType.Ranger;
+        }
     }
 
     private void refreshTargets(VecUnit units) {
@@ -191,12 +231,23 @@ public class EarthController extends PlanetController
     }
 
     private void rocketStatus() {
-        if (gc.researchInfo().getLevel(UnitType.Rocket) >= 1 && ((getRobotCount(UnitType.Worker) >= 2 && (rocketsBuilt < (int)(gc.round() / 125) || (gc.getTimeLeftMs() < 1500 && getRobotCount(UnitType.Rocket) < 1))) || (getRobotCount(UnitType.Worker) >= 1 && (gc.round() > 200 && gc.units().size() - gc.myUnits().size() > gc.myUnits().size() * 2)))) {
-            isSavingForRocket = true;            
+        if (gc.researchInfo().getLevel(UnitType.Rocket) >= 1 && ((getRobotCount(UnitType.Worker) >= 2 && (rocketsBuilt < (int)(gc.round() / 125)
+            || (gc.getTimeLeftMs() < 1500 && getRobotCount(UnitType.Rocket) < 1)))
+            || (getRobotCount(UnitType.Worker) >= 1 && (gc.round() > 200 && gc.units().size() - gc.myUnits().size() > gc.myUnits().size() * 2)))) {
+
+            isSavingForRocket = true;
             rocketRequestRound = gc.round();
-        }        
-        if (gc.round() > rocketRequestRound + 15) {
+        }
+        if (gc.round() > rocketRequestRound + AUTO_ROCKET_FLIP) {
             isSavingForRocket = false;
+        }
+    }
+
+    private void factoryStatus() {
+        // logic here to scale up factories
+        // BIG TODO
+        if (gc.round() > factoryRequestRound + AUTO_FACTORY_FLIP) {
+            isSavingForFactory = false;
         }
     }
 
@@ -240,6 +291,14 @@ public class EarthController extends PlanetController
             }
         }
     }
+
+    public void incrementEWorkerCount() {
+        this.eworkerCount ++;
+    }
+
+    public int getEWorkerCount() {
+        return this.eworkerCount;
+    }
         
     public int getRobotCount(UnitType type) {
         return this.robotCount.get(type);
@@ -250,12 +309,15 @@ public class EarthController extends PlanetController
     }
 
     private void refreshRobotCount(VecUnit units) {
+        this.eworkerCount = 0;
         for(UnitType ut : UnitType.values()) {
             robotCount.put(ut, 0);
         }
         UnitType ut;
         for(int i = 0; i < units.size(); i ++) {
             ut = units.get(i).unitType();
+            if(ut == UnitType.Worker && myHandler.get(units.get(i).id()) != null && myHandler.get(units.get(i).id()) instanceof WorkerHandler)
+                this.eworkerCount ++;
             incrementRobotCount(ut);
         }
     }
@@ -294,6 +356,10 @@ public class EarthController extends PlanetController
                 continue;
             if(!this.pm.isConnected(ml, unit.location().mapLocation()))
                 continue;
+            if(!this.pm.isCached(unit.location().mapLocation()))
+                continue;
+            if(this.pm.getCachedPathField(unit.location().mapLocation()).getDistanceAtPoint(ml) >= ROCKET_LOADING_THRESH_DIST)
+                continue;
             if(!rh.stillNeeded.keySet().contains(ut))
                 continue;
             if(rh.stillNeeded.get(ut) > 0) return rh;
@@ -303,9 +369,10 @@ public class EarthController extends PlanetController
 
     public void assignHandler(Map<Integer,UnitHandler> myHandler, Unit unit) {
 
-        UnitHandler newHandler = null;
+        if(myHandler.containsKey(unit.id())) return; // if someone else already assigned this id, don't reassign it
+        if(unit.location().isInGarrison()) return; // we like to wait until our factory/rockets unload these things to assign
 
-        if(unit.location().isInGarrison()) return;
+        UnitHandler newHandler = null;
 
         if(amLoadingRocket > 0) {
             // System.out.println("Loading a rocket, does it need?");
@@ -330,10 +397,13 @@ public class EarthController extends PlanetController
                 newHandler = new RangerHandler(this, gc, unit.id(), rng);
                 break;
             case Worker:
-                newHandler = new WorkerHandler(this, gc, unit.id(), rng);
+                if(this.getEWorkerCount() < 3)
+                    newHandler = new WorkerHandler(this, gc, unit.id(), rng);
+                else
+                    newHandler = new MiningWorkerHandler(this, gc, unit.id(), rng, this.mm);
                 break;
             case Rocket:
-                newHandler = new RocketHandler(this, gc, unit.id(), rng, this.llh, RocketHandler.FIRST_CONTACT_CREW);
+                newHandler = new RocketHandler(this, gc, unit.id(), rng, this.llh, llh.nextManifest());
                 addRocketRequestedUnits((RocketHandler)newHandler, unit);
                 break;
             case Healer:

@@ -11,13 +11,21 @@ public class PathMaster
 	protected HashMap<Point,PathField> limitedCache;
 	protected int cacheCount;
 	protected int[][] labels;
+	private int generateCount = 1;
 	
 	public PathMaster(PlanetMap basemap) {
 		this.basemap = basemap;
-		// this.pathFieldCache = new PathField[(int)basemap.getWidth()][(int)basemap.getHeight()];
 		this.labels = this.generateLabels();
 		this.limitedCache = new HashMap<Point,PathField>();
 		this.cacheCount = 0;
+	}
+
+	public int getRegion(int x, int y) {
+		return labels[x][y];
+	}
+
+	public int getRegion(MapLocation ml) {
+		return getRegion(ml.getY(), ml.getX());
 	}
 	
 	public boolean isConnected(MapLocation a, MapLocation b) {
@@ -32,10 +40,8 @@ public class PathMaster
 			for(int j = 0; j < ret[i].length; j++) {
 				if(this.basemap.isPassableTerrainAt(new MapLocation(this.basemap.getPlanet(), j, i)) == 0) {
 					ret[i][j] = -1;
-				}
-				else if(ret[i][j] == 0) {
-					zone++;
-					recur(ret, i, j, zone);
+				} else if(ret[i][j] == 0) {
+					recur(ret, i, j, ++zone);
 				}
 			}
 		}
@@ -73,6 +79,7 @@ public class PathMaster
 
 	public void clearPFCache(MapLocation target) {
 		this.limitedCache.remove(new Point(target.getX(), target.getY()));
+		this.generateCount--;
 	}
 
 	public PathField getPathField(MapLocation target) {
@@ -93,6 +100,18 @@ public class PathMaster
 		return limitedCache.get(new Point(x,y));
 	}
 
+	public PathField getCachedPathField(MapLocation ml) {
+		return getCachedPathField(ml.getX(), ml.getY());
+	}
+
+	public boolean isCached(int x, int y) {
+		return getCachedPathField(x, y) != null;
+	}
+
+	public boolean isCached(MapLocation ml) {
+		return isCached(ml.getX(), ml.getY());
+	}
+
 	public PathField getAndCachePathField(MapLocation target) {
 		PathField pf = this.generatePathField(target);
 		this.cachePathField(target.getX(), target.getY(), pf);
@@ -100,6 +119,7 @@ public class PathMaster
 	}
 
 	public PathField generatePathField(MapLocation target) {
+		System.out.println("Generate PF called: " + generateCount++);
 		// Does BFS, assigning directions back at each location
 		Queue<BFSLocation> queue = new LinkedList<BFSLocation>();
 		BFSLocation cur = fromMapLocation(target);
@@ -162,5 +182,4 @@ public class PathMaster
 			return fromMapLocation(new MapLocation(Planet.Earth, this.x, this.y).add(dir), Utils.reverseDirection(dir), this.dist+1);
 		}
 	}
-
 }

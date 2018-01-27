@@ -8,12 +8,20 @@ public class RocketHandler extends UnitHandler {
 	public static final double[] TANKY_CREW = new double[] {0, 0.5, 0.5, 0, 0};
 	public static final double[] FIRST_CONTACT_CREW = new double[] {0.5, 0.5, 0, 0, 0};
 	public static final double[] ARTISTIC_CREW = new double[] {0, 0, 0, 0.5, 0.5}; //send in the wierder, more niche troops
+	public static final double[] META_CREW_1 = new double[] {0, 0.5, 0, 0, 0.5};
+	public static final double[] META_CREW_2 = new double[] {0, 0, 0.5, 0, 0.5};
+	public static final double[] META_CREW_3 = new double[] {0, 0, 0, 0.5, 0.5};
+	
+	public static final int TAKEOFF_COUNTDOWN = 3; 
 	
 	public Map<UnitType, Integer> targetManifest;
     public Map<UnitType, Integer> stillNeeded;
 	public MapLocation dest;
 	public LaunchingLogicHandler llh;
-    public final boolean firstContact; 
+	public int launchCountDown = Integer.MAX_VALUE;
+	public Direction[][] warningMatrix;
+	public MapLocation myLocation;
+	public PlanetMap map;
 	
 	/**
 	 * generate a rocket handler for a rocket
@@ -24,17 +32,15 @@ public class RocketHandler extends UnitHandler {
     public RocketHandler(PlanetController parent, GameController gc, int id, Random rng, LaunchingLogicHandler llh, double[] manifest) {
         super(parent, gc, id, rng);
         
-        this.firstContact = manifest[0] > 0;
-        
         //parse the manifestj
         this.targetManifest = new EnumMap<UnitType, Integer>(UnitType.class);
         this.stillNeeded = new EnumMap<UnitType, Integer>(UnitType.class);
 
-        this.targetManifest.put(UnitType.Worker, (int) (gc.unit(this.id).structureMaxCapacity() * manifest[0]));
-        this.targetManifest.put(UnitType.Ranger, (int) (gc.unit(this.id).structureMaxCapacity() * manifest[1]));
-        this.targetManifest.put(UnitType.Knight, (int) (gc.unit(this.id).structureMaxCapacity() * manifest[2]));
-        this.targetManifest.put(UnitType.Mage  , (int) (gc.unit(this.id).structureMaxCapacity() * manifest[3]));
-        this.targetManifest.put(UnitType.Healer, (int) (gc.unit(this.id).structureMaxCapacity() * manifest[4]));
+        this.targetManifest.put(UnitType.Worker, (int)(gc.unit(this.id).structureMaxCapacity() * manifest[0]));
+        this.targetManifest.put(UnitType.Ranger, (int)(gc.unit(this.id).structureMaxCapacity() * manifest[1]));
+        this.targetManifest.put(UnitType.Knight, (int)(gc.unit(this.id).structureMaxCapacity() * manifest[2]));
+        this.targetManifest.put(UnitType.Mage  , (int)(gc.unit(this.id).structureMaxCapacity() * manifest[3]));
+        this.targetManifest.put(UnitType.Healer, (int)(gc.unit(this.id).structureMaxCapacity() * manifest[4]));
 
         for(UnitType key : this.targetManifest.keySet()) {
             this.stillNeeded.put(key, this.targetManifest.get(key));
@@ -44,6 +50,9 @@ public class RocketHandler extends UnitHandler {
         
         this.dest = gc.unit(this.id).location().mapLocation();
         this.llh = llh;
+        this.warningMatrix = ((EarthController)parent).rocketWarning;
+        this.myLocation = gc.unit(this.id).location().mapLocation();
+        this.map = ((EarthController)parent).map;
 
         // System.out.println("Caching path field for " + this.dest + " (" + this.dest.getX() + "," + this.dest.getY() + ")");
         this.parent.pm.getAndCachePathField(this.dest);
@@ -60,9 +69,39 @@ public class RocketHandler extends UnitHandler {
     public void takeTurn(Unit unit) {
     	if(unit.structureIsBuilt() != 0) {
     		this.load();
-            this.setDestination(llh.optimalLandingLocation(this.firstContact));
+            this.setDestination(llh.optimalLandingLocation());
     		// System.out.println("Dest: " + this.getDestination());
-    		if(this.shouldLaunch() && gc.canLaunchRocket(this.id, this.dest)) {
+            if(this.launchCountDown != Integer.MAX_VALUE) 
+            	this.launchCountDown--;
+    		if(this.launchCountDown == Integer.MAX_VALUE && this.willLaunch()) {
+//    			this.blastOff();
+//    			llh.addUsedMapLocation(this.getDestination());
+    			this.launchCountDown = TAKEOFF_COUNTDOWN;
+    			for(int di = -1; di <= 1; di++) {
+    				for(int dj = -1; dj <= 1; dj++) {
+    					if(di == 0 && dj == 0) continue;
+    					int i = myLocation.getX() + di, j = myLocation.getY() + dj;
+    					MapLocation thatLocation = new MapLocation(Planet.Earth, i, j);
+    					// System.out.println(thatLocation);
+    					if(map.onMap(thatLocation) && map.isPassableTerrainAt(thatLocation) != 0) {
+    						Direction newDir = myLocation.directionTo(thatLocation);
+    						// System.out.println(newDir);
+    						this.warningMatrix[i][j] = newDir;
+    					}
+    				}
+    			}
+    			// System.out.println(Arrays.deepToString(this.warningMatrix));
+    		}
+    		if(this.launchCountDown <= 0 && gc.canLaunchRocket(this.id, this.dest)) {
+    			int i = myLocation.getX(), j = myLocation.getY();
+    			for(int di = -1; di <= 1; di++) {
+    				for(int dj = -1; dj <= 1; dj++) {
+    					try {
+    						this.warningMatrix[i+di][j+dj] = Direction.Center;
+    					}catch(Exception e){}
+    				}
+    			}
+    			// System.out.println(Arrays.deepToString(this.warningMatrix));
     			this.blastOff();
     			llh.addUsedMapLocation(this.getDestination());
     		}
@@ -115,6 +154,10 @@ public class RocketHandler extends UnitHandler {
     	else return false;
     }
     
+    public boolean willLaunch() {
+    	return this.shouldLaunch() && gc.canLaunchRocket(this.id, this.dest);
+    }
+    
     /**
      * Checks to see if the rocket is fully stocked with the intended swarm
      * 
@@ -155,8 +198,14 @@ public class RocketHandler extends UnitHandler {
     	for(int i = 0; i < adjacent.size(); i++) {
             adj = adjacent.get(i);
     		if(this.targetManifest.keySet().contains(adj.unitType()) && this.targetManifest.get(adj.unitType()) > 0) {
-                if(((EarthController)parent).myHandler.get(adj.id()) instanceof MiningWorkerHandler)
+                if(parent.myHandler.get(adj.id()) instanceof WorkerHandler) {
                     continue;
+                }
+                if(parent.myHandler.get(adj.id()) instanceof MiningWorkerHandler) {
+                    Cluster jaunt = ((EarthController)parent).mm.clusterMap[adj.location().mapLocation().getX()][adj.location().mapLocation().getY()];
+                    if(jaunt != null)
+                        jaunt.minersAt--;
+                }
   //   			System.out.println("Loading " + adjacent.get(i).id());
     			if(this.loadTroop(adj.id())) {
                     // once we're loaded, decrease from the manifest

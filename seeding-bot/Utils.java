@@ -2,6 +2,7 @@ import bc.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -149,6 +150,7 @@ public class Utils
     // 2 if counter-clockwise neighbor succeeded,
     // 3 if clockwise neighbor succeeded
     public static int tryMoveWiggle(GameController gc, int unitId, Direction dir) {
+        if(dir == Direction.Center) return 0;
         if(!gc.isMoveReady(unitId)) {
             return 0;
         }
@@ -193,6 +195,17 @@ public class Utils
         return directions;   
     }
 
+    public static boolean tryMove(GameController gc, int id, Direction direction) {
+        if (!gc.isMoveReady(id)) {
+            return false;   
+        }
+        if (gc.canMove(id, direction)) {
+            gc.moveRobot(id, direction);
+            return true;
+        }        
+        return false;
+    }
+
     public static boolean trySmallMoveRotate(GameController gc, int id, Direction direction) {
         if (!gc.isMoveReady(id)) {
             return false;   
@@ -222,19 +235,6 @@ public class Utils
         }
         return false;
     }
-
-    public static boolean tryReplicateRotate(GameController gc, int id, Direction direction) {
-        int index = directionList.indexOf(direction);
-        for (int i = 0; i < bigRotation.length; i++) {
-            Direction tryDirection = directionList.get((8 + index + bigRotation[i]) % 8);
-            if (gc.canReplicate(id, tryDirection)) {
-                gc.replicate(id, tryDirection);
-                return true;
-            }
-        }
-        return false;
-    }
-
 
     public static boolean canOccupy(GameController gc, MapLocation location, PlanetController parent, HashSet<MapLocation> visited) {
         if (visited.contains(location)) {

@@ -21,9 +21,7 @@ public class MarsController extends PlanetController
     }
 
     public PlanetMap map;
-    public Team enemyTeam;    
-
-    public HashMap<Integer, UnitHandler> myHandler;
+    public Team enemyTeam;
     
     public void control() {
     
@@ -75,7 +73,7 @@ public class MarsController extends PlanetController
         map = gc.startingMap(Planet.Mars);                
     }
 
-    public void takeTurnByType(HashMap<Integer,UnitHandler> myHandler, VecUnit units, UnitType unitType) {
+    public void takeTurnByType(Map<Integer,UnitHandler> myHandler, VecUnit units, UnitType unitType) {
         for(int i = 0; i < units.size(); i ++) {
             Unit unit = units.get(i);
             if(unit.unitType() == unitType && !unit.location().isInGarrison() && !unit.location().isInSpace()) {
@@ -84,7 +82,7 @@ public class MarsController extends PlanetController
         }
     }
 
-    public void assignHandler(HashMap<Integer,UnitHandler> myHandler, Unit unit) {
+    public void assignHandler(Map<Integer,UnitHandler> myHandler, Unit unit) {
 
         UnitHandler newHandler = null;
         
