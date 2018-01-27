@@ -188,6 +188,6 @@ public class LaunchingLogicHandler extends UnitHandler  {
 				return (1000 * adjacentSquares[i2][j2] - values[i2][j2] - (int)(0.01 * rocketDistances[i2][j2])) - (1000 * adjacentSquares[i1][j1] - values[i1][j1] - (int)(0.01 * rocketDistances[i1][j1]));			}
 		};
 	}
-	
-	        
+
+    public void handleDeath() {} 
 }

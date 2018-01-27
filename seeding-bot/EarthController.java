@@ -83,6 +83,19 @@ public class EarthController extends PlanetController
             VecUnit allUnits = gc.units();
             VecUnit units = gc.myUnits();
 
+            HashSet<Integer> aliveIDs = new HashSet<Integer>();
+            for(int i = 0; i < units.size(); i ++) {
+                aliveIDs.add(units.get(i).id());
+            }
+
+            for(int id : new HashSet<Integer>(myHandler.keySet())) {
+                if(!aliveIDs.contains(id)) { // unit has died
+                    System.out.println(id + " has died!");
+                    myHandler.get(id).handleDeath();
+                    myHandler.remove(id);
+                }
+            }
+
             noEnemies = true;
 
             // for(int i = 0; i < allUnits.size(); i ++) {
@@ -257,10 +270,9 @@ public class EarthController extends PlanetController
             d = rng.nextDouble();
             if(gc.round() < 150 && d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) - eworkerCount < 6) {
                 return UnitType.Worker;
+            }
         }
-        else {
-        	return UnitType.Ranger;
-        }
+        return UnitType.Ranger;
     }
 
     private void refreshTargets(VecUnit units) {

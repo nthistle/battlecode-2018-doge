@@ -272,4 +272,6 @@ public class MiningWorkerHandler extends UnitHandler {
         }
         return false;
     }
+
+    public void handleDeath() {}
 }

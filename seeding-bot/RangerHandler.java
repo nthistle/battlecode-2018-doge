@@ -168,4 +168,6 @@ public class RangerHandler extends UnitHandler {
         }        
         return null;
     }
+
+    public void handleDeath() {}
 }

@@ -74,8 +74,8 @@ public class MarsWorkerHandler extends UnitHandler {
                     break;
                 }
             }
-        }   	
-    	
-    	
+        }
     }
+
+    public void handleDeath() {}
 }

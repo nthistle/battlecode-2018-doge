@@ -10,4 +10,6 @@ public class KnightHandler extends UnitHandler {
     public void takeTurn() {
         // TODO
     }
+
+    public void handleDeath() {}
 }

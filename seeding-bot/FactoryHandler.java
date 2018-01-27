@@ -69,4 +69,6 @@ public class FactoryHandler extends UnitHandler {
     		gc.produceRobot(this.id, buildQueue.poll());
     	}
     }
+
+    public void handleDeath() {}
 }

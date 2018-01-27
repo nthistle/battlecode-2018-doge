@@ -166,4 +166,6 @@ public class MarsRangerHandler extends UnitHandler {
         }        
         return null;
     }
+
+    public void handleDeath() {}
 }
