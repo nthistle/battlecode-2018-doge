@@ -187,4 +187,6 @@ public class HealerHandler extends UnitHandler {
         }        
         return null;
     }
+
+    public void handleDeath() {}
 }

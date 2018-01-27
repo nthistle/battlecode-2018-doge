@@ -87,6 +87,7 @@ public class MiningWorkerHandler extends UnitHandler {
                 }
             }
             if(a.members.size() == 0) {
+                System.out.println("Line 83: We don't have any more members in cluster");
                 Point oldCluster = this.m.clusterMap[mapLocation.getX()][mapLocation.getY()].clusterMaxima;
                 this.target = null;
                 boolean hello = m.assignTarget(this);
@@ -117,16 +118,31 @@ public class MiningWorkerHandler extends UnitHandler {
                     }
                 }
             } else {
-                Point random;
-                if (a.members.size() == 1) {
-                    random = a.members.get(this.parent.rng.nextInt(a.members.size()));                    
-                } else {
+                if(this.miniTarget == null || !this.m.clusterMap[miniTarget.x][miniTarget.y].clusterMaxima.equals(this.m.clusterMap[this.target.getX()][this.target.getY()].clusterMaxima)) {
+                    //we have not picked a mini-target
+                    // System.out.println("We just created a miniTarget because it was null before or wasn't part of the cluster we want to go to");
+                    Point random;
+                    int w = 0;
                     do {
                         random = a.members.get(this.parent.rng.nextInt(a.members.size()));
-                    } while((new Point(mapLocation.getX(), mapLocation.getY()).equals(random)));                    
+                    } while((new Point(mapLocation.getX(), mapLocation.getY()).equals(random)) && w++ < 10);
+                    this.miniTarget = random;
+                    Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), random.x, random.y)));    
+                } else if(this.miniTarget.equals(new Point(mapLocation.getX(), mapLocation.getY())) && gc.karboniteAt(mapLocation) <= 1L) {
+                    //System.out.println("We just created a miniTarget because it was null before");
+                    Point random;
+                    int w = 0;
+                    do {
+                        random = a.members.get(this.parent.rng.nextInt(a.members.size()));
+                    } while((new Point(mapLocation.getX(), mapLocation.getY()).equals(random)) && w++ < 10);
+                    this.miniTarget = random;
+                    Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), random.x, random.y)));
+                } else {
+                    //System.out.println("Moving to the miniTarget");
+                    if(mapLocation.directionTo(new MapLocation(parent.getPlanet(), this.miniTarget.x, this.miniTarget.y)) != Direction.Center)
+                        Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), this.miniTarget.x, this.miniTarget.y)));
                 }
-
-                Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), random.x, random.y)));
+                
             }
         } else {
             if(this.path != null && this.path.isPointSet(mapLocation.getX(), mapLocation.getY())) {
@@ -256,4 +272,6 @@ public class MiningWorkerHandler extends UnitHandler {
         }
         return false;
     }
+
+    public void handleDeath() {}
 }

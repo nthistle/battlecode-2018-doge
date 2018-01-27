@@ -15,9 +15,14 @@ import java.util.Random;
 
 public class WorkerHandler extends UnitHandler {
 
+    private final int TARGET_REFRESH_RATE = 15;
+
     private Bug bug;    
     private EarthController earthParent;
     private MapLocation previousLocation;
+
+    private MapLocation targetLocation = null;
+    private int targetTurn = 0;
 
     public boolean solo = false;
 
@@ -54,6 +59,10 @@ public class WorkerHandler extends UnitHandler {
         MiningMaster mm = earthParent.mm;
         Map<Integer, UnitHandler> myHandler = earthParent.myHandler;        
         
+        if (targetLocation != null && (mapLocation.equals(targetLocation) || gc.round() >= targetTurn + TARGET_REFRESH_RATE)) {
+            targetLocation = null;
+        }
+
         // status markers        
         boolean busy = false;
         boolean done = false;
@@ -68,7 +77,7 @@ public class WorkerHandler extends UnitHandler {
         int nearbyWorkerCount = 0;
         int nearbyTroopCount = 0;        
         MapLocation nearestStructure = null;
-        long nearestDistance = Long.MAX_VALUE;
+        long nearest = Long.MAX_VALUE;
         for (int i = 0; i < nearbyAllies.size(); i++) {
             Unit allyUnit = nearbyAllies.get(i);
             UnitType unitType = allyUnit.unitType();
@@ -91,9 +100,9 @@ public class WorkerHandler extends UnitHandler {
                 } else {
                     distance = mapLocation.distanceSquaredTo(tryLocation);
                 }
-                if (nearestStructure == null || distance < nearestDistance) {
+                if (nearestStructure == null || distance < nearest) {
                     nearestStructure = tryLocation;
-                    nearestDistance = distance;
+                    nearest = distance;
                 }                    
             } else if (unitType != UnitType.Worker) {
                 nearbyTroopCount++;
@@ -118,7 +127,7 @@ public class WorkerHandler extends UnitHandler {
                 && ((earthParent.getEWorkerCount() < 3) 
                 || (earthParent.getEWorkerCount() == 3 && nearbyWorkerCount < 3) 
                 || (earthParent.getEWorkerCount() == 4 && nearbyWorkerCount == 2)))
-            || (nearbyStructures.size() >= 1 && nearbyWorkerCount < 5)))) {
+            || (nearbyStructures.size() >= 1 && nearbyWorkerCount < 4)))) {
             // || (earthParent.getRobotCount(UnitType.Factory) >= 4 && nearbyWorkerCount < 3))) {                         
             for (Direction d : Utils.directions()) {                
                 if (gc.canReplicate(id, d)) {
@@ -149,7 +158,7 @@ public class WorkerHandler extends UnitHandler {
         // if necessary TODO: find nearest enemies plural for best escape route
         int nearbyThreatCount = 0;
         MapLocation nearestThreat = null;
-        nearestDistance = Long.MAX_VALUE;
+        nearest = Long.MAX_VALUE;
         for (int i = 0; i < nearbyEnemies.size(); i++) {
             nearbyThreatCount++;
             Unit nearbyUnit = nearbyEnemies.get(i);
@@ -159,30 +168,25 @@ public class WorkerHandler extends UnitHandler {
             }
             MapLocation tryLocation = nearbyUnit.location().mapLocation();
             long distance = mapLocation.distanceSquaredTo(tryLocation);
-            if (distance - 2 <= nearbyUnit.attackRange() && distance < nearestDistance) {
+            if (distance - 2 <= nearbyUnit.attackRange() && distance < nearest) {
                 nearestThreat = tryLocation;
-                nearestDistance = distance;
+                nearest = distance;
             }
         }
 
         // if within attack range of enemy
         // don't try to assist in building and run in opposite direction
         if (!busy && nearestThreat != null && earthParent.getRobotCount(UnitType.Factory) != 0 && Utils.tryMoveRotate(gc, id, nearestThreat.directionTo(mapLocation))) {
+            targetLocation = null;
             busy = true;            
             previousLocation = mapLocation;
         }
 
         // if cannot build but there are nearby structures move towards them
-        if (!busy && nearestStructure != null && gc.isMoveReady(id)) {
+        if (!busy && nearestStructure != null) {
             // System.out.println(nearestStructure);
-            if (pm.isCached(nearestStructure)) {
-                PathField structurePath = pm.getPathFieldWithCache(nearestStructure);
-                if (structurePath.isPointSet(mapLocation)) {
-                    Utils.tryMoveRotate(gc, id, structurePath.getDirectionAtPoint(mapLocation));
-                }
-            } else {
-                bug.bugMove(mapLocation, nearestStructure);
-            }
+            move(pm, mapLocation, nearestStructure);
+            targetLocation = null;
             busy = true;
             previousLocation = mapLocation;
         }
@@ -212,22 +216,19 @@ public class WorkerHandler extends UnitHandler {
             }
         }
 
-        if (!busy && gc.isMoveReady(id)) {
-            int total = 0;
-            int startX = mapLocation.getX() - 7;
-            int startY = mapLocation.getY() - 7;
-            int endX = startX + 14;
-            int endY = startY + 14;
-            for (int x = startX; x <= endX; x++) {
-                for (int y = startY; y <= endY; y++) {
-                                        
-                }
-            }
+        if (!busy && nearbyWorkerCount > 5) {
+            quickTurn(gc, myHandler, mapLocation, true, mm);
         }
 
-        if (!done) {
+        if (!busy && targetLocation != null) {
+            move(pm, mapLocation, targetLocation);
+        }
+
+        Direction moveDirection = null;
+        if (!(done && busy)) {
             Direction harvestDirection = null;            
             long mostMoney = 0;
+            boolean bestChoice = false;
             for (Direction d : Direction.values()) {                         
                 MapLocation tryLocation = mapLocation.add(d);                
                 if (map.onMap(tryLocation) && gc.canHarvest(id, d)) {   
@@ -235,13 +236,55 @@ public class WorkerHandler extends UnitHandler {
                     if (harvestDirection == null || money > mostMoney) {
                         harvestDirection = d;                        
                         mostMoney = money;
-                    }                    
+                        if (gc.canMove(id, d)) {
+                            moveDirection = d;
+                            bestChoice = true;
+                            continue;
+                        }
+                    }
+                    if (!bestChoice && gc.canMove(id, d)) {
+                        moveDirection = d;
+                    }
                 }            
             }
             if (harvestDirection != null) {                
                 gc.harvest(id, harvestDirection);            
                 done = true;
             }            
+        }
+        
+        if (!busy && gc.isMoveReady(id)) {
+            if (moveDirection != null) {
+                gc.moveRobot(id, moveDirection);
+            } else if (targetLocation == null) {
+                MapLocation nearestMoney = null;
+                int nearestDistance = 0;   
+                int startX = mapLocation.getX() - 7;
+                int startY = mapLocation.getY() - 7;
+                int endX = startX + 14;
+                int endY = startY + 14;
+                for (int x = startX; x <= endX; x++) {
+                    for (int y = startY; y <= endY; y++) {
+                        if (x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight()) {
+                            continue;
+                        }
+                        MapLocation tempLocation = new MapLocation(Planet.Earth, x, y);                        
+                        if (!pm.isConnected(tempLocation, mapLocation)) {
+                            continue;
+                        }
+                        int distance = (int)mapLocation.distanceSquaredTo(tempLocation);
+                        if (tempLocation.isWithinRange(unit.visionRange(), mapLocation) && distance < nearestDistance) {
+                            nearestDistance = distance;
+                            nearestMoney = tempLocation;
+                        }
+                    }
+                }
+                if (nearestMoney != null) {
+                    targetLocation = nearestMoney;
+                    targetTurn = (int)gc.round();
+                    move(pm, mapLocation, nearestMoney);
+                }
+            }
         }
 
         // try to repair neighbors
@@ -262,10 +305,24 @@ public class WorkerHandler extends UnitHandler {
 
         // if has nothing to do move to most empty areas
         if (!busy) {            
-            Direction moveDirection = findMoveDirection(mapLocation);
+            moveDirection = findMoveDirection(mapLocation);
             if (moveDirection != null && Utils.tryMoveRotate(gc, id, moveDirection)) {
                 previousLocation = mapLocation;
             }                                    
+        }
+    }
+
+    private void move(PathMaster pm, MapLocation mapLocation, MapLocation destLocation) {
+        if (!gc.isMoveReady(id)) {
+            return;
+        }
+        if (pm.isCached(destLocation)) {
+            PathField path = pm.getPathFieldWithCache(destLocation);
+            if (path.isPointSet(mapLocation)) {
+                Utils.tryMoveRotate(gc, id, path.getDirectionAtPoint(mapLocation));
+            }
+        } else {
+            bug.bugMove(mapLocation, destLocation);
         }
     }
 
@@ -367,4 +424,6 @@ public class WorkerHandler extends UnitHandler {
         }
         return status;
     }
+
+    public void handleDeath() {}
 }
