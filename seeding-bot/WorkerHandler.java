@@ -120,8 +120,7 @@ public class WorkerHandler extends UnitHandler {
                 || (earthParent.getEWorkerCount() == 4 && nearbyWorkerCount == 2)))
             || (nearbyStructures.size() >= 1 && nearbyWorkerCount < 5)))) {
             // || (earthParent.getRobotCount(UnitType.Factory) >= 4 && nearbyWorkerCount < 3))) {                         
-            for (Direction d : Utils.directions()) {
-                System.out.println(d + " " + gc.canReplicate(id, d));
+            for (Direction d : Utils.directions()) {                
                 if (gc.canReplicate(id, d)) {
                     gc.replicate(id, d);     
                     quickTurn(gc, myHandler, mapLocation.add(d), false, mm);
