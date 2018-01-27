@@ -11,6 +11,7 @@ public class PathMaster
 	protected HashMap<Point,PathField> limitedCache;
 	protected int cacheCount;
 	protected int[][] labels;
+	protected int[] labelSize; 
 	private int generateCount = 1;
 	
 	public PathMaster(PlanetMap basemap) {
@@ -45,6 +46,14 @@ public class PathMaster
 				}
 			}
 		}
+		this.labelSize = new int[zone];
+		for(int i = 0; i < ret.length; i++) {
+			for(int j = 0; j < ret[i].length; j++) {
+				if(ret[i][j] > 0) {
+					this.labelSize[ret[i][j]-1]++;
+				}
+			}
+		}
 		return ret;
 	}
 	
@@ -69,6 +78,14 @@ public class PathMaster
 		}
 	}
 
+	public int sizeOfConnectedComponent(int x, int y) {
+		return this.labelSize[this.labels[y][x]-1];
+	}
+	
+	public int sizeOfConnectedComponent(MapLocation ml) {
+		return this.sizeOfConnectedComponent(ml.getX(), ml.getY());
+	}
+	
 	// warning, this method WILL cache the path that you ask for
 	public PathField getPathFieldWithCache(MapLocation target) {
 		PathField cachedPf = getCachedPathField(target.getX(), target.getY());
