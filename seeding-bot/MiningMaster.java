@@ -304,7 +304,7 @@ public class MiningMaster {
 		this.initialKarboniteLocationsOriginal[a.x][a.y] = karb;
 		Cluster q = this.clusterMap[a.x][a.y];
 		if(q != null) {
-			if(karb == 0) {
+			if(karb <= 0) {
 				q.members.remove(a);
 			}
 			if(q.members.size() == 0) {
