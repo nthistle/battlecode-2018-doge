@@ -178,14 +178,14 @@ public class WorkerHandler extends UnitHandler {
             // System.out.println(nearestStructure);
             if (pm.isCached(nearestStructure)) {
                 PathField structurePath = pm.getPathFieldWithCache(nearestStructure);
-                if (structurePath.isPointSet(mapLocation) && Utils.tryMoveRotate(gc, id, structurePath.getDirectionAtPoint(mapLocation))) {
-                    busy = true;
-                    previousLocation = mapLocation;
+                if (structurePath.isPointSet(mapLocation)) {
+                    Utils.tryMoveRotate(gc, id, structurePath.getDirectionAtPoint(mapLocation));
                 }
-            } else if (Utils.tryMoveRotate(gc, id, mapLocation.directionTo(nearestStructure))) {
-                busy = true;
-                previousLocation = mapLocation;
+            } else {
+                bug.bugMove(mapLocation, nearestStructure);
             }
+            busy = true;
+            previousLocation = mapLocation;
         }
 
         // simple rocket build code
