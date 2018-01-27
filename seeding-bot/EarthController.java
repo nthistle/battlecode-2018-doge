@@ -86,21 +86,17 @@ public class EarthController extends PlanetController
 
             noEnemies = true;
 
-            for(int i = 0; i < allUnits.size(); i ++) {
-                // this is probably going to clog targetingmaster to high hell but who cares rn
-                Unit uu = allUnits.get(i);
-                if(uu.team() == enemyTeam && !uu.location().isInGarrison() && !uu.location().isInSpace() && uu.location().isOnPlanet(Planet.Earth)) {
-                    tm.addTarget(uu.location().mapLocation());
-                    break;
-                }
-            }
+            // for(int i = 0; i < allUnits.size(); i ++) {
+            //     // this is probably going to clog targetingmaster to high hell but who cares rn
+            //     Unit uu = allUnits.get(i);
+            //     if(uu.team() == enemyTeam && !uu.location().isInGarrison() && !uu.location().isInSpace() && uu.location().isOnPlanet(Planet.Earth)) {
+            //         tm.addTarget(uu.location().mapLocation());
+            //         break;
+            //     }
+            // }
 
             rocketStatus();
             factoryStatus();
-            
-            refreshRobotCount(units);
-
-            refreshTargets(allUnits);
             
             for(int i = 0; i < units.size(); i ++) {
                 Unit unit = units.get(i);
@@ -109,6 +105,10 @@ public class EarthController extends PlanetController
                     assignHandler(myHandler, unit);
                 }
             }
+
+            refreshRobotCount(units);
+
+            refreshTargets(allUnits);
 
             llh.takeTurn();
 
@@ -134,7 +134,39 @@ public class EarthController extends PlanetController
     }
 
     public void initialAssign() {
-        
+        VecUnit units = gc.myUnits();                
+        for (int i = 0; i < units.size(); i++) {            
+            Unit unit = units.get(i);
+            MapLocation tempLocation = unit.location().mapLocation();
+            VecUnit nearby = gc.senseNearbyUnitsByTeam(tempLocation, unit.visionRange(), gc.team());
+            boolean finished = false;
+            for (int j = 0; j < nearby.size(); j++) {
+                if (pm.isConnected(tempLocation, nearby.get(j).location().mapLocation())) {
+                    myHandler.put(unit.id(), new WorkerHandler(this, gc, unit.id(), rng));
+                    finished = true;
+                    break;
+                }
+            }
+            if (finished) {
+                continue;
+            }            
+            int startX = tempLocation.getX() - 7;
+            int startY = tempLocation.getY() - 7;
+            int endX = startX + 14;
+            int endY = startY + 14;
+            for (int x = startX; x <= endX; x++) {
+                for (int y = startY; y <= endY; y++) {
+                    int[][] tempMoney = mm.initialKarboniteLocationsOriginal();
+                    if (x >= 0 && x < tempMoney.length && y >= 0 && y < tempMoney[0].length && tempLocation.isWithinRange(unit.visionRange(), new MapLocation(Planet.Earth, x, y))) {
+                        finished = true;
+                        break;
+                    }                    
+                }
+            }
+            if (finished) {
+                continue;
+            }
+        }
     }
 
     public static int ROCKET_LOADING_THRESH_DIST = 12;
@@ -212,7 +244,7 @@ public class EarthController extends PlanetController
             return UnitType.Healer;
         } else {
             d = rng.nextDouble();
-            if(d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) < 6) {
+            if(d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) - eworkerCount < 6) {
                 return UnitType.Worker;
             }
             return UnitType.Ranger;

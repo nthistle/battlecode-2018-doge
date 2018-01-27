@@ -19,6 +19,8 @@ public class WorkerHandler extends UnitHandler {
     private EarthController earthParent;
     private MapLocation previousLocation;
 
+    public boolean isThereMoney = false;
+
     public WorkerHandler(PlanetController parent, GameController gc, int id, Random rng) {
         super(parent, gc, id, rng);
         earthParent = (EarthController)parent;
@@ -102,13 +104,15 @@ public class WorkerHandler extends UnitHandler {
                 && ((earthParent.getEWorkerCount() < 3) 
                 || (earthParent.getEWorkerCount() == 3 && nearbyWorkerCount < 3) 
                 || (earthParent.getEWorkerCount() == 4 && nearbyWorkerCount == 2)))
-            || (nearbyStructures.size() >= 1 && nearbyWorkerCount < 5)
+            || (isThereMoney && nearbyStructures.size() >= 1 && nearbyWorkerCount < 5)
             || (earthParent.getRobotCount(UnitType.Factory) >= 4 && nearbyWorkerCount < 3))) { 
+            System.out.println(nearbyWorkerCount + " " + earthParent.getRobotCount(UnitType.Worker) + " " + earthParent.getEWorkerCount());
             for (Direction d : Utils.directions()) {
                 if (gc.canReplicate(id, d)) {
                     gc.replicate(id, d);     
                     quickTurn(gc, myHandler, mapLocation.add(d));
                     earthParent.incrementEWorkerCount();
+                    done = true;
                     break;
                 }
             }            
@@ -195,6 +199,7 @@ public class WorkerHandler extends UnitHandler {
         }
 
         if (!busy && gc.isMoveReady(id)) {
+            int total = 0;
             int startX = mapLocation.getX() - 7;
             int startY = mapLocation.getY() - 7;
             int endX = startX + 14;
