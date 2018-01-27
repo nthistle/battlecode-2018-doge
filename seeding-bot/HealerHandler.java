@@ -9,9 +9,20 @@ import java.util.Random;
 import java.util.Queue;
 
 public class HealerHandler extends UnitHandler {
-
+	public Team enemy; 
+	public MapLocation myLocation;
+	public static final Map<Direction, Integer> threatVec;
     public HealerHandler(PlanetController parent, GameController gc, int id, Random rng) {
         super(parent, gc, id, rng);
+        enemy = ((EarthController)parent).enemyTeam;
+        myLocation = gc.unit(id).location().mapLocation();
+        threatVec = new EnumMap<Direction, Integer>(Direction);
+        for(Direction dir : Direction.values()) {
+        	if(dir == Direction.Center) continue;
+        	else {
+        		threatVec.put(dir, 0);
+        	}
+        }
     }
 
     public void takeTurn() {
@@ -27,10 +38,9 @@ public class HealerHandler extends UnitHandler {
             return;
         }
 
-        MapLocation mapLocation = location.mapLocation();
 
         if (location.isOnPlanet(Planet.Mars)) {
-            System.out.println("LITTINGTON_BILLINGTON");
+            //System.out.println("LITTINGTON_BILLINGTON");
             return;
         }
 
@@ -49,35 +59,79 @@ public class HealerHandler extends UnitHandler {
         
         if(gc.isHealReady(this.id)) { //heal nearest unit    
             Unit healTarget = getMostHurt(nearbyAttackers, unit.attackRange());
-            
         	if(healTarget != null && gc.canHeal(this.id, healTarget.id())) {
         		gc.heal(this.id, healTarget.id());
             }
         }
         
-        if(gc.isMoveReady(this.id)) {
-        	Unit moveTarget = getMostHurt(nearbyAttackers, unit.visionRange());
-        	Direction moveDir = moveTarget != null ? mapLocation.directionTo(moveTarget.location().mapLocation()) : null;
-        	if(moveDir != null) {
-        		Utils.tryMoveRotate(gc, this.id, moveDir);
-        	}
+        if(gc.isMoveReady(this.id)) {        	
+        	Direction runAwayDir = getRunAwayDirection(gc.senseNearbyUnitsByTeam(myLocation, 50, enemy));
+        	if(runAwayDir != Direction.Center) 
+        		Utils.tryMoveWiggleRecur(gc, id, runAwayDir, null);
         	else {
-        		MapLocation target = getTarget(mapLocation, unit.visionRange(), enemyTeam, tm);
-        		
-        		if(target != null) Utils.tryMoveRotate(gc, this.id, mapLocation.directionTo(target));
+        		Unit moveTarget = getMostHurt(nearbyAttackers, unit.visionRange());
+        		Direction moveDir = moveTarget != null ? mapLocation.directionTo(moveTarget.location().mapLocation()) : null;
+        		if(moveDir != null) {
+        			Utils.tryMoveWiggleRecur(gc, this.id, moveDir, null);
+        		}
+        		else {
+        			MapLocation target = getTarget(mapLocation, unit.visionRange(), enemyTeam, tm);
+        			if(target != null) Utils.tryMoveRotate(gc, this.id, mapLocation.directionTo(target));
+        		}
         	}
         }
-        
-        
-
-        MapLocation target = getTarget(mapLocation, unit.visionRange(), enemyTeam, tm);
-
-        if(target != null) Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));
     }
 
     public Direction getRandomDirection(MapLocation mapLocation, MapLocation targetLocation, PathMaster pm) {
         Direction[] dirs = pm.getPathFieldWithCache(targetLocation).getDirectionsAtPoint(mapLocation);
         return dirs[rng.nextInt(dirs.length)];
+    }
+    
+    public getRunAwayDirection(VecUnit threats) {
+    	for(Direction dir : threats.keySet()) {
+    		threats.put(dir, 0);
+    	}
+    	for(int i = 0; i < threats.size(); i++) {
+    		Unit bih = threats.get(i);
+    		MapLocation bihLoc = bih.location().mapLocation();
+    		UnitType bihType = bih.unitType();
+    		int dist = myLocation.distanceSquaredTo(bihLoc);
+    		Direction attackDir = myLocation.subtract(bihLoc);
+    		if(bihType == UnitType.Ranger) {
+    			if(dist >= 10 && dist <= 50) {
+    				threats.put(dir, threats.get(dir) + 30);
+    			}
+    		}
+    		else if(bihType == UnitType.Knight) {
+    			if(dist <= 2) {
+    				threats.put(dir, threats.get(dir) + 80);
+    			}
+    		}
+    		else if(bihType == UnitType.Mage) {
+    			if(dist <= 30) {
+    				threats.put(dir, threats.get(dir) + 105); 
+    			}
+    		}
+    		else if(bihType == UnitType.Healer || bihType == UnitType.Worker) {
+    			if(dist <= 50) {
+    				threats.put(dir, threats.get(dir) + 30); //i mean, we need to run away from enemy healers & workers, just not very fast
+    			}
+    		}
+    		else if(bihType == UnitType.Rocket || bihType == UnitType.Rocket) {
+    			if(dist <= 50) {
+    				threats.put(dir, threats.get(dir) + 25 * () / 5); //weigh danger by distance past 30. 
+    			}
+    		}
+    	}
+    	Direction ret = Direction.Center;
+    	int maxIncomingDmg = 0;
+    	for(Direction dir : threats.keySet()) {
+    		if(threats.get(dir) > maxIncomingDmg) {
+    			maxIncomingDmg = threats.get(dir);
+    			ret = dir;
+    		}
+    	}
+    	return ret; 
     }
 
     private void load(VecUnit all, ArrayList<Unit> attackers, ArrayList<Unit> passive) {
