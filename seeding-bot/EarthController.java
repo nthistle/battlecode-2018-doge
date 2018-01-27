@@ -257,7 +257,7 @@ public class EarthController extends PlanetController
             return UnitType.Healer;
         } else {
             d = rng.nextDouble();
-            if(d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) - eworkerCount < 6) {
+            if(gc.round() < 150 && d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) - eworkerCount < 6) {
                 return UnitType.Worker;
             }
             return UnitType.Ranger;
@@ -276,10 +276,9 @@ public class EarthController extends PlanetController
     }
 
     private void rocketStatus() {
-        if (gc.researchInfo().getLevel(UnitType.Rocket) >= 1 && ((getRobotCount(UnitType.Worker) >= 2 && (rocketsBuilt < (int)(gc.round() / 125)
+        if (gc.researchInfo().getLevel(UnitType.Rocket) >= 1 && ((getRobotCount(UnitType.Worker) >= 2 && ((gc.round() > 250 && rocketsBuilt < (int)(gc.round() / 125) - 1)
             || (gc.getTimeLeftMs() < 1500 && getRobotCount(UnitType.Rocket) < 1)))
             || (getRobotCount(UnitType.Worker) >= 1 && (gc.round() > 200 && gc.units().size() - gc.myUnits().size() > gc.myUnits().size() * 2)))) {
-
             isSavingForRocket = true;
             rocketRequestRound = gc.round();
         }

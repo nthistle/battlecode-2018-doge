@@ -100,10 +100,6 @@ public class WorkerHandler extends UnitHandler {
             }
         }
         
-        // if (solo && (nearbyStructures.size() >= 1 || earthParent.getRobotCount(UnitType.Factory) >= 1)) {
-        //     solo = false;
-        // }
-
         if (gc.karbonite() >= 60 && solo) {
             for (Direction d : Utils.directions()) {
                 if (gc.canReplicate(id, d)) {
@@ -118,14 +114,14 @@ public class WorkerHandler extends UnitHandler {
         }
 
         if (gc.karbonite() >= 60 
-            && (((!solo && earthParent.getRobotCount(UnitType.Factory) == 0 
+            && (((!solo && nearbyBuiltStructureCount == 0 
                 && ((earthParent.getEWorkerCount() < 3) 
                 || (earthParent.getEWorkerCount() == 3 && nearbyWorkerCount < 3) 
                 || (earthParent.getEWorkerCount() == 4 && nearbyWorkerCount == 2)))
             || (nearbyStructures.size() >= 1 && nearbyWorkerCount < 5)))) {
-            // || (earthParent.getRobotCount(UnitType.Factory) >= 4 && nearbyWorkerCount < 3))) { 
-            System.out.println(nearbyWorkerCount + " " + earthParent.getRobotCount(UnitType.Worker) + " " + earthParent.getEWorkerCount());
+            // || (earthParent.getRobotCount(UnitType.Factory) >= 4 && nearbyWorkerCount < 3))) {                         
             for (Direction d : Utils.directions()) {
+                System.out.println(d + " " + gc.canReplicate(id, d));
                 if (gc.canReplicate(id, d)) {
                     gc.replicate(id, d);     
                     quickTurn(gc, myHandler, mapLocation.add(d), false, mm);
@@ -276,8 +272,7 @@ public class WorkerHandler extends UnitHandler {
 
     private void quickTurn(GameController gc, Map<Integer, UnitHandler> myHandler, MapLocation newLocation, boolean mining, MiningMaster mm) {
         Unit newWorker = gc.senseUnitAtLocation(newLocation);
-        int newId = newWorker.id();
-        System.out.println("replicate: " + mining);
+        int newId = newWorker.id();        
         if (mining) {
             myHandler.put(newId, new MiningWorkerHandler(earthParent, gc, newId, rng, mm));
         } else {
