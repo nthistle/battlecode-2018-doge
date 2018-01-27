@@ -21,7 +21,6 @@ public class MiningWorkerHandler extends UnitHandler {
     public void reassignAllMiners(MapLocation location) {
         Point oldCluster = this.m.clusterMap[location.getX()][location.getY()].clusterMaxima;
         this.target = null;
-        this.miniTarget = null;
         boolean hello = m.assignTarget(this);
         if(!hello) {
             ((EarthController)(this.parent)).myHandler.put(this.id, new WorkerHandler(this.parent, this.gc, this.id, this.rng));
@@ -109,71 +108,45 @@ public class MiningWorkerHandler extends UnitHandler {
         Cluster f = m.clusterMap[mapLocation.getX()][mapLocation.getY()];
         if(!didHarvest && f != null && f.clusterMaxima.equals(c.clusterMaxima)) {
             Cluster a = this.m.clusterMap[mapLocation.getX()][mapLocation.getY()];
-            if(this.miniTarget == null && a.clusterMaxima.equals(this.m.clusterMap[this.target.getX()][this.target.getY()].clusterMaxima)) {
-                //we have not picked a new miniTarget
-                if(a.members.size() == 0) {
-                    reassignAllMiners(mapLocation);
-                } else if(a.members.size() == 1) {
-                    Point last = a.members.get(0);
-                    int money = (int)gc.karboniteAt(new MapLocation(parent.getPlanet(), last.x, last.y));
-                    if (money == 0) {
-                        m.initialKarboniteLocationsOriginal[last.x][last.y] = 0;
-                        m.updateIndividual(last, money);
-                        reassignAllMiners(mapLocation);
-                    } else {
-                        this.miniTarget = last;
-                        Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), last.x, last.y)));
-                    }
-                } else {
-                    Point current = new Point(mapLocation.getX(), mapLocation.getY());
-                    Point goal = a.members.get(0);
-                    long distanceAway = Integer.MAX_VALUE;
-                    for(int k = 0; k < a.members.size(); k++) {
-                        long dist = Cluster.distanceSquaredTo(a.members.get(k), current);
-                        if(dist < distanceAway) {
-                            distanceAway = dist;
-                            goal = a.members.get(k);
-                        }
-                    }
-                    this.miniTarget = goal;
-                    Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), goal.x, goal.y)));
-                }
-            } else if(this.miniTarget.equals(new Point(mapLocation.getX(), mapLocation.getY())) && gc.karboniteAt(mapLocation) <= 0L) {
-                //we just reached the square we want and mined it, lets pick a new location
-                if(a.members.size() == 0) {
-                    reassignAllMiners(mapLocation);
-                } else if(a.members.size() == 1) {
-                    Point last = a.members.get(0);
-                    int money = (int)gc.karboniteAt(new MapLocation(parent.getPlanet(), last.x, last.y));
-                    if (money == 0) {
-                        m.initialKarboniteLocationsOriginal[last.x][last.y] = 0;
-                        m.updateIndividual(last, money);
-                        reassignAllMiners(mapLocation);
-                    } else {
-                        this.miniTarget = last;
-                        Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), last.x, last.y)));
-                    }
-                } else {
-                    Point current = new Point(mapLocation.getX(), mapLocation.getY());
-                    Point goal = a.members.get(0);
-                    long distanceAway = Integer.MAX_VALUE;
-                    for(int k = 0; k < a.members.size(); k++) {
-                        long dist = Cluster.distanceSquaredTo(a.members.get(k), current);
-                        if(dist < distanceAway) {
-                            distanceAway = dist;
-                            goal = a.members.get(k);
-                        }
-                    }
-                    this.miniTarget = goal;
-                    Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), goal.x, goal.y)));
-                }
-            } else {
-                //we want to move to miniTarget
-                Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), miniTarget.x, miniTarget.y)));
-            }
             //WE WANT TO MOVE TO A RANDOM JOINT IN THE CLUSTER
             //FIXXXXXX 
-            
+            if(a.members.size() == 0) {
+                reassignAllMiners(mapLocation);
+            } else if(a.members.size() == 1) {
+                Point last = a.members.get(0);
+                int money = (int)gc.karboniteAt(new MapLocation(parent.getPlanet(), last.x, last.y));
+                if (money == 0) {
+                    m.initialKarboniteLocationsOriginal[last.x][last.y] = 0;
+                    m.updateIndividual(last, money);
+                } else {
+                    Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), last.x, last.y)));
+                }
+            } else {
+
+                Point current = new Point(mapLocation.getX(), mapLocation.getY());
+                Point goal = a.members.get(0);
+                long distanceAway = Integer.MAX_VALUE;
+                for(int k = 0; k < a.members.size(); k++) {
+                    long dist = Cluster.distanceSquaredTo(a.members.get(k), current);
+                    if(dist < distanceAway) {
+                        distanceAway = dist;
+                        goal = a.members.get(k);
+                    }
+                }
+                Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), goal.x, goal.y)));
+
+                /*Point random;
+                if (a.members.size() == 1) {
+                    random = a.members.get(0);                 
+                } else {
+                    do {
+                        random = a.members.get(this.parent.rng.nextInt(a.members.size()));
+                    } while((new Point(mapLocation.getX(), mapLocation.getY()).equals(random)));                    
+                }
+
+                Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), random.x, random.y)));
+                */
+            }
         } else {
             if(this.path != null && this.path.isPointSet(mapLocation.getX(), mapLocation.getY())) {
                 Direction dirToMoveIn = this.path.getDirectionAtPoint(mapLocation);
