@@ -63,47 +63,11 @@ public class Cluster {
 
 	//returns true if there is still karbonite left in the cluster, returns false if there is no more karbonite left in the cluster
 	public boolean update(Point location, int minedAmount) {
-		Iterator<Point> it = this.members.iterator();
-		this.maxPoint = this.members.get(0);
-		while(it.hasNext()) {
-			Point curr = it.next();
-			if(location.equals(curr)) {
-				int base = m.initialKarboniteLocationsOriginal[location.x][location.y];
-				if(base - minedAmount <= 0) {
-					m.initialKarboniteLocationsOriginal[location.x][location.y] = 0;
-					it.remove();
-					continue;
-				} else {
-					m.initialKarboniteLocationsOriginal[location.x][location.y] -= minedAmount;
-				}
-			}
-			if(m.initialKarboniteLocationsOriginal[curr.x][curr.y] > m.initialKarboniteLocationsOriginal[this.maxPoint.x][this.maxPoint.y]) {
-				this.maxPoint = new Point(curr.x, curr.y);
-			}
-		}
-		//System.out.println(Arrays.toString(this.members.toArray()));
-		//System.out.println(this.maxPoint);
-		if(this.members.size() == 0) {
-			System.out.println("We don't have anything else in this cluster at [" + clusterMaxima.x + "," + clusterMaxima.y + "]");
-			this.maxPoint = null;
-			Iterator<Cluster> clusterIt = m.clusters.iterator();
-			while(clusterIt.hasNext()) {
-				Cluster q = clusterIt.next();
-				if(q.clusterMaxima.equals(this.clusterMaxima))
-					clusterIt.remove();
-			}
-			this.m.parentController.pm.clearPFCache(new MapLocation(this.m.parentController.getPlanet(), this.clusterMaxima.x, this.clusterMaxima.y));
-			for(int i = 0; i < this.m.clusters.size(); i++) {
-				Cluster q = this.m.clusters.get(i);
-				if(this.m.parentController.pm.getCachedPathField(q.clusterMaxima.x, q.clusterMaxima.y) == null) {
-					MapLocation end = new MapLocation(this.m.parentController.getPlanet(), q.clusterMaxima.x, q.clusterMaxima.y);
-					this.m.parentController.pm.getPathFieldWithCache(end);
-					break;
-				}
-			}
-			return false;
-		}
-		return true;
+		return this.m.updateIndividual(location, this.m.initialKarboniteLocationsOriginal[location.x][location.y] - minedAmount);
+	}
+
+	public int value() {
+		return Cluster.value(this);	
 	}
 
 	public static int heuristic(Cluster a) {
@@ -117,8 +81,8 @@ public class Cluster {
             }
 		}
 
-		return nearestDist * -10 + a.members.size() * 2 + (int) Math.pow(Cluster.value(a), 2);
-		//return a.members.size() * 2 + (int) Math.pow(Cluster.value(a), 2); 
+		//return nearestDist * -10 + a.members.size() * 2 + (int) Math.pow(Cluster.value(a), 2);
+		return a.members.size() * 2 + (int) Math.pow(Cluster.value(a), 1.5); 
 	}
 
 	public static int value(Cluster a) {
