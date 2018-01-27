@@ -78,6 +78,7 @@ public class MiningWorkerHandler extends UnitHandler {
             Cluster a = this.m.clusterMap[mapLocation.getX()][mapLocation.getY()];
             //WE WANT TO MOVE TO A RANDOM JOINT IN THE CLUSTER
             //FIXXXXXX            
+            System.out.println(a.members.size());
             if (a.members.size() == 1) {
                 Point last = a.members.get(0);
                 int money = (int)gc.karboniteAt(new MapLocation(parent.getPlanet(), last.x, last.y));

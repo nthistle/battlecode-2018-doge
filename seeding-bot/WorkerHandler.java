@@ -1,4 +1,5 @@
 import bc.*;
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -108,6 +109,10 @@ public class WorkerHandler extends UnitHandler {
                 nearbyTroopCount++;
             }
         }
+
+        if (solo && mm.totalValue() < 200) {
+            solo = false;
+        }
         
         if (gc.karbonite() >= 60 && solo) {
             for (Direction d : Utils.directions()) {
@@ -201,6 +206,12 @@ public class WorkerHandler extends UnitHandler {
                 earthParent.rocketsBuilt += 1; // not yet completely accurate
                 busy = true;
                 done = true;                                    
+                MapLocation tempLocation = mapLocation.add(buildDirection);
+                int tempX = tempLocation.getX();
+                int tempY = tempLocation.getY();
+                if (mm.clusterMap[tempX][tempY] != null) {
+                    mm.clusterMap[tempX][tempY].update(new Point(tempX, tempY), (int)unit.workerHarvestAmount());
+                }
             }                    
         }        
 
@@ -212,12 +223,19 @@ public class WorkerHandler extends UnitHandler {
                 earthParent.incrementRobotCount(UnitType.Factory);
                 earthParent.isSavingForFactory = false;
                 busy = true;
-                done = true;                
+                done = true;
+                MapLocation tempLocation = mapLocation.add(buildDirection);
+                int tempX = tempLocation.getX();
+                int tempY = tempLocation.getY();
+                if (mm.clusterMap[tempX][tempY] != null) {
+                    mm.clusterMap[tempX][tempY].update(new Point(tempX, tempY), (int)unit.workerHarvestAmount());
+                }
             }
         }
 
         if (!busy && nearbyWorkerCount > 5) {
             quickTurn(gc, myHandler, mapLocation, true, mm);
+            earthParent.decrementEWorkerCount();
         }
 
         if (!busy && targetLocation != null) {
@@ -250,6 +268,12 @@ public class WorkerHandler extends UnitHandler {
             if (harvestDirection != null) {                
                 gc.harvest(id, harvestDirection);            
                 done = true;
+                MapLocation tempLocation = mapLocation.add(harvestDirection);
+                int tempX = tempLocation.getX();
+                int tempY = tempLocation.getY();
+                if (mm.clusterMap[tempX][tempY] != null) {
+                    mm.clusterMap[tempX][tempY].update(new Point(tempX, tempY), (int)unit.workerHarvestAmount());
+                }                
             }            
         }
         
@@ -258,14 +282,15 @@ public class WorkerHandler extends UnitHandler {
                 gc.moveRobot(id, moveDirection);
             } else if (targetLocation == null) {
                 MapLocation nearestMoney = null;
-                int nearestDistance = 0;   
+                int nearestDistance = Integer.MAX_VALUE;   
                 int startX = mapLocation.getX() - 7;
                 int startY = mapLocation.getY() - 7;
                 int endX = startX + 14;
                 int endY = startY + 14;
+                int[][] tempMoneyLocations = mm.initialKarboniteLocationsOriginal;
                 for (int x = startX; x <= endX; x++) {
                     for (int y = startY; y <= endY; y++) {
-                        if (x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight()) {
+                        if (x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight() || tempMoneyLocations[x][y] <= 0) {
                             continue;
                         }
                         MapLocation tempLocation = new MapLocation(Planet.Earth, x, y);                        

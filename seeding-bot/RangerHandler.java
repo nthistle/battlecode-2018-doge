@@ -56,7 +56,7 @@ public class RangerHandler extends UnitHandler {
         load(nearbyEnemies, nearbyEnemyAttackers, nearbyEnemyPassive);        
 
         MapLocation target = getTarget(mapLocation, unit.visionRange(), enemyTeam, tm);
-
+                
         Unit focusEnemy = getClosestEnemy(nearbyEnemyAttackers, mapLocation);
         if (focusEnemy != null && focusEnemy.location().mapLocation().distanceSquaredTo(mapLocation) > 12) {
             focusEnemy = getWeakestEnemy(nearbyEnemyAttackers, mapLocation);

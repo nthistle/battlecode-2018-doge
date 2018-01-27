@@ -239,7 +239,7 @@ public class EarthController extends PlanetController
             if(workersNecessary > 0 && fh.peekBuildQueue()!=UnitType.Worker) {
                 fh.clearBuildQueue();
                 fh.addToBuildQueue(UnitType.Worker);
-                workersNecessary--;
+                workersNecessary--;                
             }
             if(fh.getBuildQueueSize() < FactoryHandler.IDEAL_BQUEUE_SIZE) {
                 fh.addToBuildQueue(this.getRandomBasePhaseUnit());
@@ -255,7 +255,7 @@ public class EarthController extends PlanetController
         //     return UnitType.Healer;
         // } else {
             d = rng.nextDouble();
-            if(gc.round() < 150 && d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) - eworkerCount < 6) {
+            if(gc.round() < 150 && d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) - eworkerCount < 6) {                
                 return UnitType.Worker;
             }
             return UnitType.Ranger;
@@ -332,6 +332,10 @@ public class EarthController extends PlanetController
                 tm.addTarget(temp);
             }
         }
+    }
+
+    public void decrementEWorkerCount() {
+        this.eworkerCount--;
     }
 
     public void incrementEWorkerCount() {
@@ -441,7 +445,7 @@ public class EarthController extends PlanetController
                 newHandler = new RangerHandler(this, gc, unit.id(), rng);
                 break;
             case Worker:
-                if(this.getEWorkerCount() < 3)
+                if(this.getEWorkerCount() < 3 || mm.totalValue() < 200)
                     newHandler = new WorkerHandler(this, gc, unit.id(), rng);
                 else
                     newHandler = new MiningWorkerHandler(this, gc, unit.id(), rng, this.mm);
