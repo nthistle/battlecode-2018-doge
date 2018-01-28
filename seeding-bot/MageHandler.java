@@ -16,10 +16,10 @@ public class MageHandler extends UnitHandler {
     @Override
     public void takeTurn(Unit unit) {
         handleMovement(unit);
-        handleAttack(unit);
+        // handleAttack(unit);
     }
 
-    public void handleMovement() {
+    public void handleMovement(Unit unit) {
         List<Direction> closerDirs = new ArrayList<Direction>();
         List<Direction> sameDirs = new ArrayList<Direction>();
         for(Direction dir : Utils.directions()) {

@@ -3,12 +3,14 @@ import java.util.*;
 import java.awt.Point;
 
 public class CommunicationsManager {
+	
 	private MarsController parent;
 	private Random rng;
 	private GameController gc;
 	private Team myTeam;
 	private Team enemyTeam;
 	private Set<Point> loggedPoints;
+
 	public CommunicationsManager(MarsController parent, GameController gc, Random rng) {
 		this.parent = parent;
 		this.rng = rng;
@@ -20,7 +22,7 @@ public class CommunicationsManager {
 	
 	public void update() {
 		//clear the array
-		System.out.println(gc.getTeamArray(Planet.Mars).toString());
+		// System.out.println(gc.getTeamArray(Planet.Mars).toString());
 		
 		for(int i = 0; i < 100; i++) {
 			gc.writeTeamArray(i, 0);
