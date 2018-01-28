@@ -111,7 +111,7 @@ public class WorkerHandler extends UnitHandler {
             }
         }
 
-        if (solo && mm.totalValue() < 200) {
+        if (solo && mm.totalValue() < 300) {
             solo = false;
         }
         
@@ -233,7 +233,7 @@ public class WorkerHandler extends UnitHandler {
             }
         }
 
-        if (!busy && nearbyWorkerCount > 5 && mm.totalValue() > 200) {
+        if (!busy && nearbyWorkerCount > 5 && mm.totalValue() > 300) {
             quickTurn(gc, myHandler, mapLocation, true, mm);
             earthParent.decrementEWorkerCount();
         }
