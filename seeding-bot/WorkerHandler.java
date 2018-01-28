@@ -19,11 +19,12 @@ public class WorkerHandler extends UnitHandler {
     private final int TARGET_REFRESH_RATE = 15;
 
     private Bug bug;    
-    private EarthController earthParent;
-    private MapLocation previousLocation;
+    private EarthController earthParent;    
 
     private MapLocation targetLocation = null;
     private int targetTurn = 0;
+
+    private MapLocation previousLocation;
 
     public boolean solo = false;
 
@@ -127,7 +128,7 @@ public class WorkerHandler extends UnitHandler {
             }
         }
 
-        if (gc.karbonite() >= 60 
+        if (earthParent.getEWorkerCount() <= 8 && gc.karbonite() >= 60 
             && (((!solo && nearbyBuiltStructureCount == 0 
                 && ((earthParent.getEWorkerCount() < 3) 
                 || (earthParent.getEWorkerCount() == 3 && nearbyWorkerCount < 3) 
@@ -183,8 +184,7 @@ public class WorkerHandler extends UnitHandler {
         // don't try to assist in building and run in opposite direction
         if (!busy && nearestThreat != null && earthParent.getRobotCount(UnitType.Factory) != 0 && Utils.tryMoveRotate(gc, id, nearestThreat.directionTo(mapLocation))) {
             targetLocation = null;
-            busy = true;            
-            previousLocation = mapLocation;
+            busy = true;                        
         }
 
         // if cannot build but there are nearby structures move towards them
@@ -192,8 +192,7 @@ public class WorkerHandler extends UnitHandler {
             // System.out.println(nearestStructure);
             move(pm, mapLocation, nearestStructure);
             targetLocation = null;
-            busy = true;
-            previousLocation = mapLocation;
+            busy = true;            
         }
 
         // simple rocket build code
@@ -233,7 +232,7 @@ public class WorkerHandler extends UnitHandler {
             }
         }
 
-        if (!busy && nearbyWorkerCount > 5) {
+        if (!busy && nearbyWorkerCount > 5 && mm.totalValue() > 200) {
             quickTurn(gc, myHandler, mapLocation, true, mm);
             earthParent.decrementEWorkerCount();
         }
@@ -279,7 +278,7 @@ public class WorkerHandler extends UnitHandler {
         
         if (!busy && gc.isMoveReady(id)) {
             if (moveDirection != null) {
-                gc.moveRobot(id, moveDirection);
+                gc.moveRobot(id, moveDirection);                
             } else if (targetLocation == null) {
                 MapLocation nearestMoney = null;
                 int nearestDistance = Integer.MAX_VALUE;   
@@ -333,7 +332,9 @@ public class WorkerHandler extends UnitHandler {
             moveDirection = findMoveDirection(mapLocation);
             if (moveDirection != null && Utils.tryMoveRotate(gc, id, moveDirection)) {
                 previousLocation = mapLocation;
-            }                                    
+            } else if (previousLocation != null && Utils.tryMoveRotate(gc, id, mapLocation.directionTo(previousLocation))) {
+                previousLocation = mapLocation;
+            }
         }
     }
 
@@ -371,11 +372,11 @@ public class WorkerHandler extends UnitHandler {
             if (previousLocation != null && tryLocation.equals(previousLocation)) {
                 continue;
             }
-            if (Utils.canOccupy(gc, tryLocation, ((EarthController)parent), tried)) {
+            if (canOccupyMove(tryLocation, tried)) {
                 int empty = 0;
                 for (Direction dd : Utils.directionList) {
                     MapLocation tryTryLocation = tryLocation.add(dd);
-                    if (Utils.canOccupy(gc, tryLocation, ((EarthController)parent), tried)) {
+                    if (canOccupyMove(tryLocation, tried)) {
                         empty++;
                     }
                 }                
@@ -395,14 +396,14 @@ public class WorkerHandler extends UnitHandler {
         int mostEmpty = 0;                        
         for (Direction d : Utils.directionList) {
             MapLocation tryLocation = unit.location().mapLocation().add(d);
-            if (Utils.canOccupy(gc, tryLocation, parent, tried)) {
+            if (canOccupyMove(tryLocation, tried)) {
                 if (!testBuildLocation(tryLocation, d, triedTried)) {
                     continue;
                 }
                 int empty = 0;                
                 for (Direction dd : Utils.directionList) {
                     MapLocation tryTryLocation = tryLocation.add(dd);
-                    if (Utils.canOccupy(gc, tryLocation, ((EarthController)parent), tried)) {
+                    if (canOccupyMove(tryTryLocation, tried)) {
                         empty++;
                     } 
                 }                
@@ -416,20 +417,89 @@ public class WorkerHandler extends UnitHandler {
     }
 
     private boolean testBuildLocation(MapLocation location, Direction direction, HashSet<MapLocation> triedTried) {
+        if (earthParent.getRobotCount(UnitType.Factory) == 0 && gc.round() > 100) {
+            return true;
+        }
+        if (bc.bcDirectionIsDiagonal(direction)) {
+            Direction left = bc.bcDirectionRotateLeft(direction);
+            Direction right = bc.bcDirectionRotateRight(direction);
+            MapLocation upper = location.add(direction);
+            MapLocation leftUpper = location.add(left);
+            MapLocation rightUpper = location.add(right);
+            left = bc.bcDirectionRotateLeft(left);
+            right = bc.bcDirectionRotateRight(right);
+            MapLocation leftSide = location.add(left);
+            MapLocation rightSide = location.add(right);
+            left = bc.bcDirectionRotateLeft(left);
+            right = bc.bcDirectionRotateRight(right);   
+            MapLocation leftLower = location.add(left);
+            MapLocation rightLower = location.add(right);         
+            if (canOccupy(upper) && !(canOccupy(leftLower) && canOccupy(leftUpper)) && !(canOccupy(rightLower) && canOccupy(rightUpper))) {
+                return false;
+            }
+            if (canOccupy(leftUpper) && !canOccupy(leftLower) && !(canOccupy(rightLower) && canOccupy(rightUpper))) {
+                return false;
+            }
+            if (canOccupy(rightUpper) && !canOccupy(rightLower) && !(canOccupy(leftLower) && canOccupy(leftUpper))) {
+                return false;
+            }            
+            if (canOccupy(leftSide) && !canOccupy(leftLower) && !(canOccupy(rightLower) && canOccupy(rightUpper) && canOccupy(leftUpper))) {
+                return false;
+            }
+            if (canOccupy(rightSide) && !canOccupy(rightLower) && !(canOccupy(leftLower) && canOccupy(leftUpper) && canOccupy(rightUpper))) {
+                return false;
+            }
+        } else {
+            Direction left = bc.bcDirectionRotateLeft(direction);
+            Direction right = bc.bcDirectionRotateRight(direction);
+            MapLocation upper = location.add(direction);
+            MapLocation leftUpper = location.add(left);
+            MapLocation rightUpper = location.add(right);
+            left = bc.bcDirectionRotateLeft(left);
+            right = bc.bcDirectionRotateRight(right);
+            MapLocation leftSide = location.add(left);
+            MapLocation rightSide = location.add(right);
+            if (canOccupy(upper) && !canOccupy(leftSide) && !canOccupy(rightSide)) {
+                return false;
+            }
+            if (canOccupy(leftUpper) && !canOccupy(leftSide) && !(canOccupy(rightSide) && canOccupy(upper))) {
+                return false;
+            }
+            if (canOccupy(rightUpper) && !canOccupy(rightSide) && !(canOccupy(leftSide) && canOccupy(upper))) {
+                return false;
+            }            
+        }
         boolean status = true;        
         for (int i = 0; i < Utils.directionList.size(); i++) {
             Direction tryDirection = Utils.directionList.get(i);
             MapLocation tryLocation = location.add(tryDirection);                        
-            status = status && canOccupyBuild(gc, tryLocation, parent, triedTried);
+            status = status && canOccupyBuild(tryLocation, triedTried);
         }        
         return status;
     }
 
-    public static boolean canOccupyBuild(GameController gc, MapLocation location, PlanetController parent, HashSet<MapLocation> visited) {
+    public boolean canOccupy(MapLocation location) {
+        PlanetMap map = earthParent.map;
+        return map.onMap(location) && map.isPassableTerrainAt(location) == 1 && !(gc.hasUnitAtLocation(location) && gc.senseUnitAtLocation(location).unitType() == UnitType.Factory);        
+    }
+
+    public boolean canOccupyMove(MapLocation location, HashSet<MapLocation> visited) {
         if (visited.contains(location)) {
             return true;
         }
-        PlanetMap map = ((EarthController)parent).map;
+        PlanetMap map = earthParent.map;
+        boolean status = map.onMap(location) && map.isPassableTerrainAt(location) == 1 && !gc.hasUnitAtLocation(location);
+        if (status) {
+            visited.add(location);
+        }
+        return status;
+    }
+
+    public boolean canOccupyBuild(MapLocation location, HashSet<MapLocation> visited) {
+        if (visited.contains(location)) {
+            return true;
+        }
+        PlanetMap map = earthParent.map;
         boolean status = !map.onMap(location) || map.isPassableTerrainAt(location) == 0 || !gc.hasUnitAtLocation(location) || (gc.senseUnitAtLocation(location).unitType() != UnitType.Factory && gc.senseUnitAtLocation(location).unitType() != UnitType.Rocket);
         if (status) {
             visited.add(location);

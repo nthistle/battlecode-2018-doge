@@ -235,19 +235,7 @@ public class Utils
         }
         return false;
     }
-
-    public static boolean canOccupy(GameController gc, MapLocation location, PlanetController parent, HashSet<MapLocation> visited) {
-        if (visited.contains(location)) {
-            return true;
-        }
-        PlanetMap map = ((EarthController)parent).map;                
-        boolean status = map.onMap(location) && map.isPassableTerrainAt(location) == 1 && !gc.hasUnitAtLocation(location);
-        if (status) {
-            visited.add(location);
-        }
-        return status;
-    }
-    
+        
     public static boolean canOccupyMars(GameController gc, MapLocation location) {
         PlanetMap map = gc.startingMap(Planet.Mars);
         boolean status = map.onMap(location) && map.isPassableTerrainAt(location) == 1 && !gc.hasUnitAtLocation(location);
