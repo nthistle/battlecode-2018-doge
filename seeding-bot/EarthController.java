@@ -83,7 +83,7 @@ public class EarthController extends PlanetController
             if(gc.round() > 0 && gc.round() % 50 == 0) {
                 mm.update();
                 System.out.println("Successfully updated MiningMaster");
-                mm.printKarboniteMap();
+                //mm.printKarboniteMap();
             }
             //end
 
