@@ -82,6 +82,8 @@ public class EarthController extends PlanetController
             //update miningmaster every 50 rounds
             if(gc.round() > 0 && gc.round() % 50 == 0) {
                 mm.update();
+                System.out.println("Successfully updated MiningMaster");
+                mm.printKarboniteMap();
             }
             //end
 

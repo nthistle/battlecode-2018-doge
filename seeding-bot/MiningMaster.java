@@ -123,10 +123,13 @@ public class MiningMaster {
 	}
 
 	public void printKarboniteMap() {
-		for(int i = 0; i < initialKarboniteLocations.length; i++) {
-			for(int j = 0; j < initialKarboniteLocations[0].length; j++) {
-				String a = initialKarboniteLocations[i][j] + "";
-				if(initialKarboniteLocations[i][j]>9)
+
+		for(int j = initialKarboniteLocationsOriginal[0].length - 1; j > -1 ; j--) {
+
+			for(int i = 0; i < initialKarboniteLocationsOriginal.length; i++) {
+			
+				String a = initialKarboniteLocationsOriginal[i][j] + "";
+				if(initialKarboniteLocationsOriginal[i][j]>9)
 					System.out.print(a + "   ");
 				else
 					System.out.print(a + "    ");
