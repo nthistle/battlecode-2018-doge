@@ -45,6 +45,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	
 	public void recieveCommunications() {
 		Veci32 data = gc.getTeamArray(Planet.Mars);
+		
 	}
 	
 	public MapLocation optimalLandingLocation() {
