@@ -104,6 +104,18 @@ public class HealerHandler extends UnitHandler {
         		}
         	}
         }
+
+        if (!gc.isMoveReady(id)) {
+            return;
+        }
+
+        for(int i = 0; i < 5; i ++) {
+            Direction moveDir = Utils.getRandomDirection(Direction.values(), this.rng);
+            if(gc.canMove(this.id, moveDir)) {
+                gc.moveRobot(this.id, moveDir);
+                break;
+            }
+        }
         //System.out.println(unit.location().mapLocation());
     }
 

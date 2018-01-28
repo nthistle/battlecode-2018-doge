@@ -24,7 +24,7 @@ public class MarsHealerHandler extends UnitHandler {
     public Map<Direction, Integer> threatMap;
 
     public MarsHealerHandler(PlanetController parent, GameController gc, int id, Random rng) {
-        super(parent, gc, id, rng);
+        super(parent, gc, id, rng);        
         marsParent = (MarsController)parent;
         bug = new Bug(gc, id, marsParent.map);
         enemy = marsParent.enemyTeam;
