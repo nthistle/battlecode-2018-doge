@@ -102,12 +102,13 @@ public class MiningWorkerHandler extends UnitHandler {
                     }
                 }
             }
-        } 
-
-        if(this.target == null)
-            return;        
+        }
 
         boolean didHarvest = doHarvest(unit);
+
+        if(this.target == null)
+            return;
+        
         Cluster c = m.clusterMap[target.getX()][target.getY()];
         Cluster f = m.clusterMap[mapLocation.getX()][mapLocation.getY()];
         if(!didHarvest && f != null && f.clusterMaxima.equals(c.clusterMaxima)) {

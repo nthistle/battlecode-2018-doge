@@ -50,20 +50,20 @@ public class EarthController extends PlanetController
     public int queuedWorkers = 0;
 
     public void control() {
+
+        myHandler = new HashMap<Integer, UnitHandler>();
+        
+        llh = new LaunchingLogicHandler(this, gc, -1, rng);
+        mm = new MiningMaster(this);
+        mm.generate();
     
         System.out.println("Earth Controller initiated");
     
         globalValues();
 
-        myHandler = new HashMap<Integer, UnitHandler>();
-
         initializeTMTargets();
 
         queueResearch();
-        
-        llh = new LaunchingLogicHandler(this, gc, -1, rng);
-        mm = new MiningMaster(this);
-        mm.generate();
         
         rocketWarning = new Direction[(int)this.map.getWidth()][(int)this.map.getHeight()];
         
@@ -92,7 +92,6 @@ public class EarthController extends PlanetController
 
             for(int id : new HashSet<Integer>(myHandler.keySet())) {
                 if(!aliveIDs.contains(id)) { // unit has died
-                    System.out.println(id + " has died!");
                     myHandler.get(id).handleDeath();
                     myHandler.remove(id);
                 }
@@ -198,8 +197,7 @@ public class EarthController extends PlanetController
                             }
                         }                        
                     }
-                }
-                            
+                }                            
             }            
         }
     }
@@ -285,10 +283,10 @@ public class EarthController extends PlanetController
         if (getRobotCount(UnitType.Ranger) > 3 && getRobotCount(UnitType.Healer) < 2) {
             return UnitType.Healer;
         }
-        if (getRobotCount(UnitType.Healer) < (int)(0.5 * getRobotCount(UnitType.Ranger))) {
+        if (getRobotCount(UnitType.Ranger) < (int)(0.5 * getRobotCount(UnitType.Healer))) {
             return UnitType.Ranger;
         }
-        if(d < 0.4 && getRobotCount(UnitType.Ranger) > 6) return UnitType.Healer;
+        if (d < 0.33 && getRobotCount(UnitType.Ranger) > 6) return UnitType.Healer;
         else return UnitType.Ranger;
     }
 
@@ -324,33 +322,41 @@ public class EarthController extends PlanetController
     }
 
     // For now, only does Rangers/Workers/Rockets, and only takes us to Round 625
-    private void queueResearch() {        
+    private void queueResearch() {                
+        if (mm.totalValue() > 300) {
+            gc.queueResearch(UnitType.Worker); // Worker I (25)
+            // completed by round 25            
+        }
+        
         gc.queueResearch(UnitType.Ranger); // Ranger I (25)
-        // completed by round 25
-
-        gc.queueResearch(UnitType.Worker); // Worker I (25)
         // completed by round 50
 
-        gc.queueResearch(UnitType.Rocket); // Rocket I (50)
-        // completed by round 100
-
         gc.queueResearch(UnitType.Ranger); // Ranger II (100)
+        // completed by round 150
+
+        gc.queueResearch(UnitType.Rocket); // Rocket I (50)
         // completed by round 200
 
+        gc.queueResearch(UnitType.Healer); // Rocket I (25)
+        // completed by round 225
+
+        gc.queueResearch(UnitType.Healer); // Rocket I (100)
+        // completed by round 325
+
         gc.queueResearch(UnitType.Rocket); // Rocket II (100)
-        // completed by round 300
+        // completed by round 425
 
         gc.queueResearch(UnitType.Rocket); // Rocket III (100)
-        // completed by round 400
+        // completed by round 525
 
         gc.queueResearch(UnitType.Worker); // Worker II (75)
-        // completed by round 475
+        // completed by round 600
 
         gc.queueResearch(UnitType.Worker); // Worker III (75)
-        // completed by round 550
+        // completed by round 675
 
         gc.queueResearch(UnitType.Worker); // Worker IV (75)
-        // completed by round 625
+        // completed by round 750
     }
 
     public void initializeTMTargets() {
@@ -475,7 +481,7 @@ public class EarthController extends PlanetController
                 newHandler = new RangerHandler(this, gc, unit.id(), rng);
                 break;
             case Worker:
-                if(this.getEWorkerCount() < 3 || mm.totalValue() < 200) {                    
+                if(this.getEWorkerCount() < 3 || mm.totalValue() < 300) {
                     newHandler = new WorkerHandler(this, gc, unit.id(), rng);
                 } else {
                     //newHandler = new MiningWorkerHandler(this, gc, unit.id(), rng, this.mm);
