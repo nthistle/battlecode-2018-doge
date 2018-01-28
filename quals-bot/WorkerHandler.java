@@ -248,7 +248,7 @@ public class WorkerHandler extends UnitHandler {
         }
 
         if (!busy && targetLocation != null) {
-            System.out.println(targetLocation);
+            // System.out.println(targetLocation);
             move(pm, mapLocation, targetLocation);
         }
 
@@ -375,7 +375,7 @@ public class WorkerHandler extends UnitHandler {
             //TODO chnage to convertToMiner
             //myHandler.put(newId, new MiningWorkerHandler(earthParent, gc, newId, rng, mm));
             if(newWorker.unitType() == UnitType.Worker) {
-                System.out.println("Just requested a brand-new miner");
+                // System.out.println("Just requested a brand-new miner");
                 mm.convertToMiner(newId);
             }
         } else {
