@@ -210,7 +210,7 @@ public class WorkerHandler extends UnitHandler {
                 int tempX = tempLocation.getX();
                 int tempY = tempLocation.getY();
                 if (mm.clusterMap[tempX][tempY] != null) {
-                    mm.clusterMap[tempX][tempY].update(new Point(tempX, tempY), (int)unit.workerHarvestAmount());
+                    mm.clusterMap[tempX][tempY].update(new Point(tempX, tempY), (int)gc.karboniteAt(tempLocation));
                 }
             }                    
         }        
@@ -228,7 +228,7 @@ public class WorkerHandler extends UnitHandler {
                 int tempX = tempLocation.getX();
                 int tempY = tempLocation.getY();
                 if (mm.clusterMap[tempX][tempY] != null) {
-                    mm.clusterMap[tempX][tempY].update(new Point(tempX, tempY), (int)unit.workerHarvestAmount());
+                    mm.clusterMap[tempX][tempY].update(new Point(tempX, tempY), (int)gc.karboniteAt(tempLocation));
                 }
             }
         }
@@ -361,19 +361,6 @@ public class WorkerHandler extends UnitHandler {
         }        
         myHandler.get(newId).takeTurn(newWorker);
     }
-
-    // private boolean tryReplicateRotate(GameController gc, MapLocation mapLocation, Direction direction, Map<Integer, UnitHandler> myHandler) {
-    //     int index = Utils.directionList.indexOf(direction);
-    //     for (int i = 0; i < Utils.bigRotation.length; i++) {
-    //         Direction tryDirection = Utils.directionList.get((8 + index + Utils.bigRotation[i]) % 8);
-    //         if (gc.canReplicate(id, tryDirection)) {
-    //             gc.replicate(id, tryDirection);
-    //             quickTurn(gc, myHandler, mapLocation.add(tryDirection));
-    //             return true;
-    //         }
-    //     }
-    //     return false;
-    // }
 
     private Direction findMoveDirection(MapLocation mapLocation) {
         HashSet<MapLocation> tried = new HashSet<MapLocation>();

@@ -45,7 +45,9 @@ public class EarthController extends PlanetController
     public boolean isSavingForRocket = false;
     public long rocketRequestRound = 0;
     public long rocketsBuilt = 0;
+
     public int eworkerCount = 0;
+    public int queuedWorkers = 0;
 
     public void control() {
     
@@ -239,7 +241,7 @@ public class EarthController extends PlanetController
             return;
         }
 
-        int workersNecessary = 3 - this.getEWorkerCount();
+        int workersNecessary = 3 - this.getEWorkerCount() - queuedWorkers;
         // never want to get below 3 workers, have the factories URGENTLY make them
 
         Unit unit;
@@ -252,6 +254,7 @@ public class EarthController extends PlanetController
             if(workersNecessary > 0 && fh.peekBuildQueue()!=UnitType.Worker) {
                 fh.clearBuildQueue();
                 fh.addToBuildQueue(UnitType.Worker);
+                queuedWorkers++;
                 workersNecessary--;                
             }
             if(fh.getBuildQueueSize() < FactoryHandler.IDEAL_BQUEUE_SIZE) {
@@ -268,9 +271,9 @@ public class EarthController extends PlanetController
         //     return UnitType.Healer;
         // } else {
         d = rng.nextDouble();
-        if(gc.round() < 150 && d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) - eworkerCount < 6) {
-            return UnitType.Worker;
-        }
+        // if(gc.round() < 150 && d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) - eworkerCount < 6) {
+        //     return UnitType.Worker;
+        // }
         return UnitType.Ranger;
     }
 
@@ -457,7 +460,7 @@ public class EarthController extends PlanetController
                 newHandler = new RangerHandler(this, gc, unit.id(), rng);
                 break;
             case Worker:
-                if(this.getEWorkerCount() < 3 || mm.totalValue() < 200)
+                if(this.getEWorkerCount() < 3 || mm.totalValue() < 200)                    
                     newHandler = new WorkerHandler(this, gc, unit.id(), rng);
                 else
                     newHandler = new MiningWorkerHandler(this, gc, unit.id(), rng, this.mm);

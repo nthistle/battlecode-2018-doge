@@ -65,6 +65,9 @@ public class FactoryHandler extends UnitHandler {
     	if(myParent.isSavingForRocket)  usableKarbonite -= bc.bcUnitTypeBlueprintCost(UnitType.Rocket);
 
     	if(gc.canProduceRobot(this.id, buildQueue.peek()) && usableKarbonite > bc.bcUnitTypeFactoryCost(buildQueue.peek())) {
+            if (buildQueue.peek() == UnitType.Worker && myParent.queuedWorkers > 0) {
+                myParent.queuedWorkers--;
+            }
     		// now we can build this guy
     		gc.produceRobot(this.id, buildQueue.poll());
     	}
