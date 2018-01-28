@@ -77,7 +77,8 @@ public class RangerHandler extends UnitHandler {
                     if (gc.isAttackReady(id) && gc.canAttack(id, focusEnemy.id())) {
                         gc.attack(id, focusEnemy.id());
                     }
-                    Utils.tryMoveWiggleRecur(gc, id, enemyLocation.directionTo(mapLocation), null);
+                    // Utils.tryMoveWiggleRecur(gc, id, enemyLocation.directionTo(mapLocation), null);
+                    Utils.tryMoveWiggle(gc, id, enemyLocation.directionTo(mapLocation));
                 } else {                
                     bug.bugMove(mapLocation, target);
                     // Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));
@@ -92,7 +93,8 @@ public class RangerHandler extends UnitHandler {
                 if (gc.isAttackReady(id) && gc.canAttack(id, focusEnemy.id())) {
                     gc.attack(id, focusEnemy.id());
                 }
-                Utils.tryMoveWiggleRecur(gc, id, enemyLocation.directionTo(mapLocation), null);
+                // Utils.tryMoveWiggleRecur(gc, id, enemyLocation.directionTo(mapLocation), null);
+                Utils.tryMoveWiggle(gc, id, enemyLocation.directionTo(mapLocation));
             } else {                
                 bug.bugMove(mapLocation, enemyLocation);                
                 // Utils.tryMoveRotate(gc, id, mapLocation.directionTo(target));
