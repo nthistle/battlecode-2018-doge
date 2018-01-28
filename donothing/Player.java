@@ -8,7 +8,7 @@ public class Player {
         GameController gc = new GameController();
 
         while(true) {
-            gc.takeTurn();
+            gc.nextTurn();
         }
     }
 }
