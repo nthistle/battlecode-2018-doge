@@ -148,7 +148,7 @@ public class RocketHandler extends UnitHandler {
                 // System.out.println(ut + ": " + targetManifest.get(ut));
             // }
         // }
-        if(gc.round() == 745) return true; // sarkis why didn't you do this
+        if(gc.round() >= 745) return true; 
 
     	if(this.isLoaded() && this.llh.optimalLaunchingTime() == gc.round()) return true;
     	else if(gc.unit(this.id).health() <= 150) return true;

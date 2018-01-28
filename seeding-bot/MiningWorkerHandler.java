@@ -1,4 +1,5 @@
 import bc.*;
+
 import java.util.Random;
 import java.awt.Point;
 
@@ -85,8 +86,10 @@ public class MiningWorkerHandler extends UnitHandler {
                     for (Direction d : Utils.directions()) {
                         if (gc.canReplicate(this.id, d)) {
                             gc.replicate(this.id, d);
+                            MapLocation itsLocation = unit.location().mapLocation().add(d);
+                            if(!gc.hasUnitAtLocation(itsLocation)) continue;
                             c.minersAt += 1;
-                            Unit head = gc.senseUnitAtLocation(unit.location().mapLocation().add(d));
+                            Unit head = gc.senseUnitAtLocation(itsLocation);
                             UnitHandler newHandler = new MiningWorkerHandler(parent, gc, head.id(), rng, m);
                             ((MiningWorkerHandler) newHandler).setTarget(this.target, this.parent.pm);
                             ((EarthController)(this.parent)).myHandler.put(head.id(), newHandler);

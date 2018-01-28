@@ -274,7 +274,8 @@ public class EarthController extends PlanetController
         // if(gc.round() < 150 && d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) - eworkerCount < 6) {
         //     return UnitType.Worker;
         // }
-        return UnitType.Ranger;
+        if(d < 0.4 && getRobotCount(UnitType.Ranger) > 6) return UnitType.Healer;
+        else return UnitType.Ranger;
     }
 
     private void refreshTargets(VecUnit units) {
