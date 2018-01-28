@@ -110,27 +110,27 @@ public class HealerHandler extends UnitHandler {
     		int dist = (int)myLocation.distanceSquaredTo(bihLoc);
     		Direction dir = bihLoc.directionTo(myLocation);
     		if(bihType == UnitType.Ranger) {
-    			if(dist >= 10 && dist <= 50) {
+    			if(dist <= 80) {
     				threatMap.put(dir, threatMap.get(dir) + 30);
     			}
     		}
     		else if(bihType == UnitType.Knight) {
-    			if(dist <= 2) {
+    			if(dist <= 32) {
     				threatMap.put(dir, threatMap.get(dir) + 80);
     			}
     		}
     		else if(bihType == UnitType.Mage) {
-    			if(dist <= 30) {
+    			if(dist <= 60) {
     				threatMap.put(dir, threatMap.get(dir) + 105); 
     			}
     		}
     		else if(bihType == UnitType.Healer || bihType == UnitType.Worker) {
-    			if(dist <= 50) {
+    			if(dist <= 80) {
     				threatMap.put(dir, threatMap.get(dir) + 30); //i mean, we need to run away from enemy healers & workers, just not very fast
     			}
     		}
     		else if(bihType == UnitType.Rocket || bihType == UnitType.Rocket) {
-    			if(dist <= 50) {
+    			if(dist <= 100) {
     				threatMap.put(dir, threatMap.get(dir) + 5 * (50 - dist)); //weigh danger by distance past 30 as f(dist) = 5 * (50 - dist) 
     			}
     		}

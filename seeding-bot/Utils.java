@@ -150,7 +150,7 @@ public class Utils
     // 2 if counter-clockwise neighbor succeeded,
     // 3 if clockwise neighbor succeeded
     public static int tryMoveWiggle(GameController gc, int unitId, Direction dir) {
-        if(dir == Direction.Center) return 0;
+        if(dir == Direction.Center) return -1;
         if(!gc.isMoveReady(unitId)) {
             return 0;
         }
