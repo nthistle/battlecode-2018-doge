@@ -20,6 +20,7 @@ public class MiningWorkerHandler extends UnitHandler {
     }
 
     public void reassignAllMiners(MapLocation location) {
+        System.out.println(location);
         Point oldCluster = this.m.clusterMap[location.getX()][location.getY()].clusterMaxima;
         this.target = null;
         boolean hello = m.assignTarget(this);
@@ -222,7 +223,19 @@ public class MiningWorkerHandler extends UnitHandler {
                     harvestDirection = d;              
                     mostMoney = money;
                 }
-            }
+            } 
+            /*
+            else if(this.m.parentController.gc.startingMap(this.m.parentController.getPlanet()).onMap(tryLocation)) {
+                long money = gc.karboniteAt(tryLocation);
+                //if(this.clusterMap[mapLocation.getX()][mapLocation.getY] != null && this.clusterMap[mapLocation.getX()][mapLocation.getY].clusterMaxima.equals(new Point(this.target.getX(), this.target.getY())) && this.m.initialKarboniteLocationsOriginal[tryLocation.getX()][tryLocation.getY()] != ((int) money)) {
+                if(this.m.initialKarboniteLocationsOriginal[tryLocation.getX()][tryLocation.getY()] != ((int) money)) {
+                    boolean hello1 = this.m.updateIndividual(new Point(tryLocation.getX(), tryLocation.getY()), (int) money);
+                    if(hello1) {
+                        reassignAllMiners(mapLocation);
+                        return false;
+                    }
+                }
+            }*/
         }
         if (harvestDirection != null) {       
             gc.harvest(this.id, harvestDirection);

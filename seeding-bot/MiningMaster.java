@@ -123,10 +123,13 @@ public class MiningMaster {
 	}
 
 	public void printKarboniteMap() {
-		for(int i = 0; i < initialKarboniteLocations.length; i++) {
-			for(int j = 0; j < initialKarboniteLocations[0].length; j++) {
-				String a = initialKarboniteLocations[i][j] + "";
-				if(initialKarboniteLocations[i][j]>9)
+
+		for(int j = initialKarboniteLocationsOriginal[0].length - 1; j > -1 ; j--) {
+
+			for(int i = 0; i < initialKarboniteLocationsOriginal.length; i++) {
+			
+				String a = initialKarboniteLocationsOriginal[i][j] + "";
+				if(initialKarboniteLocationsOriginal[i][j]>9)
 					System.out.print(a + "   ");
 				else
 					System.out.print(a + "    ");
@@ -332,40 +335,25 @@ public class MiningMaster {
 		}
 	}
 
-	public boolean update() {
+	public void update() {
 		Iterator<Cluster> it1 = this.clusters.iterator();
 		while(it1.hasNext()) {
 			Cluster q = it1.next();
 			List<Point> members = q.members;
 			Iterator<Point> it = members.iterator();
-			q.setMaxPoint(members.get(0));
 			while(it.hasNext()) {
 				Point p = it.next();
 				//TODO figure out if there is a better way to do this
-				int karb = -1;
-				try {
-					karb = (int) this.parentController.gc.karboniteAt(new MapLocation(this.parentController.getPlanet(), p.x, p.y));
-				} catch (Exception e) {
-					//we can't see this point
+				int karb = this.initialKarboniteLocationsOriginal[p.x][p.y];
+				if(karb < 1) {
+					it.remove();
 				}
-				if(karb != -1) {
-					if(karb < 1) {
-						it.remove();
-						this.initialKarboniteLocationsOriginal[p.x][p.y] = 0;
-					}
-					this.initialKarboniteLocationsOriginal[p.x][p.y] = karb;
-				}
-				if(this.initialKarboniteLocationsOriginal[p.x][p.y] > this.initialKarboniteLocationsOriginal[q.getMaxPoint().x][q.getMaxPoint().y])
-					q.setMaxPoint(p);
 			}
 			if(q.members.size() == 0) {
 				it1.remove();
-				return true;
-			} else {
-				return false;
 			}
 		}
-		return false;
+		Collections.sort(this.clusters, Comparators.clusterComparator);
 	}
 
 	public boolean updateIndividual(Point a, int karb) {

@@ -1,6 +1,8 @@
 import bc.*;
+import java.util.EnumMap;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Random;
 
 public class FactoryHandler extends UnitHandler {
@@ -10,11 +12,16 @@ public class FactoryHandler extends UnitHandler {
 
 	protected Deque<UnitType> buildQueue;
 	protected EarthController myParent;
+    protected Map<UnitType, Integer> robotCount;
 
     public FactoryHandler(PlanetController parent, GameController gc, int id, Random rng) {
         super(parent, gc, id, rng);
         this.myParent = (EarthController) parent;
         buildQueue = new LinkedList<UnitType>();
+        robotCount = new EnumMap<UnitType, Integer>(UnitType.class);
+        for(UnitType ut : UnitType.values()) {
+            robotCount.put(ut, 0);
+        }
     }
 
     public UnitType peekBuildQueue() {
@@ -22,12 +29,14 @@ public class FactoryHandler extends UnitHandler {
     }
 
     public boolean forceAddPriorityBuildQueue(UnitType ut) {
+        robotCount.put(ut, robotCount.get(ut) + 1);
         return this.buildQueue.offerFirst(ut);
     }
 
     public boolean addToBuildQueue(UnitType ut) {
     	if(buildQueue.size() >= MAX_BQUEUE_SIZE)
     		return false;
+        robotCount.put(ut, robotCount.get(ut) + 1);
     	return buildQueue.offer(ut);
     }
 
@@ -36,6 +45,9 @@ public class FactoryHandler extends UnitHandler {
     }
 
     public void clearBuildQueue() {
+        for(UnitType ut : UnitType.values()) {
+            robotCount.put(ut, 0);
+        }
     	while(!buildQueue.isEmpty()) buildQueue.remove();
     }
     
@@ -69,6 +81,7 @@ public class FactoryHandler extends UnitHandler {
                 myParent.queuedWorkers--;
             }
     		// now we can build this guy
+            robotCount.put(buildQueue.peek(), robotCount.get(buildQueue.peek()) - 1);
     		gc.produceRobot(this.id, buildQueue.poll());
     	}
     }
