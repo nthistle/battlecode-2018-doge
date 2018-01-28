@@ -123,10 +123,9 @@ public class MiningWorkerHandler extends UnitHandler {
                     m.initialKarboniteLocationsOriginal[last.x][last.y] = 0;
                     m.updateIndividual(last, money);
                 } else {
-                    Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), last.x, last.y)));
+                    Utils.tryMoveWiggle(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), last.x, last.y)));
                 }
             } else {
-
                 Point current = new Point(mapLocation.getX(), mapLocation.getY());
                 Point goal = a.members.get(0);
                 long distanceAway = Integer.MAX_VALUE;
@@ -137,7 +136,7 @@ public class MiningWorkerHandler extends UnitHandler {
                         goal = a.members.get(k);
                     }
                 }
-                Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), goal.x, goal.y)));
+                Utils.tryMoveWiggle(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), goal.x, goal.y)));
 
                 /*Point random;
                 if (a.members.size() == 1) {
