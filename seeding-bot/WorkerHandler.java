@@ -69,6 +69,16 @@ public class WorkerHandler extends UnitHandler {
         boolean busy = false;
         boolean done = false;
 
+        for (Direction d : Direction.values()) {                         
+            MapLocation tryLocation = mapLocation.add(d);                
+            int tempX = tryLocation.getX();
+            int tempY = tryLocation.getY();                
+            if (map.onMap(tryLocation)) {
+                long money = gc.karboniteAt(tryLocation);                           
+                mm.updateIndividual(new Point(tempX, tempY), (int)money);
+            }            
+        }
+
         VecUnit nearbyAllies = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), gc.team());
         VecUnit nearbyEnemies = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), enemyTeam);        
         ArrayList<Unit> nearbyStructures = new ArrayList<Unit>(); // ally only                
@@ -115,7 +125,7 @@ public class WorkerHandler extends UnitHandler {
             solo = false;
         }
         
-        if (gc.karbonite() >= 60 && solo) {
+        if (gc.karbonite() >= 60 && (solo || (gc.round() < 10 && mm.totalValue() > 500 && earthParent.getEWorkerCount() == earthParent.getRobotCount(UnitType.Worker)))) {
             for (Direction d : Utils.directions()) {
                 if (gc.canReplicate(id, d)) {
                     gc.replicate(id, d);     
@@ -228,20 +238,21 @@ public class WorkerHandler extends UnitHandler {
                 earthParent.incrementRobotCount(UnitType.Factory);
                 earthParent.isSavingForFactory = false;
                 busy = true;
-                done = true;
-                
+                done = true;                
             }
         }
 
-        if (!busy && nearbyWorkerCount > 5 && mm.totalValue() > 300) {
+        if (!busy && nearbyWorkerCount > 5 && mm.totalValue() >= 300) {
             quickTurn(gc, myHandler, mapLocation, true, mm);
             earthParent.decrementEWorkerCount();
         }
 
         if (!busy && targetLocation != null) {
+            System.out.println(targetLocation);
             move(pm, mapLocation, targetLocation);
         }
 
+        int[][] tempMoneyLocations = mm.initialKarboniteLocationsOriginal;
         Direction moveDirection = null;
         if (!(done && busy)) {
             Direction harvestDirection = null;            
@@ -249,9 +260,13 @@ public class WorkerHandler extends UnitHandler {
             boolean bestChoice = false;
             for (Direction d : Direction.values()) {                         
                 MapLocation tryLocation = mapLocation.add(d);                
-                if (map.onMap(tryLocation) && gc.canHarvest(id, d)) {   
-                    //TODO check if this is what we want and not what we want
-                    long money = gc.karboniteAt(tryLocation);                                         
+                int tempX = tryLocation.getX();
+                int tempY = tryLocation.getY();                
+                if (map.onMap(tryLocation) && gc.canHarvest(id, d)) {                       
+                    long money = gc.karboniteAt(tryLocation);           
+                    if (tempMoneyLocations[tempX][tempY] != (int)money) {
+                        mm.updateIndividual(new Point(tempX, tempY), (int)money);
+                    }                              
                     if (harvestDirection == null || money > mostMoney) {
                         harvestDirection = d;                        
                         mostMoney = money;
@@ -288,7 +303,6 @@ public class WorkerHandler extends UnitHandler {
                 int startY = mapLocation.getY() - 7;
                 int endX = startX + 14;
                 int endY = startY + 14;
-                int[][] tempMoneyLocations = mm.initialKarboniteLocationsOriginal;
                 for (int x = startX; x <= endX; x++) {
                     for (int y = startY; y <= endY; y++) {
                         if (x < 0 || x >= map.getWidth() || y < 0 || y >= map.getHeight() || tempMoneyLocations[x][y] <= 0) {
