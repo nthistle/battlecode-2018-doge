@@ -1,4 +1,6 @@
 import bc.*;
+import java.util.List;
+import java.util.ArrayList;
 
 public class MageHandler extends UnitHandler {
 
@@ -12,7 +14,16 @@ public class MageHandler extends UnitHandler {
     
     @Override
     public void takeTurn(Unit unit) {
+        handleMovement(unit);
+        handleAttack(unit);
+    }
 
+    public void handleMovement() {
+        List<Direction> closerDirs = new ArrayList<Direction>();
+        List<Direction> sameDirs = new ArrayList<Direction>();
+        for(Direction dir : Utils.directions()) {
+            // pass
+        }
     }
 
     public Direction getRandomDirection(MapLocation mapLocation, MapLocation targetLocation, PathMaster pm) {
