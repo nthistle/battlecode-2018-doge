@@ -50,6 +50,9 @@ public class EarthController extends PlanetController
 
     public void control() {
 
+        enemyTeam = Utils.getOtherTeam(gc.team());
+        System.out.println(enemyTeam);
+
         myHandler = new HashMap<Integer, UnitHandler>();
         
         llh = new LaunchingLogicHandler(this, gc, -1, rng);
@@ -63,6 +66,7 @@ public class EarthController extends PlanetController
         initializeTMTargets();
 
         queueResearch();
+        
         
         rocketWarning = new Direction[(int)this.map.getWidth()][(int)this.map.getHeight()];
         
@@ -320,7 +324,7 @@ public class EarthController extends PlanetController
         if (getRobotCount(UnitType.Ranger) < (int)(0.5 * getRobotCount(UnitType.Healer))) {
             return UnitType.Ranger;
         }
-        if (d < 0.33 && getRobotCount(UnitType.Ranger) > 6) return UnitType.Healer;
+        if (d < 0.3 && getRobotCount(UnitType.Ranger) > 6) return UnitType.Healer;
         else return UnitType.Ranger;
     }
 

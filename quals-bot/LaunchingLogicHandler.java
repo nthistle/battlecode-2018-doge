@@ -16,6 +16,8 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	protected static Team enemyTeam;
 	protected int rocketsLoaded = 0;
 	protected PlanetMap marsMap;
+	protected int[] myMarsTroops;
+	protected int[] enemyMarsTroops;
 
 	public LaunchingLogicHandler(PlanetController parent, GameController gc, int id, Random rng) {
 		super(parent, gc, id, rng);
@@ -26,16 +28,23 @@ public class LaunchingLogicHandler extends UnitHandler  {
         //System.out.println(Arrays.deepToString(label));
         //System.out.println(this.zoneMap);
         this.usedLandingPoints = new HashSet<Point>();
+        this.myMarsTroops = new int[6];
+        this.enemyMarsTroops = new int[6];
 
 	}
 	
 	public void takeTurn() {
+		recieveCommunications();
 		recalculate();
 	}
 
 	public void recalculate() {
 		calculateOptimalLandingLocation();
 		calculateOptimalLaunchingTime();
+	}
+	
+	public void recieveCommunications() {
+		Veci32 data = gc.getTeamArray(Planet.Mars);
 	}
 	
 	public MapLocation optimalLandingLocation() {
@@ -117,7 +126,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		}
 		for(int i = enemyTeam == Team.Red ? (int)(this.marsMap.getHeight() - 1) : 0; enemyTeam == Team.Red ? i >= 0: i < this.marsMap.getHeight(); i += enemyTeam == Team.Red ? -1 : 1) {
 			for(int j = enemyTeam == Team.Red ? (int)(this.marsMap.getWidth() - 1) : 0; enemyTeam == Team.Red ? j >= 0: j < this.marsMap.getWidth(); j += enemyTeam == Team.Red ? -1 : 1) {
-				//System.out.println(i + ", " + j);
+				System.out.println(i + ", " + j);
 				MapLocation ml = new MapLocation(Planet.Mars, j, i);
 				if(marsMap.onMap(ml) && marsMap.isPassableTerrainAt(ml) == 0) {
 					label[i][j] = -1; //impassable point
@@ -193,7 +202,6 @@ public class LaunchingLogicHandler extends UnitHandler  {
 				int comp =  (1000 * adjacentSquares[i2][j2] - values[i2][j2] - (int)(0.01 * rocketDistances[i2][j2])) - (1000 * adjacentSquares[i1][j1] - values[i1][j1] - (int)(0.01 * rocketDistances[i1][j1]));
 				return comp;
 			}
-				
 		};
 	}
 

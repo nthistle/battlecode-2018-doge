@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Random;
-import java.util.Queue;
 
 public class RangerHandler extends UnitHandler {
 
@@ -32,8 +31,7 @@ public class RangerHandler extends UnitHandler {
 
         MapLocation mapLocation = location.mapLocation();
 
-        if (location.isOnPlanet(Planet.Mars)) {
-           // System.out.println("LITTINGTON_BILLINGTON");
+        if (location.isOnPlanet(Planet.Mars)) {           
             return;
         }
 

@@ -10,6 +10,7 @@ public class CommunicationsManager {
 	private Team myTeam;
 	private Team enemyTeam;
 	private Set<Point> loggedPoints;
+	private MapLocation basePoint; 
 
 	public CommunicationsManager(MarsController parent, GameController gc, Random rng) {
 		this.parent = parent;
@@ -18,6 +19,16 @@ public class CommunicationsManager {
 		this.myTeam = gc.team();
 		this.enemyTeam = Utils.getOtherTeam(this.myTeam);
 		this.loggedPoints = new HashSet<Point>();
+		PlanetMap marsMap = gc.startingMap(Planet.Mars);
+		for(int i = 0; i < marsMap.getWidth(); i++) {
+			for(int j = 0; j < marsMap.getHeight(); j++) {
+				MapLocation ml = new MapLocation(Planet.Mars, i, j);
+				if(marsMap.onMap(ml) && marsMap.isPassableTerrainAt(ml) != 0) {
+					this.basePoint = ml;
+					return;
+				}
+			}
+		}
 	}
 	
 	public void update() {
@@ -28,8 +39,8 @@ public class CommunicationsManager {
 			gc.writeTeamArray(i, 0);
 		}
 		
-		VecUnit myTroops = gc.senseNearbyUnitsByTeam(new MapLocation(Planet.Mars, 0, 0), Long.MAX_VALUE, myTeam);
-		VecUnit enemyTroops = gc.senseNearbyUnitsByTeam(new MapLocation(Planet.Mars, 0, 0), Long.MAX_VALUE, enemyTeam);
+		VecUnit myTroops = gc.senseNearbyUnitsByTeam(this.basePoint, Long.MAX_VALUE, myTeam);
+		VecUnit enemyTroops = gc.senseNearbyUnitsByTeam(this.basePoint, Long.MAX_VALUE, enemyTeam);
 		
 		int[] myCounts = new int[6];
 		int[] enemyCounts = new int[6];
@@ -58,8 +69,7 @@ public class CommunicationsManager {
 			gc.writeTeamArray(i, myCounts[i]);
 			gc.writeTeamArray(6+i, enemyCounts[i]);
 		}
-		
-		VecUnit rockets = gc.senseNearbyUnitsByType(new MapLocation(Planet.Mars, 0, 0), Long.MAX_VALUE, UnitType.Rocket);
+		VecUnit rockets = gc.senseNearbyUnitsByType(this.basePoint, Long.MAX_VALUE, UnitType.Rocket);
 		Set<Point> visitedPoints = new HashSet<Point>();
 		int i = 12;
 		for(int j = 0; j < rockets.size(); j++) {
