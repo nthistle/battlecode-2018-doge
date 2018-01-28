@@ -177,7 +177,9 @@ public class EarthController extends PlanetController
                 } else {
                     VecUnit nearby = gc.senseNearbyUnitsByTeam(tempLocation, unit.visionRange(), gc.team());
                     if (nearby.size() == 1) {
-                        myHandler.put(unit.id(), new MiningWorkerHandler(this, gc, unit.id(), rng, mm));
+                        //myHandler.put(unit.id(), new MiningWorkerHandler(this, gc, unit.id(), rng, mm));
+                        if(unit.unitType() == UnitType.Worker)
+                            mm.convertToMiner(unit.id());
                     } else {
                         myHandler.put(unit.id(), new WorkerHandler(this, gc, unit.id(), rng));
                         for (int j = 0; j < nearby.size(); j++) {
@@ -186,7 +188,9 @@ public class EarthController extends PlanetController
                                 continue;
                             }
                             if (pm.isConnected(tempLocation, nearbyUnit.location().mapLocation())) {
-                                myHandler.put(nearbyUnit.id(), new MiningWorkerHandler(this, gc, unit.id(), rng, mm));
+                                //myHandler.put(nearbyUnit.id(), new MiningWorkerHandler(this, gc, unit.id(), rng, mm));
+                                if(nearbyUnit.unitType() == UnitType.Worker)
+                                    mm.convertToMiner(nearbyUnit.id());
                             }
                         }                        
                     }
@@ -467,10 +471,13 @@ public class EarthController extends PlanetController
                 newHandler = new RangerHandler(this, gc, unit.id(), rng);
                 break;
             case Worker:
-                if(this.getEWorkerCount() < 3 || mm.totalValue() < 200)                    
+                if(this.getEWorkerCount() < 3 || mm.totalValue() < 200) {                    
                     newHandler = new WorkerHandler(this, gc, unit.id(), rng);
-                else
-                    newHandler = new MiningWorkerHandler(this, gc, unit.id(), rng, this.mm);
+                } else {
+                    //newHandler = new MiningWorkerHandler(this, gc, unit.id(), rng, this.mm);
+                    if(unit.unitType() == UnitType.Worker)
+                        mm.convertToMiner(unit.id());
+                }
                 break;
             case Rocket:
                 newHandler = new RocketHandler(this, gc, unit.id(), rng, this.llh, llh.nextManifest());

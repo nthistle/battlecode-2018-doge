@@ -359,7 +359,9 @@ public class WorkerHandler extends UnitHandler {
         int newId = newWorker.id();        
         if (mining) {
             //TODO chnage to convertToMiner
-            myHandler.put(newId, new MiningWorkerHandler(earthParent, gc, newId, rng, mm));
+            //myHandler.put(newId, new MiningWorkerHandler(earthParent, gc, newId, rng, mm));
+            if(newWorker.unitType() == UnitType.Worker)
+                mm.convertToMiner(newId);
         } else {
             myHandler.put(newId, new WorkerHandler(earthParent, gc, newId, rng));
         }        

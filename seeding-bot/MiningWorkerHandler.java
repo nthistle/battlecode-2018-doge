@@ -12,6 +12,7 @@ public class MiningWorkerHandler extends UnitHandler {
 
     public MiningWorkerHandler(PlanetController parent, GameController gc, int id, Random rng, MiningMaster m) {
         super(parent, gc, id, rng);
+        System.out.println("Just created a new MiningWorkerHandler");
         this.m = m;
     }
 
@@ -86,6 +87,7 @@ public class MiningWorkerHandler extends UnitHandler {
                     for (Direction d : Utils.directions()) {
                         if (gc.canReplicate(this.id, d)) {
                             gc.replicate(this.id, d);
+                            System.out.println("The miner at " + new Point(mapLocation.getX(), mapLocation.getY()) + " just replicated!");
                             MapLocation itsLocation = unit.location().mapLocation().add(d);
                             if(!gc.hasUnitAtLocation(itsLocation)) continue;
                             c.minersAt += 1;
