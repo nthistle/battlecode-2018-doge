@@ -25,7 +25,7 @@ public class MiningWorkerHandler extends UnitHandler {
         boolean hello = m.assignTarget(this);
         if(!hello) {
             ((EarthController)(this.parent)).myHandler.put(this.id, new WorkerHandler(this.parent, this.gc, this.id, this.rng));
-            System.out.println("Converted 1 miner to a worker");  
+            System.out.println("Converted 1 miner to a worker");
         } else {
             MapLocation groupTarget = this.target;
             //we now need to figure out all the other miners at this cluster and set their targets to the same thing
@@ -40,7 +40,7 @@ public class MiningWorkerHandler extends UnitHandler {
                         miner.setTarget(groupTarget, this.parent.pm);
                         if(miner.target == null) {
                             ((EarthController)(miner.parent)).myHandler.put(miner.id, new WorkerHandler(miner.parent, miner.gc, miner.id, miner.rng));
-                            System.out.println("Converted 1 miner to a worker");  
+                            System.out.println("Converted 1 miner to a worker");
                         } else {
                             Cluster newCluster = this.m.clusterMap[groupTarget.getX()][groupTarget.getY()];
                             newCluster.minersAt++;
@@ -55,7 +55,8 @@ public class MiningWorkerHandler extends UnitHandler {
         this.target = a;
         if(this.target != null && pm.getCachedPathField(target.getX(), target.getY()) != null) {
             this.path = pm.getPathFieldWithCache(target);
-            System.out.println("pathfinding using a cached pathfield");
+            this.miniTarget = new Point(a.getX(), a.getY());
+            // System.out.println("pathfinding using a cached pathfield");
         } else {
             this.path = null;
         }
@@ -70,11 +71,10 @@ public class MiningWorkerHandler extends UnitHandler {
     @Override
     public void takeTurn(Unit unit) {
 
-        
         //TODO change if necessary
         if(!hasTarget()) {
             m.assignTarget(this);
-        }        
+        }
 
         MapLocation mapLocation = unit.location().mapLocation();
         if(this.target != null) {
@@ -108,48 +108,65 @@ public class MiningWorkerHandler extends UnitHandler {
 
         if(this.target == null)
             return;
-        
+
         Cluster c = m.clusterMap[target.getX()][target.getY()];
         Cluster f = m.clusterMap[mapLocation.getX()][mapLocation.getY()];
-        if(!didHarvest && f != null && f.clusterMaxima.equals(c.clusterMaxima)) {
+        if(f != null && f.clusterMaxima.equals(c.clusterMaxima)) {
             Cluster a = this.m.clusterMap[mapLocation.getX()][mapLocation.getY()];
-            //WE WANT TO MOVE TO A RANDOM JOINT IN THE CLUSTER
-            //FIXXXXXX 
-            if(a.members.size() == 0) {
-                reassignAllMiners(mapLocation);
-            } else if(a.members.size() == 1) {
-                Point last = a.members.get(0);
-                int money = (int)gc.karboniteAt(new MapLocation(parent.getPlanet(), last.x, last.y));
-                if (money == 0) {
-                    m.initialKarboniteLocationsOriginal[last.x][last.y] = 0;
-                    m.updateIndividual(last, money);
+            if(this.miniTarget == null && a.clusterMaxima.equals(this.m.clusterMap[this.target.getX()][this.target.getY()].clusterMaxima)) {
+                //we have not picked a new miniTarget
+                if(a.members.size() == 0) {
+                    reassignAllMiners(mapLocation);
+                } else if(a.members.size() == 1) {
+                    Point last = a.members.get(0);
+                    int money = (int)gc.karboniteAt(new MapLocation(parent.getPlanet(), last.x, last.y));
+                    if (money == 0) {
+                        m.initialKarboniteLocationsOriginal[last.x][last.y] = 0;
+                        m.updateIndividual(last, money);
+                        reassignAllMiners(mapLocation);
+                    } else {
+                        this.miniTarget = last;
+                        Utils.tryMoveWiggle(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), last.x, last.y)));
+                    }
                 } else {
-                    Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), last.x, last.y)));
+                    Point current = new Point(mapLocation.getX(), mapLocation.getY());
+                    Point goal = a.members.get(0);
+                    long distanceAway = Integer.MAX_VALUE;
+                    for(int k = 0; k < a.members.size(); k++) {
+                        long dist = Cluster.distanceSquaredTo(a.members.get(k), current);
+                        if(dist < distanceAway) {
+                            distanceAway = dist;
+                            goal = a.members.get(k);
+                        }
+                    }
+                    this.miniTarget = goal;
+                    Utils.tryMoveWiggle(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), goal.x, goal.y)));
+                }
+            } else if(this.miniTarget.equals(new Point(mapLocation.getX(), mapLocation.getY())) && gc.karboniteAt(mapLocation) <= 0L) {
+                //we just reached the square we want and mined it, lets pick a new location
+                if(a.members.size() == 0) {
+                    reassignAllMiners(mapLocation);
+                } else if(a.members.size() == 1) {
+                    Point last = a.members.get(0);
+                    this.miniTarget = last;
+                    Utils.tryMoveWiggle(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), last.x, last.y)));
+                } else {
+                    Point current = new Point(mapLocation.getX(), mapLocation.getY());
+                    Point goal = a.members.get(0);
+                    long distanceAway = Integer.MAX_VALUE;
+                    for(int k = 0; k < a.members.size(); k++) {
+                        long dist = Cluster.distanceSquaredTo(a.members.get(k), current);
+                        if(dist < distanceAway) {
+                            distanceAway = dist;
+                            goal = a.members.get(k);
+                        }
+                    }
+                    this.miniTarget = goal;
+                    Utils.tryMoveWiggle(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), goal.x, goal.y)));
                 }
             } else {
-                Point current = new Point(mapLocation.getX(), mapLocation.getY());
-                Point goal = a.members.get(0);
-                long distanceAway = Integer.MAX_VALUE;
-                for(int k = 0; k < a.members.size(); k++) {
-                    long dist = Cluster.distanceSquaredTo(a.members.get(k), current);
-                    if(dist < distanceAway) {
-                        distanceAway = dist;
-                        goal = a.members.get(k);
-                    }
-                }
-                Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), goal.x, goal.y)));
-
-                /*Point random;
-                if (a.members.size() == 1) {
-                    random = a.members.get(0);                 
-                } else {
-                    do {
-                        random = a.members.get(this.parent.rng.nextInt(a.members.size()));
-                    } while((new Point(mapLocation.getX(), mapLocation.getY()).equals(random)));                    
-                }
-
-                Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), random.x, random.y)));
-                */
+                //we want to move to miniTarget
+                Utils.tryMoveWiggle(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), miniTarget.x, miniTarget.y)));
             }
         } else {
             if(this.path != null && this.path.isPointSet(mapLocation.getX(), mapLocation.getY())) {
@@ -167,14 +184,14 @@ public class MiningWorkerHandler extends UnitHandler {
                         
                         if(target == null || mapLocation.directionTo(new MapLocation(parent.getPlanet(), target.getX(), target.getY())) == Direction.Center) {
                             ((EarthController)(this.parent)).myHandler.put(unit.id(), new WorkerHandler(this.parent, this.gc, unit.id(), this.rng));
-                            System.out.println("Converted 1 miner to a worker C");  
+                            System.out.println("Converted 1 miner to a worker C");
                         } else {
                             //System.out.println("Move in target direction");
                         //we are trying to go somewhere that was not pathfinding cached so lets just try move wiggle
                             int dd = Utils.tryMoveWiggle(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), target.getX(), target.getY())));
                             if(dd == 0) {
                                 ((EarthController)(this.parent)).myHandler.put(unit.id(), new WorkerHandler(this.parent, this.gc, unit.id(), this.rng));
-                                System.out.println("Converted 1 miner to a worker D");  
+                                System.out.println("Converted 1 miner to a worker D");
                             }
                         }
                     }
@@ -186,11 +203,11 @@ public class MiningWorkerHandler extends UnitHandler {
     }
 
     public boolean doHarvest(Unit unit) {
-        Direction harvestDirection = null;            
+        Direction harvestDirection = null;  
         long mostMoney = 0;
         MapLocation mapLocation = unit.location().mapLocation();
         for (Direction d : Direction.values()) {                         
-            MapLocation tryLocation = mapLocation.add(d);                
+            MapLocation tryLocation = mapLocation.add(d);      
             if (this.m.parentController.gc.startingMap(this.m.parentController.getPlanet()).onMap(tryLocation) && gc.canHarvest(this.id, d)) {   
                 long money = gc.karboniteAt(tryLocation);
                 //if(this.clusterMap[mapLocation.getX()][mapLocation.getY] != null && this.clusterMap[mapLocation.getX()][mapLocation.getY].clusterMaxima.equals(new Point(this.target.getX(), this.target.getY())) && this.m.initialKarboniteLocationsOriginal[tryLocation.getX()][tryLocation.getY()] != ((int) money)) {
@@ -202,22 +219,22 @@ public class MiningWorkerHandler extends UnitHandler {
                     }
                 }
                 if (harvestDirection == null || money > mostMoney) {
-                    harvestDirection = d;                        
+                    harvestDirection = d;              
                     mostMoney = money;
-                }                    
-            }            
+                }
+            }
         }
         if (harvestDirection != null) {       
             gc.harvest(this.id, harvestDirection);
             MapLocation justHarvestedAt = unit.location().mapLocation().add(harvestDirection);
             if(this.m.clusterMap[justHarvestedAt.getX()][justHarvestedAt.getY()] != null) {
                 //we have just harvested at an actual cluster
-                boolean results = this.m.clusterMap[justHarvestedAt.getX()][justHarvestedAt.getY()].update(new Point(justHarvestedAt.getX(), justHarvestedAt.getY()), (int) unit.workerHarvestAmount());      
+                boolean results = this.m.clusterMap[justHarvestedAt.getX()][justHarvestedAt.getY()].update(new Point(justHarvestedAt.getX(), justHarvestedAt.getY()), (int) unit.workerHarvestAmount());
                 if(results && this.target != null) {
                     //assign these workers a new target
                     if(this.m.clusterMap[justHarvestedAt.getX()][justHarvestedAt.getY()].clusterMaxima.equals(new Point(this.target.getX(), this.target.getY()))) {
                         reassignAllMiners(justHarvestedAt);
-                    } 
+                    }
                 }
             }
             return true;
@@ -225,5 +242,12 @@ public class MiningWorkerHandler extends UnitHandler {
         return false;
     }
 
-    public void handleDeath() {}
+    public void handleDeath() {
+        if(this.target==null) {
+            System.out.println("Worker could not properly handle death!");
+            return;
+        }
+        Cluster c = this.m.clusterMap[this.target.getX()][this.target.getY()];
+        c.minersAt --;
+    }
 }
