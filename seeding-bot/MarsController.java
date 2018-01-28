@@ -23,13 +23,17 @@ public class MarsController extends PlanetController
     public PlanetMap map;
     public Team enemyTeam;
     
+    public CommunicationsManager comms;
+    
     public void control() {
     
         System.out.println("Mars Controller initiated");
 
         globalValues();
     
-        myHandler = new HashMap<Integer, UnitHandler>();        
+        myHandler = new HashMap<Integer, UnitHandler>();      
+        
+        comms = new CommunicationsManager(this, gc, rng);
 
         while (true) {
         
@@ -39,7 +43,9 @@ public class MarsController extends PlanetController
             System.gc();            
             
             VecUnit allUnits = gc.units();
-            VecUnit units = gc.myUnits();            
+            VecUnit units = gc.myUnits();
+            
+            comms.update();
 
             for(int i = 0; i < allUnits.size(); i ++) {
                 // this is probably going to clog targetingmaster to high hell but who cares rn
@@ -63,7 +69,7 @@ public class MarsController extends PlanetController
             takeTurnByType(myHandler, units, UnitType.Ranger);
 
             takeTurnByType(myHandler, units, UnitType.Worker);
-
+            
             gc.nextTurn();
         }
     }
