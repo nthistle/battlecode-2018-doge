@@ -2,17 +2,24 @@ import bc.*;
 import java.util.*;
 
 public class HealerHandler extends UnitHandler {
+
+    private Bug bug;
+    private EarthController earthParent;    
+
 	public Team enemy; 
 	public MapLocation myLocation;
 	public Map<Direction, Integer> threatMap;
+
     public HealerHandler(PlanetController parent, GameController gc, int id, Random rng) {
         super(parent, gc, id, rng);
-        enemy = ((EarthController)parent).enemyTeam;
+        earthParent = (EarthController)parent;
+        bug = new Bug(gc, id, earthParent.map);
+        enemy = earthParent.enemyTeam;
         myLocation = gc.unit(id).location().mapLocation();
         threatMap = new EnumMap<Direction, Integer>(Direction.class);
         for(Direction dir : Direction.values()) {
         	threatMap.put(dir, 0);
-        }
+        }        
     }
 
     public void takeTurn() {
@@ -29,17 +36,14 @@ public class HealerHandler extends UnitHandler {
         }
 
 
-        if (location.isOnPlanet(Planet.Mars)) {
-            ////System.out.println("LITTINGTON_BILLINGTON");
+        if (location.isOnPlanet(Planet.Mars)) {            
             return;
         }
         
         myLocation = unit.location().mapLocation();
 
-        // references to parent
-        EarthController earthParent = (EarthController)parent;
-        PlanetMap map = earthParent.map;
-        Team enemyTeam = earthParent.enemyTeam;
+        // references to parent        
+        PlanetMap map = earthParent.map;        
         TargetingMaster tm = earthParent.tm;        
         PathMaster pm = earthParent.pm;
         // Queue<Integer> attackTargets = earthParent.attackTargets;
@@ -66,14 +70,23 @@ public class HealerHandler extends UnitHandler {
         	if(runAwayDir != Direction.Center) 
         		Utils.tryMoveWiggleRecur(gc, id, runAwayDir, null);
         	else {
-        		Unit moveTarget = getMostHurt(nearbyAttackers, unit.visionRange());
-        		Direction moveDir = moveTarget != null ? myLocation.directionTo(moveTarget.location().mapLocation()) : null;
-        		if(moveDir != null) {
-        			Utils.tryMoveWiggleRecur(gc, this.id, moveDir, null);
+        	    Unit moveTarget = getMostHurt(nearbyAttackers, unit.visionRange());                        	
+        		if(moveTarget != null) {
+                    MapLocation target = moveTarget.location().mapLocation();        			
+                    if (pm.isCached(target) && pm.getPathFieldWithCache(target).isPointSet(myLocation)) {
+                        Utils.tryMoveRotate(gc, id, getRandomDirection(myLocation, target, pm));
+                    } else {
+                        bug.bugMove(myLocation, target);                            
+                    }
         		}
         		else {
-        			MapLocation target = getTarget(myLocation, unit.visionRange(), enemyTeam, tm);
-        			if(target != null) Utils.tryMoveRotate(gc, this.id, myLocation.directionTo(target));
+        			MapLocation target = getTarget(myLocation, unit.visionRange(), enemy, tm);
+        			if(target != null) 
+                        if (pm.isCached(target) && pm.getPathFieldWithCache(target).isPointSet(myLocation)) {
+                            Utils.tryMoveRotate(gc, id, getRandomDirection(myLocation, target, pm));
+                        } else {
+                            bug.bugMove(myLocation, target);                            
+                        }                
         		}
         	}
         }
