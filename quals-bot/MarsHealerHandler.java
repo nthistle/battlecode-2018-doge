@@ -17,14 +17,15 @@ import java.util.Collections;
 public class MarsHealerHandler extends UnitHandler {
 
     private Bug bug; 
-    private EarthController marsParent;    
+    private MarsController marsParent;    
 
     public Team enemy; 
     public MapLocation myLocation;
     public Map<Direction, Integer> threatMap;
 
     public MarsHealerHandler(PlanetController parent, GameController gc, int id, Random rng) {
-        super(parent, gc, id, rng);
+        super(parent, gc, id, rng);        
+        marsParent = (MarsController)parent;
         bug = new Bug(gc, id, marsParent.map);
         enemy = marsParent.enemyTeam;
         myLocation = gc.unit(id).location().mapLocation();
