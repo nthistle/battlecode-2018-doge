@@ -150,9 +150,9 @@ public class MiningMaster {
 		boolean shouldCreateMiner = canAssignTarget(this.parentController.gc.unit(((MiningWorkerHandler) newHandler).id).location().mapLocation());
 		if(shouldCreateMiner) {
 			assignTarget((MiningWorkerHandler) newHandler);
-			System.out.println("Request fulfilled, the miner at " + new Point(this.parentController.gc.unit(id).location().mapLocation().getX(), this.parentController.gc.unit(id).location().mapLocation().getY()) + " was assigned " + new Point(((MiningWorkerHandler) newHandler).target.getX(), ((MiningWorkerHandler) newHandler).target.getY()));
+			// System.out.println("Request fulfilled, the miner at " + new Point(this.parentController.gc.unit(id).location().mapLocation().getX(), this.parentController.gc.unit(id).location().mapLocation().getY()) + " was assigned " + new Point(((MiningWorkerHandler) newHandler).target.getX(), ((MiningWorkerHandler) newHandler).target.getY()));
 		} else {
-			System.out.println("Somebody requested a miner, but we don't need it");
+			// System.out.println("Somebody requested a miner, but we don't need it");
 		}
 		
 		return shouldCreateMiner;
@@ -246,7 +246,7 @@ public class MiningMaster {
 			for(int i = 0; i < needToBeFilled.size(); i++) {
 				if(needToBeFilled.get(i).minersAt < this.MAX_MINERS_AT_CLUSTER) {
 					needToBeFilled1.add(needToBeFilled.get(i));
-					System.out.println("Miner at " + this.parentController.gc.unit(a.id).location().mapLocation() + " just considered the cluster: " + needToBeFilled.get(i).clusterMaxima + " because " + "it only has " + needToBeFilled.get(i).minersAt + " miners");
+					// System.out.println("Miner at " + this.parentController.gc.unit(a.id).location().mapLocation() + " just considered the cluster: " + needToBeFilled.get(i).clusterMaxima + " because " + "it only has " + needToBeFilled.get(i).minersAt + " miners");
 				}
 			}
 		}
