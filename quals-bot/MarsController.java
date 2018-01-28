@@ -39,6 +39,12 @@ public class MarsController extends PlanetController
         
             System.out.println("Round #" + gc.round() + ", (" + gc.getTimeLeftMs() + " ms left)");
 
+            if(gc.getTimeLeftMs() < 1000) {
+                System.out.println("TIME POOL LOW! SKIPPING TURN!");
+                gc.nextTurn();
+                continue;
+            }
+
             System.runFinalization();
             System.gc();            
             
@@ -47,15 +53,8 @@ public class MarsController extends PlanetController
             
             comms.update();
 
-            for(int i = 0; i < allUnits.size(); i ++) {
-                // this is probably going to clog targetingmaster to high hell but who cares rn
-                Unit uu = allUnits.get(i);
-                if(uu.team() == enemyTeam && !uu.location().isInGarrison() && !uu.location().isInSpace() && uu.location().isOnPlanet(Planet.Mars)) {
-                    tm.addTarget(uu.location().mapLocation());
-                    break;
-                }
-            }
-            
+            refreshTargets(allUnits);
+
             for(int i = 0; i < units.size(); i ++) {
                 Unit unit = units.get(i);
                 
@@ -69,8 +68,22 @@ public class MarsController extends PlanetController
             takeTurnByType(myHandler, units, UnitType.Ranger);
 
             takeTurnByType(myHandler, units, UnitType.Worker);
+
+            takeTurnByType(myHandler, units, UnitType.Healer);
+            
+            // takeTurnByType(myHandler, units, UnitType.Mage);
             
             gc.nextTurn();
+        }
+    }
+
+    private void refreshTargets(VecUnit units) {
+        Unit unit;
+        for (int i = 0; i < units.size(); i++) {
+            unit = units.get(i);
+            if (unit.team() == enemyTeam && unit.location().isOnMap()) {
+                tm.addTarget(unit.location().mapLocation());                
+            }
         }
     }
 
@@ -101,6 +114,10 @@ public class MarsController extends PlanetController
                 break;
             case Rocket:
             	newHandler = new MarsRocketHandler(this, gc, unit.id(), rng);
+            // case Mage:
+            //     newHandler = new MarsMageHandler(this, gc, unit.id(), rng);
+            case Healer:
+                newHandler = new MarsHealerHandler(this, gc, unit.id(), rng);
             default:
                 break;
         }
