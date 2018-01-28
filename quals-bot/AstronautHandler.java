@@ -33,14 +33,20 @@ public class AstronautHandler extends UnitHandler {
         // TODO probably leave this in, but in the future instead have this check and ask the rocket if it still wants us
         // (make it pass the rockethandler)
     	Direction[] validDirs = this.parent.pm.getCachedPathField(this.myRocketTarget).getDirectionsAtPoint(unit.location().mapLocation());
-    	for(Direction d : validDirs) {
+        for(Direction d : validDirs) {
+            if(d==null)
+                break;
+            if(gc.canMove(this.id, d)) {
+                gc.moveRobot(this.id, d);
+                return;
+            }
+        }
+        for(Direction d : validDirs) {
             if(d==null)
                 return;
-	    	if(gc.canMove(this.id, d)) {
-	    		gc.moveRobot(this.id, d);
+            if(Utils.tryMoveWiggle(gc, this.id, d) > 0)
                 return;
-	    	}
-	    }
+        }
     }
 
     public void handleDeath() {}

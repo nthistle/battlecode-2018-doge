@@ -69,7 +69,7 @@ public class HealerHandler extends UnitHandler {
         	Direction runAwayDir = getRunAwayDirection(nearbyEnemies);
         	//System.out.println(this.id + ": " + runAwayDir);
         	if(runAwayDir != Direction.Center) 
-        		Utils.tryMoveWiggleRecur(gc, id, runAwayDir, null);
+        		Utils.tryMoveWiggle(gc, id, runAwayDir);
         	else {
         	    Unit moveTarget = getMostHurt(unit);                        	
         		if(moveTarget != null) {
