@@ -49,10 +49,8 @@ public class EarthController extends PlanetController
     public int queuedWorkers = 0;
 
     public void control() {
-
-        enemyTeam = Utils.getOtherTeam(gc.team());
-        System.out.println(enemyTeam);
-
+        globalValues();
+        
         myHandler = new HashMap<Integer, UnitHandler>();
         
         llh = new LaunchingLogicHandler(this, gc, -1, rng);
@@ -60,8 +58,6 @@ public class EarthController extends PlanetController
         mm.generate();
     
         System.out.println("Earth Controller initiated");
-    
-        globalValues();
 
         initializeTMTargets();
 
