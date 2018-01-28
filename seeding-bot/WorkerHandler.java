@@ -484,7 +484,7 @@ public class WorkerHandler extends UnitHandler {
     }
 
     public boolean canOccupyMove(MapLocation location, HashSet<MapLocation> visited) {
-        if (visited.contains(location)) {
+        if (visited.contains(location)) {            
             return true;
         }
         PlanetMap map = earthParent.map;

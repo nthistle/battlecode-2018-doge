@@ -237,7 +237,7 @@ public class EarthController extends PlanetController
     }
 
     private void updateFactoryBuildQueues(Map<Integer,UnitHandler> myHandler, VecUnit units) {
-        if (noEnemies && tm.targets.size() <= 1) {
+        if (noEnemies && tm.targets.size() <= 1 && getRobotCount(UnitType.Ranger) > 50) {
             return;
         }
 
@@ -274,6 +274,7 @@ public class EarthController extends PlanetController
         // if(gc.round() < 150 && d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) - eworkerCount < 6) {
         //     return UnitType.Worker;
         // }
+        System.out.println("WHY_AM_I_STILL_HERE");
         return UnitType.Ranger;
     }
 
