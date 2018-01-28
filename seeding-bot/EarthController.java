@@ -50,20 +50,20 @@ public class EarthController extends PlanetController
     public int queuedWorkers = 0;
 
     public void control() {
+
+        myHandler = new HashMap<Integer, UnitHandler>();
+        
+        llh = new LaunchingLogicHandler(this, gc, -1, rng);
+        mm = new MiningMaster(this);
+        mm.generate();
     
         System.out.println("Earth Controller initiated");
     
         globalValues();
 
-        myHandler = new HashMap<Integer, UnitHandler>();
-
         initializeTMTargets();
 
         queueResearch();
-        
-        llh = new LaunchingLogicHandler(this, gc, -1, rng);
-        mm = new MiningMaster(this);
-        mm.generate();
         
         rocketWarning = new Direction[(int)this.map.getWidth()][(int)this.map.getHeight()];
         
@@ -92,7 +92,6 @@ public class EarthController extends PlanetController
 
             for(int id : new HashSet<Integer>(myHandler.keySet())) {
                 if(!aliveIDs.contains(id)) { // unit has died
-                    System.out.println(id + " has died!");
                     myHandler.get(id).handleDeath();
                     myHandler.remove(id);
                 }
