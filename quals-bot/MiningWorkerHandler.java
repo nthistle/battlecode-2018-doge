@@ -20,7 +20,7 @@ public class MiningWorkerHandler extends UnitHandler {
     }
 
     public void reassignAllMiners(MapLocation location) {
-        System.out.println(location);
+        // System.out.println(location);
         Point oldCluster = this.m.clusterMap[location.getX()][location.getY()].clusterMaxima;
         this.target = null;
         boolean hello = m.assignTarget(this);
