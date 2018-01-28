@@ -199,18 +199,18 @@ public class WorkerHandler extends UnitHandler {
         if (!busy && gc.karbonite() >= 150 && earthParent.isSavingForRocket) {
             Direction buildDirection = findBuildDirection(unit);            
             if (buildDirection != null && gc.canBlueprint(id, UnitType.Rocket, buildDirection)) {
-                gc.blueprint(id, UnitType.Rocket, buildDirection);
-                earthParent.incrementRobotCount(UnitType.Rocket);
-                earthParent.isSavingForRocket = false;
-                earthParent.rocketsBuilt += 1; // not yet completely accurate
-                busy = true;
-                done = true;                                    
                 MapLocation tempLocation = mapLocation.add(buildDirection);
                 int tempX = tempLocation.getX();
                 int tempY = tempLocation.getY();
                 if (mm.clusterMap[tempX][tempY] != null) {
                     mm.clusterMap[tempX][tempY].update(new Point(tempX, tempY), (int)gc.karboniteAt(tempLocation));
                 }
+                gc.blueprint(id, UnitType.Rocket, buildDirection);
+                earthParent.incrementRobotCount(UnitType.Rocket);
+                earthParent.isSavingForRocket = false;
+                earthParent.rocketsBuilt += 1; // not yet completely accurate
+                busy = true;
+                done = true;                                    
             }                    
         }        
 
@@ -218,17 +218,18 @@ public class WorkerHandler extends UnitHandler {
         if (!busy && gc.karbonite() >= 200 && nearbyStructures.size() == 0 && (earthParent.getRobotCount(UnitType.Factory) == 0 || (earthParent.getRobotCount(UnitType.Factory) < 3 && nearbyWorkerCount >= 3) || (earthParent.getRobotCount(UnitType.Factory) >= 3 && nearbyBuiltStructureCount == 0))) {
             Direction buildDirection = findBuildDirection(unit);
             if (buildDirection != null && gc.canBlueprint(id, UnitType.Factory, buildDirection)) {
-                gc.blueprint(id, UnitType.Factory, buildDirection);
-                earthParent.incrementRobotCount(UnitType.Factory);
-                earthParent.isSavingForFactory = false;
-                busy = true;
-                done = true;
                 MapLocation tempLocation = mapLocation.add(buildDirection);
                 int tempX = tempLocation.getX();
                 int tempY = tempLocation.getY();
                 if (mm.clusterMap[tempX][tempY] != null) {
                     mm.clusterMap[tempX][tempY].update(new Point(tempX, tempY), (int)gc.karboniteAt(tempLocation));
                 }
+                gc.blueprint(id, UnitType.Factory, buildDirection);
+                earthParent.incrementRobotCount(UnitType.Factory);
+                earthParent.isSavingForFactory = false;
+                busy = true;
+                done = true;
+                
             }
         }
 
@@ -249,6 +250,7 @@ public class WorkerHandler extends UnitHandler {
             for (Direction d : Direction.values()) {                         
                 MapLocation tryLocation = mapLocation.add(d);                
                 if (map.onMap(tryLocation) && gc.canHarvest(id, d)) {   
+                    //TODO check if this is what we want and not what we want
                     long money = gc.karboniteAt(tryLocation);                                         
                     if (harvestDirection == null || money > mostMoney) {
                         harvestDirection = d;                        
@@ -356,6 +358,7 @@ public class WorkerHandler extends UnitHandler {
         Unit newWorker = gc.senseUnitAtLocation(newLocation);
         int newId = newWorker.id();        
         if (mining) {
+            //TODO chnage to convertToMiner
             myHandler.put(newId, new MiningWorkerHandler(earthParent, gc, newId, rng, mm));
         } else {
             myHandler.put(newId, new WorkerHandler(earthParent, gc, newId, rng));
