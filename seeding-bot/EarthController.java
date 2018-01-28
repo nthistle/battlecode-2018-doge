@@ -283,10 +283,10 @@ public class EarthController extends PlanetController
         if (getRobotCount(UnitType.Ranger) > 3 && getRobotCount(UnitType.Healer) < 2) {
             return UnitType.Healer;
         }
-        if (getRobotCount(UnitType.Healer) < (int)(0.5 * getRobotCount(UnitType.Ranger))) {
+        if (getRobotCount(UnitType.Ranger) < (int)(0.5 * getRobotCount(UnitType.Healer))) {
             return UnitType.Ranger;
         }
-        if(d < 0.4 && getRobotCount(UnitType.Ranger) > 6) return UnitType.Healer;
+        if (d < 0.33 && getRobotCount(UnitType.Ranger) > 6) return UnitType.Healer;
         else return UnitType.Ranger;
     }
 

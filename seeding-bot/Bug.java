@@ -110,6 +110,11 @@ public class Bug {
 				tryDirection = bc.bcDirectionRotateLeft(tryDirection);
 			}
 			MapLocation tryLocation = mapLocation.add(tryDirection);
+			if (gc.hasUnitAtLocation(tryLocation) && !reversed) {
+				buggingRight = !buggingRight;
+				traceMove(true);
+				return;				
+			}
 			if (!map.onMap(tryLocation) && !reversed) {
 				buggingRight = !buggingRight;
 				traceMove(true);

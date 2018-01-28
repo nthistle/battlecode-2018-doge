@@ -13,15 +13,18 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	protected static int[][] rocketDistances;
 	protected static List<Integer> kryptoniteTotals;
 	protected static List<Integer> usedZones;
+	protected static Team enemyTeam;
 	protected int rocketsLoaded = 0;
 	protected PlanetMap marsMap;
 
 	public LaunchingLogicHandler(PlanetController parent, GameController gc, int id, Random rng) {
 		super(parent, gc, id, rng);
+
+        this.enemyTeam = ((EarthController) parent).enemyTeam;
 		this.marsMap = gc.startingMap(Planet.Mars);
         this.zoneMap = this.getZones();
-        //System.out.println(Arrays.deepToString(label));
-        //System.out.println(this.zoneMap);
+        System.out.println(Arrays.deepToString(label));
+        System.out.println(this.zoneMap);
         this.usedLandingPoints = new HashSet<Point>();
 
 	}
@@ -112,9 +115,9 @@ public class LaunchingLogicHandler extends UnitHandler  {
 				values[(int)strike.getLocation().getY()][(int)strike.getLocation().getX()] += strike.getKarbonite();
 			}
 		}
-		for(int i = 0; i < this.marsMap.getHeight(); i++) {
-			for(int j = 0; j < this.marsMap.getWidth(); j++) {
-				//System.out.println(i + ", " + j);
+		for(int i = enemyTeam == Team.Red ? (int)(this.marsMap.getHeight() - 1) : 0; enemyTeam == Team.Red ? i >= 0: i < this.marsMap.getWidth(); i += enemyTeam == Team.Red ? -1 : 1) {
+			for(int j = enemyTeam == Team.Red ? (int)(this.marsMap.getWidth() - 1) : 0; enemyTeam == Team.Red ? j >= 0: j < this.marsMap.getWidth(); j += enemyTeam == Team.Red ? -1 : 1) {
+				System.out.println(i + ", " + j);
 				if(!Utils.canOccupyMars(gc, new MapLocation(Planet.Mars, j, i))) {
 					label[i][j] = -1; //impassable point
 				}
@@ -141,8 +144,8 @@ public class LaunchingLogicHandler extends UnitHandler  {
 			kryptoniteTotals.add(0);
 			usedZones.add(0);
 		}
-		for(int i = 0; i < this.marsMap.getHeight(); i++) {
-			for(int j = 0; j < this.marsMap.getWidth(); j++) {
+		for(int i = enemyTeam == Team.Red ? (int)(this.marsMap.getHeight() - 1) : 0; enemyTeam == Team.Red ? i >= 0: i < this.marsMap.getWidth(); i += enemyTeam == Team.Red ? -1 : 1) {
+			for(int j = enemyTeam == Team.Red ? (int)(this.marsMap.getWidth() - 1) : 0; enemyTeam == Team.Red ? j >= 0: j < this.marsMap.getWidth(); j += enemyTeam == Team.Red ? -1 : 1) {
 				if(label[i][j] > 0) {
 					ret.get(label[i][j] - 1).add(new MapLocation(Planet.Mars, j, i));
 					kryptoniteTotals.set(label[i][j]-1, kryptoniteTotals.get(label[i][j]-1) + values[i][j]);
@@ -178,14 +181,18 @@ public class LaunchingLogicHandler extends UnitHandler  {
 			public int compare(ArrayList<MapLocation> a, ArrayList<MapLocation> b) { //select the objectively better zone
 				int totA = kryptoniteTotals.get(label[(int)a.get(0).getY()][(int)a.get(0).getX()]-1);
 				int totB = kryptoniteTotals.get(label[(int)b.get(0).getY()][(int)b.get(0).getX()]-1);
-				return (totB + 100 * b.size() - 100 * usedZones.get(label[(int)b.get(0).getY()][(int)b.get(0).getX()]-1)) - (totA + 100 * a.size() - 100 * usedZones.get(label[(int)a.get(0).getY()][(int)a.get(0).getX()]-1));
+				int comp = (totB + 100 * b.size() - 100 * usedZones.get(label[(int)b.get(0).getY()][(int)b.get(0).getX()]-1)) - (totA + 100 * a.size() - 100 * usedZones.get(label[(int)a.get(0).getY()][(int)a.get(0).getX()]-1));
+				return comp;
 			}
 		};
 		
 		public static Comparator<MapLocation> MapLocComp = new Comparator<MapLocation>() {
 			public int compare(MapLocation a, MapLocation b) {
 				int i1 = a.getY(), i2 = b.getY(), j1 = a.getX(), j2 = b.getX();
-				return (1000 * adjacentSquares[i2][j2] - values[i2][j2] - (int)(0.01 * rocketDistances[i2][j2])) - (1000 * adjacentSquares[i1][j1] - values[i1][j1] - (int)(0.01 * rocketDistances[i1][j1]));			}
+				int comp =  (1000 * adjacentSquares[i2][j2] - values[i2][j2] - (int)(0.01 * rocketDistances[i2][j2])) - (1000 * adjacentSquares[i1][j1] - values[i1][j1] - (int)(0.01 * rocketDistances[i1][j1]));
+				return comp;
+			}
+				
 		};
 	}
 
