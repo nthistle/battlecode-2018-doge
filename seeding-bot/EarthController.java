@@ -282,10 +282,10 @@ public class EarthController extends PlanetController
         // if(gc.round() < 150 && d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) - eworkerCount < 6) {
         //     return UnitType.Worker;
         // }
-        if (getRobotCount(UnitType.Ranger) > 6 && getRobotCount(UnitType.Healer) < 2) {
+        if (getRobotCount(UnitType.Ranger) > 3 && getRobotCount(UnitType.Healer) < 2) {
             return UnitType.Healer;
         }
-        if (getRobotCount(UnitType.Healer) > 2 * getRobotCount(UnitType.Ranger)) {
+        if (getRobotCount(UnitType.Healer) < (int)(0.5 * getRobotCount(UnitType.Ranger))) {
             return UnitType.Ranger;
         }
         if(d < 0.4 && getRobotCount(UnitType.Ranger) > 6) return UnitType.Healer;
@@ -482,6 +482,7 @@ public class EarthController extends PlanetController
                     if(unit.unitType() == UnitType.Worker) {
                         System.out.println("Just requested a brand-new miner");
                         mm.convertToMiner(unit.id());
+                        return;
                     }
                 }
                 break;
