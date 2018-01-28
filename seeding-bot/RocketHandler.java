@@ -229,5 +229,8 @@ public class RocketHandler extends UnitHandler {
     	}
     }
 
-    public void handleDeath() {}
+    public void handleDeath() {
+        this.parent.pm.clearPFCache(this.dest);
+        ((EarthController)this.parent).amLoadingRocket --;
+    }
 }
