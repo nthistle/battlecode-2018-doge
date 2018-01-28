@@ -95,8 +95,8 @@ public class PathMaster
 	}
 
 	public void clearPFCache(MapLocation target) {
-		this.limitedCache.remove(new Point(target.getX(), target.getY()));
-		this.generateCount--;
+		if(null != this.limitedCache.remove(new Point(target.getX(), target.getY())))
+			this.generateCount--;
 	}
 
 	public PathField getPathField(MapLocation target) {

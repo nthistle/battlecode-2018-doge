@@ -91,7 +91,7 @@ public class EarthController extends PlanetController
             if(gc.round() > 0 && gc.round() % 50 == 0) {
                 mm.update();
                 System.out.println("Successfully updated MiningMaster");
-                mm.printKarboniteMap();
+                // mm.printKarboniteMap();
             }
             //end
 
@@ -323,7 +323,7 @@ public class EarthController extends PlanetController
         if (getRobotCount(UnitType.Ranger) < (int)(0.5 * getRobotCount(UnitType.Healer))) {
             return UnitType.Ranger;
         }
-        if (d < 0.33 && getRobotCount(UnitType.Ranger) > 6) return UnitType.Healer;
+        if (d < 0.3 && getRobotCount(UnitType.Ranger) > 6) return UnitType.Healer;
         else return UnitType.Ranger;
     }
 
