@@ -53,8 +53,9 @@ public class HealerHandler extends UnitHandler {
         ArrayList<Unit> nearbyPassive = new ArrayList<Unit>();
         load(nearby, nearbyAttackers, nearbyPassive);        
         
+        // must heal before we move
         if(gc.isHealReady(this.id)) { //heal nearest unit    
-            Unit healTarget = getMostHurt(nearbyAttackers, unit.attackRange());
+            Unit healTarget = getMostHurt(unit);
         	if(healTarget != null && gc.canHeal(this.id, healTarget.id())) {
         		gc.heal(this.id, healTarget.id());
             }
@@ -70,7 +71,7 @@ public class HealerHandler extends UnitHandler {
         	if(runAwayDir != Direction.Center) 
         		Utils.tryMoveWiggleRecur(gc, id, runAwayDir, null);
         	else {
-        	    Unit moveTarget = getMostHurt(nearbyAttackers, unit.visionRange());                        	
+        	    Unit moveTarget = getMostHurt(unit);                        	
         		if(moveTarget != null) {
                     MapLocation target = moveTarget.location().mapLocation();        			
                     if (pm.isCached(target) && pm.getPathFieldWithCache(target).isPointSet(myLocation)) {
@@ -177,12 +178,15 @@ public class HealerHandler extends UnitHandler {
         return closestEnemy;
     }
     
-    private Unit getMostHurt(ArrayList<Unit> friends, long range) {
+    private Unit getMostHurt(Unit unit) {
     	long minHealth = Long.MAX_VALUE;
     	Unit ret = null;
     	MapLocation myLocation = gc.unit(this.id).location().mapLocation();
-    	for(Unit friend : friends) {
-    		if(myLocation.distanceSquaredTo(friend.location().mapLocation()) > range) continue;
+        VecUnit canHealFriends = gc.senseNearbyUnitsByTeam(unit.location().mapLocation(), unit.attackRange(), gc.team());
+        for(int i = 0; i < canHealFriends.size(); i ++) {
+    	// for(Unit friend : canHealFriends) {
+            Unit friend = canHealFriends.get(i);
+    		// if(myLocation.distanceSquaredTo(friend.location().mapLocation()) > range) continue;
     		long health = friend.health();
     		long maxHealth = friend.maxHealth();
     		if(health < maxHealth && health < minHealth) { //hurt and most hurt
