@@ -11,10 +11,7 @@ public class HealerHandler extends UnitHandler {
         myLocation = gc.unit(id).location().mapLocation();
         threatMap = new EnumMap<Direction, Integer>(Direction.class);
         for(Direction dir : Direction.values()) {
-        	if(dir == Direction.Center) continue;
-        	else {
-        		threatMap.put(dir, 0);
-        	}
+        	threatMap.put(dir, 0);
         }
     }
 
@@ -33,9 +30,11 @@ public class HealerHandler extends UnitHandler {
 
 
         if (location.isOnPlanet(Planet.Mars)) {
-            //System.out.println("LITTINGTON_BILLINGTON");
+            ////System.out.println("LITTINGTON_BILLINGTON");
             return;
         }
+        
+        myLocation = unit.location().mapLocation();
 
         // references to parent
         EarthController earthParent = (EarthController)parent;
@@ -56,10 +55,14 @@ public class HealerHandler extends UnitHandler {
         		gc.heal(this.id, healTarget.id());
             }
         }
-        System.out.println(myLocation);
-        if(gc.isMoveReady(this.id)) {        	
-        	Direction runAwayDir = getRunAwayDirection(gc.senseNearbyUnitsByTeam(myLocation, 50, enemy));
-        	System.out.println(this.id + ": " + runAwayDir);
+        //System.out.println(myLocation);
+        if(gc.isMoveReady(this.id)) {        
+        	VecUnit nearbyEnemies = gc.senseNearbyUnitsByTeam(myLocation, 100, enemy);
+        	//System.out.println(nearby.size());
+        	//System.out.println(nearbyEnemies.size());
+        	//System.out.println(enemy);
+        	Direction runAwayDir = getRunAwayDirection(nearbyEnemies);
+        	//System.out.println(this.id + ": " + runAwayDir);
         	if(runAwayDir != Direction.Center) 
         		Utils.tryMoveWiggleRecur(gc, id, runAwayDir, null);
         	else {
@@ -74,7 +77,7 @@ public class HealerHandler extends UnitHandler {
         		}
         	}
         }
-        System.out.println(unit.location().mapLocation());
+        //System.out.println(unit.location().mapLocation());
     }
 
     public Direction getRandomDirection(MapLocation mapLocation, MapLocation targetLocation, PathMaster pm) {
@@ -88,6 +91,7 @@ public class HealerHandler extends UnitHandler {
     	}
     	for(int i = 0; i < threats.size(); i++) {
     		Unit bih = threats.get(i);
+    		//System.out.println(bih);
     		MapLocation bihLoc = bih.location().mapLocation();
     		UnitType bihType = bih.unitType();
     		int dist = (int)myLocation.distanceSquaredTo(bihLoc);
@@ -117,8 +121,11 @@ public class HealerHandler extends UnitHandler {
     				threatMap.put(dir, threatMap.get(dir) + 5 * (50 - dist)); //weigh danger by distance past 30 as f(dist) = 5 * (50 - dist) 
     			}
     		}
+    		else { //no immediate danger, weight 10
+    			threatMap.put(dir,  threatMap.get(dir) + 10);
+    		}
     	}
-    	System.out.println(threatMap);
+    	//System.out.println(threatMap);
     	Direction ret = Direction.Center;
     	int maxIncomingDmg = 0;
     	for(Direction dir : threatMap.keySet()) {
