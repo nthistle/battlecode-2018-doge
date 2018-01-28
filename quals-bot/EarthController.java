@@ -63,7 +63,6 @@ public class EarthController extends PlanetController
 
         queueResearch();
         
-        
         rocketWarning = new Direction[(int)this.map.getWidth()][(int)this.map.getHeight()];
         
         for(int i = 0; i < rocketWarning.length; i++) {
