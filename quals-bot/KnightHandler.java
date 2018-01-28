@@ -42,14 +42,48 @@ public class KnightHandler extends UnitHandler {
         TargetingMaster tm = earthParent.tm;        
         PathMaster pm = earthParent.pm;        
 
-        VecUnit nearbyEnemies = gc.senseNearbyUnitsByTeam(mapLocation, unit.attackRange(), earthParent.enemyTeam);        
+        VecUnit nearbyEnemies = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), earthParent.enemyTeam);        
         ArrayList<Unit> nearbyEnemyAttackers = new ArrayList<Unit>();
         ArrayList<Unit> nearbyEnemyPassive = new ArrayList<Unit>();
         load(nearbyEnemies, nearbyEnemyAttackers, nearbyEnemyPassive);        
 
-        // MapLocation target = getTarget(mapLocation, unit.visionRange(), enemyTeam, tm);
+        MapLocation target = getTarget(mapLocation, unit.visionRange(), enemyTeam, tm);
 
-        
+        Unit focusEnemy = getClosestEnemy(nearbyEnemyAttackers, mapLocation);
+        if (focusEnemy != null && focusEnemy.location().mapLocation().distanceSquaredTo(mapLocation) > 10) {
+            focusEnemy = getWeakestEnemy(nearbyEnemyAttackers, mapLocation);
+        }
+        if (focusEnemy == null) {
+            focusEnemy = getClosestEnemy(nearbyEnemyPassive, mapLocation);
+        }
+
+        if (target != null) {
+            if (focusEnemy == null) {
+                if (pm.isCached(target) && pm.getPathFieldWithCache(target).isPointSet(mapLocation)) {
+                    Utils.tryMoveRotate(gc, id, getRandomDirection(mapLocation, target, pm));
+                } else {
+                    bug.bugMove(mapLocation, target);                    
+                }                
+            } else {
+                MapLocation enemyLocation = focusEnemy.location().mapLocation();                
+                if (gc.isAttackReady(id) && gc.canAttack(id, focusEnemy.id())) {
+                    gc.attack(id, focusEnemy.id());
+                }                                    
+                bug.bugMove(mapLocation, target);                    
+                if (gc.isAttackReady(id) && gc.canAttack(id, focusEnemy.id())) {
+                    gc.attack(id, focusEnemy.id());
+                }                
+            }
+        } else if (focusEnemy != null) {
+            MapLocation enemyLocation = focusEnemy.location().mapLocation();
+            if (gc.isAttackReady(id) && gc.canAttack(id, focusEnemy.id())) {
+                gc.attack(id, focusEnemy.id());
+            }                                    
+            bug.bugMove(mapLocation, target);                    
+            if (gc.isAttackReady(id) && gc.canAttack(id, focusEnemy.id())) {
+                gc.attack(id, focusEnemy.id());
+            }                
+        }
     }
 
     public Direction getRandomDirection(MapLocation mapLocation, MapLocation targetLocation, PathMaster pm) {
@@ -68,6 +102,52 @@ public class KnightHandler extends UnitHandler {
                 passive.add(unit);
             }
         }
+    }
+
+    private Unit getWeakestEnemy(ArrayList<Unit> nearbyEnemies, MapLocation mapLocation) {
+        Unit closestEnemy = null;
+        long closestDistance = Long.MAX_VALUE;
+        for (int i = 0; i < nearbyEnemies.size(); i++) {            
+            Unit nearbyUnit = nearbyEnemies.get(i);            
+            long distance = nearbyUnit.health();
+            if (distance < closestDistance) {
+                closestEnemy = nearbyUnit;
+                closestDistance = distance;
+            }
+        }
+        return closestEnemy;
+    }
+
+
+    private Unit getClosestEnemy(ArrayList<Unit> nearbyEnemies, MapLocation mapLocation) {
+        Unit closestEnemy = null;
+        long closestDistance = Long.MAX_VALUE;
+        for (int i = 0; i < nearbyEnemies.size(); i++) {            
+            Unit nearbyUnit = nearbyEnemies.get(i);
+            MapLocation tryLocation = nearbyUnit.location().mapLocation();
+            long distance = mapLocation.distanceSquaredTo(tryLocation);
+            if (distance < closestDistance) {
+                closestEnemy = nearbyUnit;
+                closestDistance = distance;
+            }
+        }
+        return closestEnemy;
+    }
+
+    private MapLocation getTarget(MapLocation requestLocation, long range, Team enemyTeam, TargetingMaster tm) {
+        while (true) {
+            MapLocation target = tm.getTarget(requestLocation);
+            if (target == null) {
+                break;
+            }
+            if (((target.isWithinRange(range - 2, requestLocation) && gc.senseNearbyUnitsByTeam(target, range, enemyTeam).size() == 0) || target.isWithinRange(2, requestLocation)) && tm.targets.size() > 1) {
+                //System.out.println("BIG_BOY" + target);
+                tm.removeTarget(target);
+                continue;
+            }
+            return target;
+        }        
+        return null;
     }
 
     public void handleDeath() {}
