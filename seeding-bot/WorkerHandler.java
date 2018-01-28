@@ -73,9 +73,9 @@ public class WorkerHandler extends UnitHandler {
             MapLocation tryLocation = mapLocation.add(d);                
             int tempX = tryLocation.getX();
             int tempY = tryLocation.getY();                
-            if (map.onMap(tryLocation) && gc.canHarvest(id, d)) {                       
+            if (map.onMap(tryLocation)) {
                 long money = gc.karboniteAt(tryLocation);                           
-                mm.updateIndividual(new Point(tempX, tempY), (int)money);                
+                mm.updateIndividual(new Point(tempX, tempY), (int)money);
             }            
         }
 
@@ -248,6 +248,7 @@ public class WorkerHandler extends UnitHandler {
         }
 
         if (!busy && targetLocation != null) {
+            System.out.println(targetLocation);
             move(pm, mapLocation, targetLocation);
         }
 
