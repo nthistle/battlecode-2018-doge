@@ -23,8 +23,8 @@ public class LaunchingLogicHandler extends UnitHandler  {
         this.enemyTeam = ((EarthController) parent).enemyTeam;
 		this.marsMap = gc.startingMap(Planet.Mars);
         this.zoneMap = this.getZones();
-        System.out.println(Arrays.deepToString(label));
-        System.out.println(this.zoneMap);
+        //System.out.println(Arrays.deepToString(label));
+        //System.out.println(this.zoneMap);
         this.usedLandingPoints = new HashSet<Point>();
 
 	}
@@ -117,7 +117,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		}
 		for(int i = enemyTeam == Team.Red ? (int)(this.marsMap.getHeight() - 1) : 0; enemyTeam == Team.Red ? i >= 0: i < this.marsMap.getWidth(); i += enemyTeam == Team.Red ? -1 : 1) {
 			for(int j = enemyTeam == Team.Red ? (int)(this.marsMap.getWidth() - 1) : 0; enemyTeam == Team.Red ? j >= 0: j < this.marsMap.getWidth(); j += enemyTeam == Team.Red ? -1 : 1) {
-				System.out.println(i + ", " + j);
+				//System.out.println(i + ", " + j);
 				if(!Utils.canOccupyMars(gc, new MapLocation(Planet.Mars, j, i))) {
 					label[i][j] = -1; //impassable point
 				}
