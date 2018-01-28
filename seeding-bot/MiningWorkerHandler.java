@@ -12,7 +12,6 @@ public class MiningWorkerHandler extends UnitHandler {
 
     public MiningWorkerHandler(PlanetController parent, GameController gc, int id, Random rng, MiningMaster m) {
         super(parent, gc, id, rng);
-        System.out.println("Just created a new MiningWorkerHandler");
         this.m = m;
     }
 

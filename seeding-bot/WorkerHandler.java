@@ -360,8 +360,10 @@ public class WorkerHandler extends UnitHandler {
         if (mining) {
             //TODO chnage to convertToMiner
             //myHandler.put(newId, new MiningWorkerHandler(earthParent, gc, newId, rng, mm));
-            if(newWorker.unitType() == UnitType.Worker)
+            if(newWorker.unitType() == UnitType.Worker) {
+                System.out.println("Just requested a brand-new miner");
                 mm.convertToMiner(newId);
+            }
         } else {
             myHandler.put(newId, new WorkerHandler(earthParent, gc, newId, rng));
         }        

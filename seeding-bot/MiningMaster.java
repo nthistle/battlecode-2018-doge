@@ -144,13 +144,18 @@ public class MiningMaster {
 	public boolean convertToMiner(int id) {
 		UnitHandler newHandler = new MiningWorkerHandler(this.parentController, this.parentController.gc, id, this.parentController.rng, this);
 		this.parentController.myHandler.put(id, newHandler);
-		return assignTarget((MiningWorkerHandler) newHandler);
+		boolean shouldCreateMiner = canAssignTarget((MiningWorkerHandler) newHandler);
+		if(shouldCreateMiner) {
+			assignTarget((MiningWorkerHandler) newHandler);
+			System.out.println("Request fulfilled, the miner at " + new Point(this.parentController.gc.unit(id).location().mapLocation().getX(), this.parentController.gc.unit(id).location().mapLocation().getY()) + " was assigned " + new Point(((MiningWorkerHandler) newHandler).target.getX(), ((MiningWorkerHandler) newHandler).target.getY()));
+		} else {
+			System.out.println("Somebody requested a miner, but we don't need it");
+		}
+		
+		return shouldCreateMiner;
 	}
 
-	//given a mining worker handler, checks if it has a target, if not give it a target
-	//returns true if a target was assigned, returns false if not (if false, we dont need any more miners)
-	public boolean assignTarget(MiningWorkerHandler a) {
-		//TODO fix this so we don't do this by exception
+	public boolean canAssignTarget(MiningWorkerHandler a) {
 		MapLocation current;
 		try {
 			current = this.parentController.gc.unit(a.id).location().mapLocation();
@@ -194,23 +199,96 @@ public class MiningMaster {
 		//there are no more clusters that have less than 3 workers at them
 
 		if(this.clusters.size() == 0) {
-			System.out.println("No more clusters in cluster list");
 			return false;
 		}
 
-		if(needToBeFilled1.size() == 0 && needToBeFilled.size() == 0) {
+		if(needToBeFilled.size() == 0) {
+			return false;
+		}
+
+		
+		if(needToBeFilled1.size() == 0) {
+			return false;
+		}
+
+		return true;
+	}
+
+	//given a mining worker handler, checks if it has a target, if not give it a target
+	//returns true if a target was assigned, returns false if not (if false, we dont need any more miners)
+	public boolean assignTarget(MiningWorkerHandler a) {
+		//TODO fix this so we don't do this by exception
+		MapLocation current;
+		try {
+			current = this.parentController.gc.unit(a.id).location().mapLocation();
+		} catch (Exception e) {
+			current = null;
+		}
+		if(current == null)
+			return false;
+
+		if(a.hasTarget())
+			return true;
+
+		List<Cluster> needToBeFilled = new ArrayList<Cluster>();
+		Cluster goal = null;
+		long minDist = Integer.MAX_VALUE;
+
+		//first we need the clusters that are accessible by this miner but only those that have been cached
+		for(int i = 0; i < Math.min(this.MAX_PATHFIELDS, this.clusters.size()); i++) {
+			Cluster q = this.clusters.get(i);
+			if(this.parentController.pm.isConnected(current, new MapLocation(this.parentController.getPlanet(), q.clusterMaxima.x, q.clusterMaxima.y)) && this.parentController.pm.getCachedPathField(q.clusterMaxima.x, q.clusterMaxima.y) != null)
+				needToBeFilled.add(this.clusters.get(i));
+		}
+
+		List<Cluster> needToBeFilled1 = new ArrayList<Cluster>();
+		//next, if one of the clusters we want has 0 miners at it, lets try go there
+		for(int i = 0; i < needToBeFilled.size(); i++) {
+			if(needToBeFilled.get(i).minersAt == 0) {
+				needToBeFilled1.add(needToBeFilled.get(i));
+			}
+		}
+
+		//if there are none with 0 workers, lets just go to a cluster with less than 3 workers
+		if(needToBeFilled1.size() == 0) {
+			for(int i = 0; i < needToBeFilled.size(); i++) {
+				if(needToBeFilled.get(i).minersAt < this.MAX_MINERS_AT_CLUSTER) {
+					needToBeFilled1.add(needToBeFilled.get(i));
+					System.out.println("Miner at " + this.parentController.gc.unit(a.id).location().mapLocation() + " just considered the cluster: " + needToBeFilled.get(i).clusterMaxima + " because " + "it only has " + needToBeFilled.get(i).minersAt + " miners");
+				}
+			}
+		}
+
+		//there are no more clusters that have less than 3 workers at them
+
+		if(this.clusters.size() == 0) {
+			//System.out.println("No more clusters in cluster list");
+			return false;
+		}
+
+		if(needToBeFilled.size() == 0) {
+			/*
 			System.out.println("Picked a target from cluster list");
 			Cluster q = this.clusters.get(this.parentController.rng.nextInt(this.clusters.size()));
 			a.setTarget(new MapLocation(this.parentController.getPlanet(), q.clusterMaxima.x, q.clusterMaxima.y), this.parentController.pm);
 			this.clusterMap[q.clusterMaxima.x][q.clusterMaxima.y].minersAt += 1;
-			return true;
+			*/
+			//System.out.println("There are no more clusters that are connected that we can access");
+			return false;
 		}
 
+		
 		if(needToBeFilled1.size() == 0) {
+			/*
+			System.out.println("Picked a non-optimal target that may have more than 3 workers");
 			a.setTarget(new MapLocation(this.parentController.getPlanet(), needToBeFilled.get(0).clusterMaxima.x, needToBeFilled.get(0).clusterMaxima.y), this.parentController.pm);
 			this.clusterMap[needToBeFilled.get(0).clusterMaxima.x][needToBeFilled.get(0).clusterMaxima.y].minersAt += 1;
-			return true;
+			*/
+
+			//System.out.println("There are no more clusters that need more workers");
+			return false;
 		}
+
 
 		
 		//finally select the one that is the closest pathfinding distance to the location of the miner
@@ -226,6 +304,7 @@ public class MiningMaster {
 		}
 
 		if(locs.keySet().size() > 0) {
+			//System.out.println("Picked a target that was the closest to us");
 			a.setTarget(new MapLocation(this.parentController.getPlanet(), locs.get(locs.firstKey()).clusterMaxima.x, locs.get(locs.firstKey()).clusterMaxima.y), this.parentController.pm);
 			this.clusterMap[locs.get(locs.firstKey()).clusterMaxima.x][locs.get(locs.firstKey()).clusterMaxima.y].minersAt += 1;
 			return true;
