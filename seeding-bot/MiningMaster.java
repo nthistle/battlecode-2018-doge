@@ -144,7 +144,7 @@ public class MiningMaster {
 	public boolean convertToMiner(int id) {
 		UnitHandler newHandler = new MiningWorkerHandler(this.parentController, this.parentController.gc, id, this.parentController.rng, this);
 		this.parentController.myHandler.put(id, newHandler);
-		boolean shouldCreateMiner = canAssignTarget((MiningWorkerHandler) newHandler);
+		boolean shouldCreateMiner = canAssignTarget(this.parentController.gc.unit(((MiningWorkerHandler) newHandler).id).location().mapLocation());
 		if(shouldCreateMiner) {
 			assignTarget((MiningWorkerHandler) newHandler);
 			System.out.println("Request fulfilled, the miner at " + new Point(this.parentController.gc.unit(id).location().mapLocation().getX(), this.parentController.gc.unit(id).location().mapLocation().getY()) + " was assigned " + new Point(((MiningWorkerHandler) newHandler).target.getX(), ((MiningWorkerHandler) newHandler).target.getY()));
@@ -155,18 +155,7 @@ public class MiningMaster {
 		return shouldCreateMiner;
 	}
 
-	public boolean canAssignTarget(MiningWorkerHandler a) {
-		MapLocation current;
-		try {
-			current = this.parentController.gc.unit(a.id).location().mapLocation();
-		} catch (Exception e) {
-			current = null;
-		}
-		if(current == null)
-			return false;
-
-		if(a.hasTarget())
-			return true;
+	public boolean canAssignTarget(MapLocation current) {
 
 		List<Cluster> needToBeFilled = new ArrayList<Cluster>();
 		Cluster goal = null;

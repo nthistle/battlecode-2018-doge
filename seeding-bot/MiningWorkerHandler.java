@@ -126,7 +126,6 @@ public class MiningWorkerHandler extends UnitHandler {
                     Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), last.x, last.y)));
                 }
             } else {
-
                 Point current = new Point(mapLocation.getX(), mapLocation.getY());
                 Point goal = a.members.get(0);
                 long distanceAway = Integer.MAX_VALUE;
