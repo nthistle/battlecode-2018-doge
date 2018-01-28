@@ -25,6 +25,9 @@ public class MiningMaster {
 	public static final int MAX_MINERS_AT_CLUSTER = 3;
 	public static final int MIN_CLUSTER_VALUE = 15;
 	public static final int MAX_PATHFIELDS = 10;
+
+	public static int numCached = 0;
+
 	protected Cluster[][] clusterMap;
 	protected PlanetController parentController;
 
@@ -375,18 +378,25 @@ public class MiningMaster {
 					if(f.clusterMaxima.equals(q.clusterMaxima)) {
 						actuallyRemoved = true;
 						clusterIt.remove();
-					}
-				}
-				this.parentController.pm.clearPFCache(new MapLocation(this.parentController.getPlanet(), q.clusterMaxima.x, q.clusterMaxima.y));
-				for(int i = 0; i < this.clusters.size(); i++) {
-					Cluster d = this.clusters.get(i);
-					if(this.parentController.pm.getCachedPathField(d.clusterMaxima.x, d.clusterMaxima.y) == null && actuallyRemoved) {
-						MapLocation end = new MapLocation(this.parentController.getPlanet(), d.clusterMaxima.x, d.clusterMaxima.y);
-						this.parentController.pm.getPathFieldWithCache(end);
 						break;
 					}
 				}
-				return true;
+
+				if(actuallyRemoved) {
+					if(this.parentController.pm.clearPFCache(new MapLocation(this.parentController.getPlanet(), q.clusterMaxima.x, q.clusterMaxima.y)))
+						MiningMaster.numCached --;
+
+					for(int i = 0; i < this.clusters.size(); i++) {
+						Cluster d = this.clusters.get(i);
+						if(this.parentController.pm.getCachedPathField(d.clusterMaxima.x, d.clusterMaxima.y) == null && actuallyRemoved) {
+							MapLocation end = new MapLocation(this.parentController.getPlanet(), d.clusterMaxima.x, d.clusterMaxima.y);
+							this.parentController.pm.getPathFieldWithCache(end);
+							MiningMaster.numCached ++;
+							break;
+						}
+					}
+					return true;
+				}
 			}
 		}
 		return false;

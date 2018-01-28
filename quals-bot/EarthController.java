@@ -78,6 +78,8 @@ public class EarthController extends PlanetController
                     
             System.out.println("Round #" + gc.round() + ", (" + gc.getTimeLeftMs() + " ms left)");
 
+            System.out.println("Mining master at " + mm.numCached);
+
             if(gc.getTimeLeftMs() < 1000) {
                 System.out.println("TIME POOL LOW! SKIPPING TURN!");
                 gc.nextTurn();
