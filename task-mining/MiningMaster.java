@@ -18,7 +18,7 @@ public class MiningMaster {
 	protected int[][] initialKarboniteLocations;
 	protected int[][] initialKarboniteLocationsOriginal;
 	protected List<Cluster> clusters;
-	private int[] miningWorkerHandlers;
+	protected int totalValue;
 	public static final int KARBONITE_THRESHOLD = 5;
 	public static final int KARBONITE_THRESHOLD_CLUSTER = 2;
 	public static final int MAX_CLUSTERS_VISIT = 3;
@@ -143,7 +143,7 @@ public class MiningMaster {
 	//returns true if the new miner has a target, return false if he doesnt
 	public boolean convertToMiner(int id) {
 		UnitHandler newHandler = new MiningWorkerHandler(this.parentController, this.parentController.gc, id, this.parentController.rng, this);
-		((EarthController) this.parentController).myHandler.put(id, newHandler);
+		this.parentController.myHandler.put(id, newHandler);
 		return assignTarget((MiningWorkerHandler) newHandler);
 	}
 
@@ -301,20 +301,36 @@ public class MiningMaster {
 	}
 
 	public boolean updateIndividual(Point a, int karb) {
-		this.initialKarboniteLocationsOriginal[a.x][a.y] = karb;
+		if(karb <= 0)
+			this.initialKarboniteLocationsOriginal[a.x][a.y] = 0;
+		else
+			this.initialKarboniteLocationsOriginal[a.x][a.y] = karb;
 		Cluster q = this.clusterMap[a.x][a.y];
 		if(q != null) {
-			if(karb == 0) {
+			if(karb <= 0) {
 				q.members.remove(a);
 			}
 			if(q.members.size() == 0) {
-				Iterator<Cluster> i = this.clusters.iterator();
-				while(i.hasNext()) {
-					if(i.next().clusterMaxima.equals(q.clusterMaxima)) {
-						i.remove();
-						return true;
+				boolean actuallyRemoved = false;
+				System.out.println("We don't have anything else in this cluster at [" + q.clusterMaxima.x + "," + q.clusterMaxima.y + "]");
+				Iterator<Cluster> clusterIt = this.clusters.iterator();
+				while(clusterIt.hasNext()) {
+					Cluster f = clusterIt.next();
+					if(f.clusterMaxima.equals(q.clusterMaxima)) {
+						actuallyRemoved = true;
+						clusterIt.remove();
 					}
 				}
+				this.parentController.pm.clearPFCache(new MapLocation(this.parentController.getPlanet(), q.clusterMaxima.x, q.clusterMaxima.y));
+				for(int i = 0; i < this.clusters.size(); i++) {
+					Cluster d = this.clusters.get(i);
+					if(this.parentController.pm.getCachedPathField(d.clusterMaxima.x, d.clusterMaxima.y) == null && actuallyRemoved) {
+						MapLocation end = new MapLocation(this.parentController.getPlanet(), d.clusterMaxima.x, d.clusterMaxima.y);
+						this.parentController.pm.getPathFieldWithCache(end);
+						break;
+					}
+				}
+				return true;
 			}
 		}
 		return false;
@@ -365,6 +381,14 @@ public class MiningMaster {
 			this.parentController.pm.getPathFieldWithCache(end);
 		}
 
+		for(Cluster c : this.clusters) {
+			this.totalValue += c.value();
+		}
+
+		System.out.println("MiningMaster Status Update: ");
+		System.out.println(" Total Value: " + this.totalValue);
+		System.out.println(" # Clusters: " + this.clusters.size());
+
 		/*
 		System.out.println("Our top choices are " + topChoices);
 		System.out.println(Cluster.heuristic(this.clusters.get(0)));
@@ -376,6 +400,10 @@ public class MiningMaster {
 			System.out.println();
 		}
 		*/
+	}
+
+	public int totalValue() {
+		return this.totalValue;
 	}
 
 	public static class Comparators {

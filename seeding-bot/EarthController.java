@@ -45,7 +45,9 @@ public class EarthController extends PlanetController
     public boolean isSavingForRocket = false;
     public long rocketRequestRound = 0;
     public long rocketsBuilt = 0;
+
     public int eworkerCount = 0;
+    public int queuedWorkers = 0;
 
     public void control() {
     
@@ -82,6 +84,19 @@ public class EarthController extends PlanetController
 
             VecUnit allUnits = gc.units();
             VecUnit units = gc.myUnits();
+
+            HashSet<Integer> aliveIDs = new HashSet<Integer>();
+            for(int i = 0; i < units.size(); i ++) {
+                aliveIDs.add(units.get(i).id());
+            }
+
+            for(int id : new HashSet<Integer>(myHandler.keySet())) {
+                if(!aliveIDs.contains(id)) { // unit has died
+                    System.out.println(id + " has died!");
+                    myHandler.get(id).handleDeath();
+                    myHandler.remove(id);
+                }
+            }
 
             noEnemies = true;
 
@@ -226,7 +241,7 @@ public class EarthController extends PlanetController
             return;
         }
 
-        int workersNecessary = 3 - this.getEWorkerCount();
+        int workersNecessary = 3 - this.getEWorkerCount() - queuedWorkers;
         // never want to get below 3 workers, have the factories URGENTLY make them
 
         Unit unit;
@@ -239,7 +254,8 @@ public class EarthController extends PlanetController
             if(workersNecessary > 0 && fh.peekBuildQueue()!=UnitType.Worker) {
                 fh.clearBuildQueue();
                 fh.addToBuildQueue(UnitType.Worker);
-                workersNecessary--;
+                queuedWorkers++;
+                workersNecessary--;                
             }
             if(fh.getBuildQueueSize() < FactoryHandler.IDEAL_BQUEUE_SIZE) {
                 fh.addToBuildQueue(this.getRandomBasePhaseUnit());
@@ -250,17 +266,15 @@ public class EarthController extends PlanetController
 
     private UnitType getRandomBasePhaseUnit() {
         double d;
+        // d = rng.nextDouble();
+        // if(d < 0.35 && gc.round() > 150 && getRobotCount(UnitType.Ranger) > 10) {
+        //     return UnitType.Healer;
+        // } else {
         d = rng.nextDouble();
-        if(d < 0.35 && gc.round() > 150 && getRobotCount(UnitType.Ranger) > 10) {
-            return UnitType.Healer;
-        } else {
-            d = rng.nextDouble();
-            if(gc.round() < 150 && d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) - eworkerCount < 6) {
-                return UnitType.Worker;
-        }
-        else {
-        	return UnitType.Ranger;
-        }
+        // if(gc.round() < 150 && d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) - eworkerCount < 6) {
+        //     return UnitType.Worker;
+        // }
+        return UnitType.Ranger;
     }
 
     private void refreshTargets(VecUnit units) {
@@ -333,6 +347,10 @@ public class EarthController extends PlanetController
                 tm.addTarget(temp);
             }
         }
+    }
+
+    public void decrementEWorkerCount() {
+        this.eworkerCount--;
     }
 
     public void incrementEWorkerCount() {
@@ -442,7 +460,7 @@ public class EarthController extends PlanetController
                 newHandler = new RangerHandler(this, gc, unit.id(), rng);
                 break;
             case Worker:
-                if(this.getEWorkerCount() < 3)
+                if(this.getEWorkerCount() < 3 || mm.totalValue() < 200)                    
                     newHandler = new WorkerHandler(this, gc, unit.id(), rng);
                 else
                     newHandler = new MiningWorkerHandler(this, gc, unit.id(), rng, this.mm);
