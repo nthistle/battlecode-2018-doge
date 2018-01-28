@@ -36,12 +36,12 @@ public class MarsRangerHandler extends UnitHandler {
         }
 
         // references to parent
-        MarsController marsPlanet = (MarsController)parent;
-        PlanetMap map = marsPlanet.map;
-        Team enemyTeam = marsPlanet.enemyTeam;
-        TargetingMaster tm = marsPlanet.tm;        
-        PathMaster pm = marsPlanet.pm;
-        // Queue<Integer> attackQueue = marsPlanet.attackQueue;
+        MarsController marsParent = (MarsController)parent;
+        PlanetMap map = marsParent.map;
+        Team enemyTeam = marsParent.enemyTeam;
+        TargetingMaster tm = marsParent.tm;        
+        PathMaster pm = marsParent.pm;
+        // Queue<Integer> attackQueue = marsParent.attackQueue;
         
         // VecUnit nearby = gc.senseNearbyUnitsByTeam(mapLocation, unit.visionRange(), gc.team());
         // ArrayList<Unit> nearbyAttackers = new ArrayList<Unit>();

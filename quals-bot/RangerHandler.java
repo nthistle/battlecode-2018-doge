@@ -103,6 +103,18 @@ public class RangerHandler extends UnitHandler {
                 }
             }                
         }
+
+        if (!gc.isMoveReady(id)) {
+            return;
+        }
+
+        for(int i = 0; i < 5; i ++) {
+            Direction moveDir = Utils.getRandomDirection(Direction.values(), this.rng);
+            if(gc.canMove(this.id, moveDir)) {
+                gc.moveRobot(this.id, moveDir);
+                break;
+            }
+        }
     }
 
     public Direction getRandomDirection(MapLocation mapLocation, MapLocation targetLocation, PathMaster pm) {

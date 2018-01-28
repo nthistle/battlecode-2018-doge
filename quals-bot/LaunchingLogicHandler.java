@@ -5,7 +5,8 @@ import java.awt.Point;
 public class LaunchingLogicHandler extends UnitHandler  {
 	protected List<ArrayList<MapLocation>> zoneMap; 
 	protected MapLocation optimalLandingLocation;
-	protected static Set<Point> usedLandingPoints;
+	protected static Set<Point> myUsedLandingPoints;
+	protected static Set<Point> enemyUsedLandingPoints;
 	protected long launchingTime;
 	protected static int[][] values;
 	protected static int[][] label;
@@ -13,6 +14,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	protected static int[][] rocketDistances;
 	protected static List<Integer> kryptoniteTotals;
 	protected static List<Integer> usedZones;
+	protected static List<Integer> enemyUsedZones;
 	protected static Team enemyTeam;
 	protected int rocketsLoaded = 0;
 	protected PlanetMap marsMap;
@@ -27,7 +29,8 @@ public class LaunchingLogicHandler extends UnitHandler  {
         this.zoneMap = this.getZones();
         //System.out.println(Arrays.deepToString(label));
         //System.out.println(this.zoneMap);
-        this.usedLandingPoints = new HashSet<Point>();
+        this.myUsedLandingPoints = new HashSet<Point>();
+        this.enemyUsedLandingPoints = new HashSet<Point>();
         this.myMarsTroops = new int[6];
         this.enemyMarsTroops = new int[6];
 
@@ -45,7 +48,33 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	
 	public void recieveCommunications() {
 		Veci32 data = gc.getTeamArray(Planet.Mars);
-		
+		for(int i = 0; i < 6; i++) {
+			this.myMarsTroops[i] = data.get(i);
+			this.enemyMarsTroops[i] = data.get(i+6);
+		}
+		for(int i = 12; i <= 100; i++) {
+			int deet = data.get(i);
+			if(deet == 0) return;
+			int status = deet / 10000;
+			int x = (deet / 100 + 10000) % 10000;
+			int y = deet % 100;
+			System.out.println("Status: " + status + ", X: " + x + ", Y: " + y);
+			if(status == 1) { //new friendly location
+				this.addUsedMapLocation(new MapLocation(Planet.Mars, x, y));
+			}
+			else if(status == 2) { //new enemy location
+				this.addEnemyUsedMapLocation(new MapLocation(Planet.Mars, x, y));
+			}
+			else if(status == 3){ //destroyed rocket  
+				Point p = new Point(x, y);
+				if(myUsedLandingPoints.contains(p)) {
+					this.removeUsedMapLocation(new MapLocation(Planet.Mars, x, y));
+				}
+				else if(enemyUsedLandingPoints.contains(p)) {
+					this.removeEnemyUsedMapLocation(new MapLocation(Planet.Mars, x, y));
+				}
+			}
+		}
 	}
 	
 	public MapLocation optimalLandingLocation() {
@@ -61,7 +90,8 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		for(ArrayList<MapLocation> area : this.zoneMap) {
 			Collections.sort(area, Comparators.MapLocComp);
 			for(MapLocation spot : area) {
-				if(!usedLandingPoints.contains(new Point(spot.getX(), spot.getY()))) {
+				if(!myUsedLandingPoints.contains(new Point(spot.getX(), spot.getY())) && 
+						!enemyUsedLandingPoints.contains(new Point(spot.getX(), spot.getY()))) {
 					this.optimalLandingLocation = spot;
 					return spot;
 				}
@@ -91,7 +121,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	}
 	
 	public void addUsedMapLocation(MapLocation ml) {
-		this.usedLandingPoints.add(new Point(ml.getX(), ml.getY()));
+		if(!this.myUsedLandingPoints.add(new Point(ml.getX(), ml.getY()))) return;
 		int y = ml.getY(), x = ml.getX();
 		for(int di = -1; di <= 1; di++) {
 			for(int dj = -1; dj <= 1; dj++) {
@@ -107,6 +137,64 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		}
 		rocketsLoaded++;
 		usedZones.set(label[y][x]-1, usedZones.get(label[y][x]-1) + 1);
+		recalculate();
+	}
+	
+	private void removeUsedMapLocation(MapLocation ml) {
+		this.myUsedLandingPoints.remove(new Point(ml.getX(), ml.getY()));
+		int y = ml.getY(), x = ml.getX();
+		for(int di = -1; di <= 1; di++) {
+			for(int dj = -1; dj <= 1; dj++) {
+				try {
+					adjacentSquares[y+di][x+dj]--;
+				}catch(Exception e){}
+			}
+		}
+		for(int i = 0; i < this.marsMap.getHeight(); i++) {
+			for(int j = 0; j < this.marsMap.getWidth(); j++) {
+				rocketDistances[i][j] -= (y-i) * (y-i) + (x-j) * (x-j);
+			}
+		}
+		rocketsLoaded--;
+		usedZones.set(label[y][x]-1, usedZones.get(label[y][x]-1) - 1);
+		recalculate();
+	}
+	
+	private void addEnemyUsedMapLocation(MapLocation ml) {
+		if(!this.enemyUsedLandingPoints.add(new Point(ml.getX(), ml.getY()))) return;
+		int y = ml.getY(), x = ml.getX();
+		for(int di = -1; di <= 1; di++) {
+			for(int dj = -1; dj <= 1; dj++) {
+				try {
+					adjacentSquares[y+di][x+dj]--;
+				}catch(Exception e){}
+			}
+		}
+		for(int i = 0; i < this.marsMap.getHeight(); i++) {
+			for(int j = 0; j < this.marsMap.getWidth(); j++) {
+				rocketDistances[i][j] -= 4 * (y-i) * (y-i) + 4 * (x-j) * (x-j);
+			}
+		}
+		enemyUsedZones.set(label[y][x]-1, enemyUsedZones.get(label[y][x]-1) + 1);
+		recalculate();
+	}
+	
+	private void removeEnemyUsedMapLocation(MapLocation ml) {
+		this.enemyUsedLandingPoints.remove(new Point(ml.getX(), ml.getY()));
+		int y = ml.getY(), x = ml.getX();
+		for(int di = -1; di <= 1; di++) {
+			for(int dj = -1; dj <= 1; dj++) {
+				try {
+					adjacentSquares[y+di][x+dj]--;
+				}catch(Exception e){}
+			}
+		}
+		for(int i = 0; i < this.marsMap.getHeight(); i++) {
+			for(int j = 0; j < this.marsMap.getWidth(); j++) {
+				rocketDistances[i][j] += 4 * (y-i) * (y-i) + 4 * (x-j) * (x-j);
+			}
+		}
+		enemyUsedZones.set(label[y][x]-1, enemyUsedZones.get(label[y][x]-1) - 1);
 		recalculate();
 	}
 	
@@ -127,7 +215,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		}
 		for(int i = enemyTeam == Team.Red ? (int)(this.marsMap.getHeight() - 1) : 0; enemyTeam == Team.Red ? i >= 0: i < this.marsMap.getHeight(); i += enemyTeam == Team.Red ? -1 : 1) {
 			for(int j = enemyTeam == Team.Red ? (int)(this.marsMap.getWidth() - 1) : 0; enemyTeam == Team.Red ? j >= 0: j < this.marsMap.getWidth(); j += enemyTeam == Team.Red ? -1 : 1) {
-				System.out.println(i + ", " + j);
+				//System.out.println(i + ", " + j);
 				MapLocation ml = new MapLocation(Planet.Mars, j, i);
 				if(marsMap.onMap(ml) && marsMap.isPassableTerrainAt(ml) == 0) {
 					label[i][j] = -1; //impassable point
@@ -150,10 +238,12 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		List<ArrayList<MapLocation>> ret = new ArrayList<ArrayList<MapLocation>>(zone);
 		kryptoniteTotals = new ArrayList<Integer>(zone);
 		usedZones = new ArrayList<Integer>(zone);
+		enemyUsedZones = new ArrayList<Integer>(zone);
 		for(int i = 0; i < zone; i++) {
 			ret.add(new ArrayList<MapLocation>());
 			kryptoniteTotals.add(0);
 			usedZones.add(0);
+			enemyUsedZones.add(0);
 		}
 		for(int i = enemyTeam == Team.Red ? (int)(this.marsMap.getHeight() - 1) : 0; enemyTeam == Team.Red ? i >= 0: i < this.marsMap.getHeight(); i += enemyTeam == Team.Red ? -1 : 1) {
 			for(int j = enemyTeam == Team.Red ? (int)(this.marsMap.getWidth() - 1) : 0; enemyTeam == Team.Red ? j >= 0: j < this.marsMap.getWidth(); j += enemyTeam == Team.Red ? -1 : 1) {
@@ -192,7 +282,8 @@ public class LaunchingLogicHandler extends UnitHandler  {
 			public int compare(ArrayList<MapLocation> a, ArrayList<MapLocation> b) { //select the objectively better zone
 				int totA = kryptoniteTotals.get(label[(int)a.get(0).getY()][(int)a.get(0).getX()]-1);
 				int totB = kryptoniteTotals.get(label[(int)b.get(0).getY()][(int)b.get(0).getX()]-1);
-				int comp = (totB + 100 * b.size() - 100 * usedZones.get(label[(int)b.get(0).getY()][(int)b.get(0).getX()]-1)) - (totA + 100 * a.size() - 100 * usedZones.get(label[(int)a.get(0).getY()][(int)a.get(0).getX()]-1));
+				int comp = (totB + 100 * b.size() - 100 * usedZones.get(label[(int)b.get(0).getY()][(int)b.get(0).getX()]-1) + 400 * enemyUsedZones.get(label[(int)b.get(0).getY()][(int)b.get(0).getX()]-1)) 
+						- (totA + 100 * a.size() - 100 * usedZones.get(label[(int)a.get(0).getY()][(int)a.get(0).getX()]-1) + 400 * enemyUsedZones.get(label[(int)a.get(0).getY()][(int)a.get(0).getX()]-1));
 				return comp;
 			}
 		};
@@ -200,7 +291,8 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		public static Comparator<MapLocation> MapLocComp = new Comparator<MapLocation>() {
 			public int compare(MapLocation a, MapLocation b) {
 				int i1 = a.getY(), i2 = b.getY(), j1 = a.getX(), j2 = b.getX();
-				int comp =  (1000 * adjacentSquares[i2][j2] - values[i2][j2] - (int)(0.01 * rocketDistances[i2][j2])) - (1000 * adjacentSquares[i1][j1] - values[i1][j1] - (int)(0.01 * rocketDistances[i1][j1]));
+				int comp =  (10 * adjacentSquares[i2][j2] - values[i2][j2] - (int)(0.01 * rocketDistances[i2][j2])) 
+						- (10 * adjacentSquares[i1][j1] - values[i1][j1] - (int)(0.01 * rocketDistances[i1][j1]));
 				return comp;
 			}
 		};
