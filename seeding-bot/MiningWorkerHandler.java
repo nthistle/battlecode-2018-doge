@@ -18,6 +18,38 @@ public class MiningWorkerHandler extends UnitHandler {
         return target != null;
     }
 
+    public void reassignAllMiners(MapLocation location) {
+        Point oldCluster = this.m.clusterMap[location.getX()][location.getY()].clusterMaxima;
+        this.target = null;
+        boolean hello = m.assignTarget(this);
+        if(!hello) {
+            ((EarthController)(this.parent)).myHandler.put(this.id, new WorkerHandler(this.parent, this.gc, this.id, this.rng));
+            System.out.println("Converted 1 miner to a worker");  
+        } else {
+            MapLocation groupTarget = this.target;
+            //we now need to figure out all the other miners at this cluster and set their targets to the same thing
+            VecUnit units = this.gc.myUnits();
+            for(int i = 0; i < units.size(); i ++) {
+                Unit unit1 = units.get(i);
+                UnitHandler unitHandler = (((EarthController)(this.parent)).myHandler.get(unit1.id()));
+                if(unitHandler instanceof MiningWorkerHandler) {
+                    MiningWorkerHandler minerHandler = (MiningWorkerHandler) unitHandler;
+                    if(minerHandler.target != null && this.m.clusterMap[minerHandler.target.getX()][minerHandler.target.getY()] != null && this.m.clusterMap[minerHandler.target.getX()][minerHandler.target.getY()].clusterMaxima.equals(oldCluster)) {
+                        MiningWorkerHandler miner = (MiningWorkerHandler) unitHandler;
+                        miner.setTarget(groupTarget, this.parent.pm);
+                        if(miner.target == null) {
+                            ((EarthController)(miner.parent)).myHandler.put(miner.id, new WorkerHandler(miner.parent, miner.gc, miner.id, miner.rng));
+                            System.out.println("Converted 1 miner to a worker");  
+                        } else {
+                            Cluster newCluster = this.m.clusterMap[groupTarget.getX()][groupTarget.getY()];
+                            newCluster.minersAt++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public void setTarget(MapLocation a, PathMaster pm) {
         this.target = a;
         if(this.target != null && pm.getCachedPathField(target.getX(), target.getY()) != null) {
@@ -77,79 +109,50 @@ public class MiningWorkerHandler extends UnitHandler {
         if(!didHarvest && f != null && f.clusterMaxima.equals(c.clusterMaxima)) {
             Cluster a = this.m.clusterMap[mapLocation.getX()][mapLocation.getY()];
             //WE WANT TO MOVE TO A RANDOM JOINT IN THE CLUSTER
-            //FIXXXXXX            
-            System.out.println(a.members.size());
-            if (a.members.size() == 1) {
+            //FIXXXXXX 
+            if(a.members.size() == 0) {
+                reassignAllMiners(mapLocation);
+            } else if(a.members.size() == 1) {
                 Point last = a.members.get(0);
                 int money = (int)gc.karboniteAt(new MapLocation(parent.getPlanet(), last.x, last.y));
                 if (money == 0) {
                     m.initialKarboniteLocationsOriginal[last.x][last.y] = 0;
                     m.updateIndividual(last, money);
-                }
-            }
-            if(a.members.size() == 0) {
-                System.out.println("Line 83: We don't have any more members in cluster");
-                Point oldCluster = this.m.clusterMap[mapLocation.getX()][mapLocation.getY()].clusterMaxima;
-                this.target = null;
-                boolean hello = m.assignTarget(this);
-                if(!hello) {
-                    ((EarthController)(this.parent)).myHandler.put(unit.id(), new WorkerHandler(this.parent, this.gc, unit.id(), this.rng));
-                    System.out.println("Converted 1 miner to a worker");  
                 } else {
-                    MapLocation groupTarget = this.target;
-                    //we now need to figure out all the other miners at this cluster and set their targets to the same thing
-                    VecUnit units = this.gc.myUnits();
-                    for(int i = 0; i < units.size(); i ++) {
-                        Unit unit1 = units.get(i);
-                        UnitHandler unitHandler = (((EarthController)(this.parent)).myHandler.get(unit1.id()));
-                        if(unitHandler instanceof MiningWorkerHandler) {
-                            MiningWorkerHandler minerHandler = (MiningWorkerHandler) unitHandler;
-                            if(minerHandler.target != null && this.m.clusterMap[minerHandler.target.getX()][minerHandler.target.getY()] != null && this.m.clusterMap[minerHandler.target.getX()][minerHandler.target.getY()].clusterMaxima.equals(oldCluster)) {
-                                MiningWorkerHandler miner = (MiningWorkerHandler) unitHandler;
-                                miner.setTarget(groupTarget, this.parent.pm);
-                                if(miner.target == null) {
-                                    ((EarthController)(miner.parent)).myHandler.put(miner.id, new WorkerHandler(miner.parent, miner.gc, miner.id, miner.rng));
-                                    System.out.println("Converted 1 miner to a worker");  
-                                } else {
-                                    Cluster newCluster = this.m.clusterMap[groupTarget.getX()][groupTarget.getY()];
-                                    newCluster.minersAt++;
-                                }
-                            }
-                        }
-                    }
+                    Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), last.x, last.y)));
                 }
             } else {
-                if(this.miniTarget == null || !this.m.clusterMap[miniTarget.x][miniTarget.y].clusterMaxima.equals(this.m.clusterMap[this.target.getX()][this.target.getY()].clusterMaxima)) {
-                    //we have not picked a mini-target
-                    // System.out.println("We just created a miniTarget because it was null before or wasn't part of the cluster we want to go to");
-                    Point random;
-                    int w = 0;
-                    do {
-                        random = a.members.get(this.parent.rng.nextInt(a.members.size()));
-                    } while((new Point(mapLocation.getX(), mapLocation.getY()).equals(random)) && w++ < 10);
-                    this.miniTarget = random;
-                    Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), random.x, random.y)));    
-                } else if(this.miniTarget.equals(new Point(mapLocation.getX(), mapLocation.getY())) && gc.karboniteAt(mapLocation) <= 1L) {
-                    //System.out.println("We just created a miniTarget because it was null before");
-                    Point random;
-                    int w = 0;
-                    do {
-                        random = a.members.get(this.parent.rng.nextInt(a.members.size()));
-                    } while((new Point(mapLocation.getX(), mapLocation.getY()).equals(random)) && w++ < 10);
-                    this.miniTarget = random;
-                    Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), random.x, random.y)));
-                } else {
-                    //System.out.println("Moving to the miniTarget");
-                    if(mapLocation.directionTo(new MapLocation(parent.getPlanet(), this.miniTarget.x, this.miniTarget.y)) != Direction.Center)
-                        Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), this.miniTarget.x, this.miniTarget.y)));
+
+                Point current = new Point(mapLocation.getX(), mapLocation.getY());
+                Point goal = a.members.get(0);
+                long distanceAway = Integer.MAX_VALUE;
+                for(int k = 0; k < a.members.size(); k++) {
+                    long dist = Cluster.distanceSquaredTo(a.members.get(k), current);
+                    if(dist < distanceAway) {
+                        distanceAway = dist;
+                        goal = a.members.get(k);
+                    }
                 }
-                
+                Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), goal.x, goal.y)));
+
+                /*Point random;
+                if (a.members.size() == 1) {
+                    random = a.members.get(0);                 
+                } else {
+                    do {
+                        random = a.members.get(this.parent.rng.nextInt(a.members.size()));
+                    } while((new Point(mapLocation.getX(), mapLocation.getY()).equals(random)));                    
+                }
+
+                Utils.tryMoveRotate(this.gc, unit.id(), mapLocation.directionTo(new MapLocation(parent.getPlanet(), random.x, random.y)));
+                */
             }
         } else {
             if(this.path != null && this.path.isPointSet(mapLocation.getX(), mapLocation.getY())) {
                 Direction dirToMoveIn = this.path.getDirectionAtPoint(mapLocation);
                 Utils.tryMoveRotate(this.gc, unit.id(), dirToMoveIn);
             } else {
+                //THERE ARE NO PATHFINDING JAUNTS CACHED
                 if(this.path == null) {
                     Cluster a = this.m.clusterMap[mapLocation.getX()][mapLocation.getY()];
                     if(a == null) {
@@ -190,35 +193,7 @@ public class MiningWorkerHandler extends UnitHandler {
                 if(this.m.initialKarboniteLocationsOriginal[tryLocation.getX()][tryLocation.getY()] != ((int) money)) {
                     boolean hello1 = this.m.updateIndividual(new Point(tryLocation.getX(), tryLocation.getY()), (int) money);
                     if(hello1) {
-                        Point oldCluster = this.m.clusterMap[mapLocation.getX()][mapLocation.getY()].clusterMaxima;
-                        this.target = null;
-                        boolean hello = m.assignTarget(this);
-                        if(!hello) {
-                            ((EarthController)(this.parent)).myHandler.put(unit.id(), new WorkerHandler(this.parent, this.gc, unit.id(), this.rng));
-                            System.out.println("Converted 1 miner to a worker");  
-                        } else {
-                            MapLocation groupTarget = this.target;
-                            //we now need to figure out all the other miners at this cluster and set their targets to the same thing
-                            VecUnit units = this.gc.myUnits();
-                            for(int i = 0; i < units.size(); i ++) {
-                                Unit unit1 = units.get(i);
-                                UnitHandler unitHandler = (((EarthController)(this.parent)).myHandler.get(unit1.id()));
-                                if(unitHandler instanceof MiningWorkerHandler) {
-                                    MiningWorkerHandler minerHandler = (MiningWorkerHandler) unitHandler;
-                                    if(minerHandler.target != null && this.m.clusterMap[minerHandler.target.getX()][minerHandler.target.getY()] != null && this.m.clusterMap[minerHandler.target.getX()][minerHandler.target.getY()].clusterMaxima.equals(oldCluster)) {
-                                        MiningWorkerHandler miner = (MiningWorkerHandler) unitHandler;
-                                        miner.setTarget(groupTarget, this.parent.pm);
-                                        if(miner.target == null) {
-                                            ((EarthController)(miner.parent)).myHandler.put(miner.id, new WorkerHandler(miner.parent, miner.gc, miner.id, miner.rng));
-                                            System.out.println("Converted 1 miner to a worker");  
-                                        } else {
-                                            Cluster newCluster = this.m.clusterMap[groupTarget.getX()][groupTarget.getY()];
-                                            newCluster.minersAt++;
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        reassignAllMiners(mapLocation);
                         return false;
                     }
                 }
@@ -234,38 +209,10 @@ public class MiningWorkerHandler extends UnitHandler {
             if(this.m.clusterMap[justHarvestedAt.getX()][justHarvestedAt.getY()] != null) {
                 //we have just harvested at an actual cluster
                 boolean results = this.m.clusterMap[justHarvestedAt.getX()][justHarvestedAt.getY()].update(new Point(justHarvestedAt.getX(), justHarvestedAt.getY()), (int) unit.workerHarvestAmount());      
-                if(!results && this.target != null) {
+                if(results && this.target != null) {
                     //assign these workers a new target
                     if(this.m.clusterMap[justHarvestedAt.getX()][justHarvestedAt.getY()].clusterMaxima.equals(new Point(this.target.getX(), this.target.getY()))) {
-                        Point oldCluster = this.m.clusterMap[justHarvestedAt.getX()][justHarvestedAt.getY()].clusterMaxima;
-                        this.target = null;
-                        boolean hello = m.assignTarget(this);
-                        if(!hello) {
-                            ((EarthController)(this.parent)).myHandler.put(unit.id(), new WorkerHandler(this.parent, this.gc, unit.id(), this.rng));
-                            System.out.println("Converted 1 miner to a worker");  
-                        } else {
-                            MapLocation groupTarget = this.target;
-                            //we now need to figure out all the other miners at this cluster and set their targets to the same thing
-                            VecUnit units = this.gc.myUnits();
-                            for(int i = 0; i < units.size(); i ++) {
-                                Unit unit1 = units.get(i);
-                                UnitHandler unitHandler = (((EarthController)(this.parent)).myHandler.get(unit1.id()));
-                                if(unitHandler instanceof MiningWorkerHandler) {
-                                    MiningWorkerHandler minerHandler = (MiningWorkerHandler) unitHandler;
-                                    if(minerHandler.target != null && this.m.clusterMap[minerHandler.target.getX()][minerHandler.target.getY()] != null && this.m.clusterMap[minerHandler.target.getX()][minerHandler.target.getY()].clusterMaxima.equals(oldCluster)) {
-                                        MiningWorkerHandler miner = (MiningWorkerHandler) unitHandler;
-                                        miner.setTarget(groupTarget, this.parent.pm);
-                                        if(miner.target == null) {
-                                            ((EarthController)(miner.parent)).myHandler.put(miner.id, new WorkerHandler(miner.parent, miner.gc, miner.id, miner.rng));
-                                            System.out.println("Converted 1 miner to a worker");  
-                                        } else {
-                                            Cluster newCluster = this.m.clusterMap[groupTarget.getX()][groupTarget.getY()];
-                                            newCluster.minersAt++;
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        reassignAllMiners(justHarvestedAt);
                     } 
                 }
             }
