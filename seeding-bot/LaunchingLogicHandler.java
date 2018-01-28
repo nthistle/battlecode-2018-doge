@@ -23,8 +23,8 @@ public class LaunchingLogicHandler extends UnitHandler  {
         this.enemyTeam = ((EarthController) parent).enemyTeam;
 		this.marsMap = gc.startingMap(Planet.Mars);
         this.zoneMap = this.getZones();
-        System.out.println(Arrays.deepToString(label));
-        System.out.println(this.zoneMap);
+        //System.out.println(Arrays.deepToString(label));
+        //System.out.println(this.zoneMap);
         this.usedLandingPoints = new HashSet<Point>();
 
 	}
@@ -115,10 +115,11 @@ public class LaunchingLogicHandler extends UnitHandler  {
 				values[(int)strike.getLocation().getY()][(int)strike.getLocation().getX()] += strike.getKarbonite();
 			}
 		}
-		for(int i = enemyTeam == Team.Red ? (int)(this.marsMap.getHeight() - 1) : 0; enemyTeam == Team.Red ? i >= 0: i < this.marsMap.getWidth(); i += enemyTeam == Team.Red ? -1 : 1) {
+		for(int i = enemyTeam == Team.Red ? (int)(this.marsMap.getHeight() - 1) : 0; enemyTeam == Team.Red ? i >= 0: i < this.marsMap.getHeight(); i += enemyTeam == Team.Red ? -1 : 1) {
 			for(int j = enemyTeam == Team.Red ? (int)(this.marsMap.getWidth() - 1) : 0; enemyTeam == Team.Red ? j >= 0: j < this.marsMap.getWidth(); j += enemyTeam == Team.Red ? -1 : 1) {
-				System.out.println(i + ", " + j);
-				if(!Utils.canOccupyMars(gc, new MapLocation(Planet.Mars, j, i))) {
+				//System.out.println(i + ", " + j);
+				MapLocation ml = new MapLocation(Planet.Mars, j, i);
+				if(marsMap.onMap(ml) && marsMap.isPassableTerrainAt(ml) == 0) {
 					label[i][j] = -1; //impassable point
 				}
 				else if(label[i][j] == 0){ //not yet visited
@@ -132,8 +133,8 @@ public class LaunchingLogicHandler extends UnitHandler  {
 						}catch(Exception e) {}
 					}
 				}
-				if(this.marsMap.isPassableTerrainAt(new MapLocation(Planet.Mars, j, i)) != 0) 
-					values[i][j] += (int)this.marsMap.initialKarboniteAt(new MapLocation(Planet.Mars, j, i));
+				if(this.marsMap.isPassableTerrainAt(ml) != 0) 
+					values[i][j] += (int)this.marsMap.initialKarboniteAt(ml);
 			}
 		}
 		List<ArrayList<MapLocation>> ret = new ArrayList<ArrayList<MapLocation>>(zone);
@@ -144,7 +145,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 			kryptoniteTotals.add(0);
 			usedZones.add(0);
 		}
-		for(int i = enemyTeam == Team.Red ? (int)(this.marsMap.getHeight() - 1) : 0; enemyTeam == Team.Red ? i >= 0: i < this.marsMap.getWidth(); i += enemyTeam == Team.Red ? -1 : 1) {
+		for(int i = enemyTeam == Team.Red ? (int)(this.marsMap.getHeight() - 1) : 0; enemyTeam == Team.Red ? i >= 0: i < this.marsMap.getHeight(); i += enemyTeam == Team.Red ? -1 : 1) {
 			for(int j = enemyTeam == Team.Red ? (int)(this.marsMap.getWidth() - 1) : 0; enemyTeam == Team.Red ? j >= 0: j < this.marsMap.getWidth(); j += enemyTeam == Team.Red ? -1 : 1) {
 				if(label[i][j] > 0) {
 					ret.get(label[i][j] - 1).add(new MapLocation(Planet.Mars, j, i));

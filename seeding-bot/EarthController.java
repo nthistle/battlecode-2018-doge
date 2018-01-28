@@ -29,8 +29,7 @@ public class EarthController extends PlanetController
     public PlanetMap map;
     public Team enemyTeam;
     
-    public Map<UnitType, Integer> robotCount = new EnumMap<UnitType, Integer>(UnitType.class);
-    public List<Queue<UnitType>> factoryBuildQueues = new ArrayList<Queue<UnitType>>();
+    public Map<UnitType, Integer> robotCount = new EnumMap<UnitType, Integer>(UnitType.class);    
     
     public Direction[][] rocketWarning; 
 
@@ -147,11 +146,21 @@ public class EarthController extends PlanetController
     }
 
     public void initialAssign() {
+        this.eworkerCount = 0;
+        for(UnitType ut : UnitType.values()) {
+            robotCount.put(ut, 0);
+        }        
         VecUnit units = gc.myUnits();                
         for (int i = 0; i < units.size(); i++) {            
             Unit unit = units.get(i);
             if (myHandler.containsKey(unit.id())) {
                 continue;
+            }
+            if (mm.totalValue() < 300 || (i == units.size() - 1 && eworkerCount == 0)) {
+                myHandler.put(unit.id(), new WorkerHandler(this, gc, unit.id(), rng));
+                eworkerCount++;
+                incrementRobotCount(UnitType.Worker);
+                continue;                
             }
             MapLocation tempLocation = unit.location().mapLocation();            
             int startX = tempLocation.getX() - 7;
@@ -162,27 +171,35 @@ public class EarthController extends PlanetController
             int totalMoney = 0;            
             for (int x = startX; x <= endX; x++) {
                 for (int y = startY; y <= endY; y++) {                    
-                    if (x >= 0 && x < tempMoney.length && y >= 0 && y < tempMoney[0].length && tempLocation.isWithinRange(unit.visionRange(), new MapLocation(Planet.Earth, x, y))) {
+                    MapLocation moneyLocation = new MapLocation(Planet.Earth, x, y);
+                    if (x >= 0 && x < tempMoney.length && y >= 0 && y < tempMoney[0].length && tempLocation.isWithinRange(unit.visionRange(), moneyLocation) && pm.isConnected(tempLocation, moneyLocation)) {
                         totalMoney += tempMoney[x][y];                        
                     }                    
                 }
             }
             if (totalMoney >= 50) {
                 myHandler.put(unit.id(), new WorkerHandler(this, gc, unit.id(), rng));
+                eworkerCount++;
+                incrementRobotCount(UnitType.Worker);
             } else {
                 if (units.size() == 1) {
                     myHandler.put(unit.id(), new WorkerHandler(this, gc, unit.id(), rng));
                     ((WorkerHandler)myHandler.get(unit.id())).solo = true;                    
+                    eworkerCount++;
+                    incrementRobotCount(UnitType.Worker);
                 } else {
                     VecUnit nearby = gc.senseNearbyUnitsByTeam(tempLocation, unit.visionRange(), gc.team());
                     if (nearby.size() == 1) {
                         //myHandler.put(unit.id(), new MiningWorkerHandler(this, gc, unit.id(), rng, mm));
                         if(unit.unitType() == UnitType.Worker) {
-                            System.out.println("Just requested a brand-new miner");
-                            mm.convertToMiner(unit.id());
+                            // System.out.println("Just requested a brand-new miner");
+                            mm.convertToMiner(unit.id());                            
+                            incrementRobotCount(UnitType.Worker);
                         }
                     } else {
                         myHandler.put(unit.id(), new WorkerHandler(this, gc, unit.id(), rng));
+                        eworkerCount++;
+                        incrementRobotCount(UnitType.Worker);
                         for (int j = 0; j < nearby.size(); j++) {
                             Unit nearbyUnit = nearby.get(j);
                             if (unit.id() == nearbyUnit.id()) {
@@ -191,8 +208,9 @@ public class EarthController extends PlanetController
                             if (pm.isConnected(tempLocation, nearbyUnit.location().mapLocation())) {
                                 //myHandler.put(nearbyUnit.id(), new MiningWorkerHandler(this, gc, unit.id(), rng, mm));
                                 if(nearbyUnit.unitType() == UnitType.Worker) {
-                                    System.out.println("Just requested a brand-new miner");
+                                // System.out.println("Just requested a brand-new miner");
                                     mm.convertToMiner(nearbyUnit.id());
+                                    incrementRobotCount(UnitType.Worker);
                                 }
                             }
                         }                        
@@ -260,11 +278,13 @@ public class EarthController extends PlanetController
             if(workersNecessary > 0 && fh.peekBuildQueue()!=UnitType.Worker) {
                 fh.clearBuildQueue();
                 fh.addToBuildQueue(UnitType.Worker);
+                fh.robotCount.put(UnitType.Worker, fh.robotCount.get(UnitType.Worker) + 1);
                 queuedWorkers++;
                 workersNecessary--;                
-            }
-            if(fh.getBuildQueueSize() < FactoryHandler.IDEAL_BQUEUE_SIZE) {
-                fh.addToBuildQueue(this.getRandomBasePhaseUnit());
+            } else if(fh.getBuildQueueSize() < FactoryHandler.IDEAL_BQUEUE_SIZE) {
+                UnitType ut = this.getRandomBasePhaseUnit();
+                fh.robotCount.put(ut, fh.robotCount.get(ut) + 1);
+                fh.addToBuildQueue(ut);
             }
             // System.out.println("Factory ID#"+i+" has build queue of length " + fh.getBuildQueueSize());
         }
@@ -323,7 +343,7 @@ public class EarthController extends PlanetController
 
     // For now, only does Rangers/Workers/Rockets, and only takes us to Round 625
     private void queueResearch() {                
-        if (mm.totalValue() > 300) {
+        if (mm.totalValue() >= 300) {
             gc.queueResearch(UnitType.Worker); // Worker I (25)
             // completed by round 25            
         }
@@ -400,6 +420,11 @@ public class EarthController extends PlanetController
             ut = units.get(i).unitType();
             if(ut == UnitType.Worker && myHandler.get(units.get(i).id()) != null && myHandler.get(units.get(i).id()) instanceof WorkerHandler)
                 this.eworkerCount ++;
+            if (ut == UnitType.Factory) {
+                for(UnitType ut2 : UnitType.values()) {
+                    robotCount.put(ut2, robotCount.get(ut2) + ((FactoryHandler)myHandler.get(units.get(i).id())).robotCount.get(ut2));
+                }
+            }
             incrementRobotCount(ut);
         }
     }
