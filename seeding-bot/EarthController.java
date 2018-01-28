@@ -79,6 +79,12 @@ public class EarthController extends PlanetController
                     
             System.out.println("Round #" + gc.round() + ", (" + gc.getTimeLeftMs() + " ms left)");
 
+            //update miningmaster every 50 rounds
+            if(gc.round() > 0 && gc.round() % 50 == 0) {
+                mm.update();
+            }
+            //end
+
             System.runFinalization();
             System.gc();
 
