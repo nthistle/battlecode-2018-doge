@@ -291,7 +291,8 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		public static Comparator<MapLocation> MapLocComp = new Comparator<MapLocation>() {
 			public int compare(MapLocation a, MapLocation b) {
 				int i1 = a.getY(), i2 = b.getY(), j1 = a.getX(), j2 = b.getX();
-				int comp =  (10 * adjacentSquares[i2][j2] - values[i2][j2] - (int)(0.1 * rocketDistances[i2][j2])) - (10 * adjacentSquares[i1][j1] - values[i1][j1] - (int)(0.01 * rocketDistances[i1][j1]));
+				int comp =  (10 * adjacentSquares[i2][j2] - values[i2][j2] - (int)(0.01 * rocketDistances[i2][j2])) 
+						- (10 * adjacentSquares[i1][j1] - values[i1][j1] - (int)(0.01 * rocketDistances[i1][j1]));
 				return comp;
 			}
 		};
