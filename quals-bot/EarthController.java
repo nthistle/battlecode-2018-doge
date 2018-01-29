@@ -338,7 +338,7 @@ public class EarthController extends PlanetController
     private void rocketStatus() {
         if (gc.researchInfo().getLevel(UnitType.Rocket) >= 1 && ((getRobotCount(UnitType.Worker) >= 2 && ((gc.round() > 250 && rocketsBuilt < (int)(gc.round() / 125) - 1)
             || (gc.getTimeLeftMs() < 1500 && getRobotCount(UnitType.Rocket) < 1)))
-            || (getRobotCount(UnitType.Worker) >= 1 && (gc.round() > 200 && gc.units().size() - gc.myUnits().size() > gc.myUnits().size() * 2)) || (gc.round() > 500 && noEnemies))) {
+            || (getRobotCount(UnitType.Worker) >= 1 && (gc.round() > 200 && gc.units().size() - gc.myUnits().size() > gc.myUnits().size() * 2)) || (gc.round() > 500 && noEnemies) || gc.round() > 650)) {
             isSavingForRocket = true;
             rocketRequestRound = gc.round();
         }
