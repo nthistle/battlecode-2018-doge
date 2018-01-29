@@ -13,6 +13,11 @@ public class RocketHandler extends UnitHandler {
 	public static final double[] RANGER_HEALER_CREW_3 = new double[] {0, 0.25, 0, 0, 0.75};
 	
 	public static final int TAKEOFF_COUNTDOWN = 3; 
+    
+    public static final int FORCE_TAKEOFF_THRESH = 3;
+    public static final int FORCE_TAKEOFF_TIMER = 20;
+
+    public int numLoaded = 0;
 	
 	public Map<UnitType, Integer> targetManifest;
     public Map<UnitType, Integer> stillNeeded;
@@ -23,6 +28,7 @@ public class RocketHandler extends UnitHandler {
 	public MapLocation myLocation;
 	public PlanetMap map;
 	public int builtRound = Integer.MAX_VALUE;
+    public int forceTakeoffTimer = -1;
 	
 	/**
 	 * generate a rocket handler for a rocket
@@ -68,6 +74,7 @@ public class RocketHandler extends UnitHandler {
     
     @Override
     public void takeTurn(Unit unit) {
+        if(forceTakeoffTimer>0) forceTakeoffTimer--;
     	if(unit.structureIsBuilt() != 0) {
     		if(this.builtRound == Integer.MAX_VALUE) 
     			this.builtRound = (int)gc.round();
@@ -151,6 +158,8 @@ public class RocketHandler extends UnitHandler {
                 // System.out.println(ut + ": " + targetManifest.get(ut));
             // }
         // }
+        if(forceTakeoffTimer==0)
+            return true;
         if(gc.round() >= 730) 
         	return true; 
         else if(this.isLoaded() && this.llh.optimalLaunchingTime() == gc.round()) 
@@ -189,6 +198,10 @@ public class RocketHandler extends UnitHandler {
     	if(!gc.canLoad(this.id, unitID)) return false;
     	else {
     		gc.load(this.id, unitID);
+            numLoaded ++;
+            if(numLoaded >= FORCE_TAKEOFF_THRESH) {
+                forceTakeoffTimer = FORCE_TAKEOFF_TIMER;
+            }
     		return true;
     	}
     }

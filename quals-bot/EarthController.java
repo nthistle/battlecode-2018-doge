@@ -121,9 +121,6 @@ public class EarthController extends PlanetController
             //     }
             // }
 
-            rocketStatus();
-            factoryStatus();
-            
             for(int i = 0; i < units.size(); i ++) {
                 Unit unit = units.get(i);
                 
@@ -135,6 +132,9 @@ public class EarthController extends PlanetController
             refreshRobotCount(units);
 
             refreshTargets(allUnits);
+
+            rocketStatus();
+            factoryStatus();
 
             llh.takeTurn();
 
@@ -320,7 +320,7 @@ public class EarthController extends PlanetController
         if (getRobotCount(UnitType.Ranger) < (int)(0.5 * getRobotCount(UnitType.Healer))) {
             return UnitType.Ranger;
         }
-        if (d < 0.3 && getRobotCount(UnitType.Ranger) > 6) return UnitType.Healer;
+        if (d < 0.3 && getRobotCount(UnitType.Ranger) > 3) return UnitType.Healer;
         else return UnitType.Ranger;
     }
 
@@ -336,9 +336,9 @@ public class EarthController extends PlanetController
     }
 
     private void rocketStatus() {
-        if (gc.researchInfo().getLevel(UnitType.Rocket) >= 1 && getRobotCount(UnitType.Rocket) <= 2 && ((getRobotCount(UnitType.Worker) >= 2 && ((gc.round() > 250 && rocketsBuilt < (int)(gc.round() / 125) - 1)
+        if (gc.researchInfo().getLevel(UnitType.Rocket) >= 1 && ((getRobotCount(UnitType.Worker) >= 2 && ((gc.round() > 250 && rocketsBuilt < (int)(gc.round() / 125) - 1)
             || (gc.getTimeLeftMs() < 1500 && getRobotCount(UnitType.Rocket) < 1)))
-            || (getRobotCount(UnitType.Worker) >= 1 && (gc.round() > 200 && gc.units().size() - gc.myUnits().size() > gc.myUnits().size() * 2)))) {
+            || (getRobotCount(UnitType.Worker) >= 1 && (gc.round() > 200 && gc.units().size() - gc.myUnits().size() > gc.myUnits().size() * 2)) || (gc.round() > 500 && noEnemies) || gc.round() > 650)) {
             isSavingForRocket = true;
             rocketRequestRound = gc.round();
         }
