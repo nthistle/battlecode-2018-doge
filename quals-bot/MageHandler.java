@@ -9,6 +9,8 @@ public class MageHandler extends UnitHandler {
     private static final int MAGE_CONSIDER_CAP = 10;
     private boolean lastWasLat = false;
 
+    private PathField myPf;
+
     public MageHandler(PlanetController parent, GameController gc, int id, Random rng) {
         super(parent, gc, id, rng);
     }
@@ -100,7 +102,8 @@ public class MageHandler extends UnitHandler {
             if(parent.tm.getTarget(0) != null)
                 pf = parent.pm.getCachedPathField(parent.tm.getTarget(0));
         }
-        if(pf == null) return;
+        if(pf == null) pf = myPf;
+        System.out.println("mage movement got to here!!!\n\n\n");
 
         List<Direction> closerDirs = new ArrayList<Direction>();
         List<Direction> sameDirs = new ArrayList<Direction>();
