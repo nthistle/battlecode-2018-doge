@@ -116,8 +116,8 @@ public class MarsController extends PlanetController
             	newHandler = new MarsRocketHandler(this, gc, unit.id(), rng);
             // case Mage:
             //     newHandler = new MarsMageHandler(this, gc, unit.id(), rng);
-            case Healer:
-                newHandler = new MarsHealerHandler(this, gc, unit.id(), rng);
+            // case Healer:
+            //     newHandler = new MarsHealerHandler(this, gc, unit.id(), rng);
             default:
                 break;
         }
