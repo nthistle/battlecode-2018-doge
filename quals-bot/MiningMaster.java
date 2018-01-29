@@ -360,6 +360,10 @@ public class MiningMaster {
 	}
 
 	public boolean updateIndividual(Point a, int karb) {
+		return updateIndividual(a, karb, true);
+	}
+
+	public boolean updateIndividual(Point a, int karb, boolean evanCalled) {
 		if(karb <= 0)
 			this.initialKarboniteLocationsOriginal[a.x][a.y] = 0;
 		else
@@ -381,22 +385,48 @@ public class MiningMaster {
 						break;
 					}
 				}
+				if(!actuallyRemoved) return false;
 
-				if(actuallyRemoved) {
-					if(this.parentController.pm.clearPFCache(new MapLocation(this.parentController.getPlanet(), q.clusterMaxima.x, q.clusterMaxima.y)))
+				if(this.parentController.pm.isCached(q.clusterMaxima.x, q.clusterMaxima.y)) {
+					if(this.parentController.pm.clearPFCache(q.clusterMaxima.x, q.clusterMaxima.y)) {
 						MiningMaster.numCached --;
 
-					for(int i = 0; i < this.clusters.size(); i++) {
-						Cluster d = this.clusters.get(i);
-						if(this.parentController.pm.getCachedPathField(d.clusterMaxima.x, d.clusterMaxima.y) == null && actuallyRemoved) {
-							MapLocation end = new MapLocation(this.parentController.getPlanet(), d.clusterMaxima.x, d.clusterMaxima.y);
-							this.parentController.pm.getPathFieldWithCache(end);
-							MiningMaster.numCached ++;
-							break;
+						// cache a new one
+						for(int i = 0; i < this.clusters.size(); i ++) {
+							Cluster d = this.clusters.get(i);
+							if(!this.parentController.pm.isCached(d.clusterMaxima.x, d.clusterMaxima.y)) {
+								this.parentController.pm.getPathFieldWithCache(new MapLocation(this.parentController.getPlanet(), d.clusterMaxima.x, d.clusterMaxima.y));
+								MiningMaster.numCached ++;
+								return true;
+							}
 						}
-					}
-					return true;
+					} else { System.out.println("ISSUE HERE!"); }
 				}
+
+				// if(evanCalled) {
+				// 	if(this.parentController.pm.isCached(q.clusterMaxima.x, q.clusterMaxima.y)) {
+				// 		this.parentController.pm.clearPFCache(q.clusterMaxima.x, q.clusterMaxima.y);
+
+				// 	}
+				// }
+
+				// if(evanCalled) return true;
+
+				// if(actuallyRemoved) {
+				// 	if(this.parentController.pm.clearPFCache(new MapLocation(this.parentController.getPlanet(), q.clusterMaxima.x, q.clusterMaxima.y)))
+				// 		MiningMaster.numCached --;
+
+				// 	for(int i = 0; i < this.clusters.size(); i++) {
+				// 		Cluster d = this.clusters.get(i);
+				// 		if(this.parentController.pm.getCachedPathField(d.clusterMaxima.x, d.clusterMaxima.y) == null && actuallyRemoved) {
+				// 			MapLocation end = new MapLocation(this.parentController.getPlanet(), d.clusterMaxima.x, d.clusterMaxima.y);
+				// 			this.parentController.pm.getPathFieldWithCache(end);
+				// 			MiningMaster.numCached ++;
+				// 			break;
+				// 		}
+				// 	}
+				// 	return true;
+				// }
 			}
 		}
 		return false;

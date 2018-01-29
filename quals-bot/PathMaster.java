@@ -94,13 +94,17 @@ public class PathMaster
 		return cachedPf;
 	}
 
-	public boolean clearPFCache(MapLocation target) {
-		System.out.println(this.limitedCache.get())
-		if(this.limitedCache.remove(new Point(target.getX(), target.getY())) != null) {
+	public boolean clearPFCache(int x, int y) {
+		// System.out.println("removing from " + x + "," + y + ", " + this.limitedCache.get(new Point(x, y)));
+		if(this.limitedCache.remove(new Point(x, y)) != null) {
 			this.generateCount--;
 			return true;
 		}
 		return false;
+	}
+
+	public boolean clearPFCache(MapLocation target) {
+		return clearPFCache(target.getX(), target.getY());
 	}
 
 	public PathField getPathField(MapLocation target) {
