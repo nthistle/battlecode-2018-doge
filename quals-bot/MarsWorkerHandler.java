@@ -45,7 +45,7 @@ public class MarsWorkerHandler extends UnitHandler {
     	}
     	
     	//replicate
-    	if((gc.karbonite() > 250 && gc.round() < 750) || (gc.round() >= 750 && gc.karbonite() >= 30)) { //before, seldom replicate. After, spam that shit. 
+    	if((gc.karbonite() > 250 && gc.round() < 750) || (gc.round() >= 750 && gc.karbonite() >= 60)) { //before, seldom replicate. After, spam that shit. 
     		for(Direction c : Direction.values()) {
     			if(gc.canReplicate(this.id, c)) {
     				gc.replicate(this.id, c);

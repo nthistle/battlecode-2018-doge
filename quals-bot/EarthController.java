@@ -49,20 +49,20 @@ public class EarthController extends PlanetController
     public int queuedWorkers = 0;
 
     public void control() {
+
+        System.out.println("Earth Controller initiated");
+
         globalValues();
         
         myHandler = new HashMap<Integer, UnitHandler>();
         
         llh = new LaunchingLogicHandler(this, gc, -1, rng);
         mm = new MiningMaster(this);
-        mm.generate();
-    
-        System.out.println("Earth Controller initiated");
+        mm.generate();        
 
         initializeTMTargets();
 
         queueResearch();
-        
         
         rocketWarning = new Direction[(int)this.map.getWidth()][(int)this.map.getHeight()];
         

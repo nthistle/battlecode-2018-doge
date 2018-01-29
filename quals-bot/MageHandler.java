@@ -6,6 +6,7 @@ import java.util.Random;
 public class MageHandler extends UnitHandler {
 
     private static final double LATERAL_MOVE_CHANCE = 0.4;
+    private static final int MAGE_CONSIDER_CAP = 10;
     private boolean lastWasLat = false;
 
     public MageHandler(PlanetController parent, GameController gc, int id, Random rng) {
@@ -18,8 +19,72 @@ public class MageHandler extends UnitHandler {
     
     @Override
     public void takeTurn(Unit unit) {
-        handleMovement(unit);
-        // handleAttack(unit);
+        if(gc.isMoveReady(this.id))
+            handleMovement(unit);
+        if(gc.isAttackReady(this.id))
+            handleAttack(unit);
+    }
+
+    public void handleAttack(Unit unit) {
+        // after movement processing
+        MapLocation nLoc = gc.unit(this.id).location().mapLocation();
+
+        VecUnit nearby = gc.senseNearbyUnits(nLoc, unit.attackRange());
+
+        Team team = gc.team();
+
+        int dmg = unit.damage();
+
+        Unit bestTarget = null;
+        int bestHeuristic = 0; // pls no negative, rather not hurt friendlies unnecessarily
+        int considered = 0;
+        for(int i = 0; i < nearby.size() && considered < MAGE_CONSIDER_CAP; i ++) {
+            Unit tg = nearby.get(i);
+            if(tg.team() == team) return;
+            considered ++;
+            // assess as potential target
+            int nval = assessValue(team, tg, dmg);
+            if(nval > bestHeuristic) {
+                bestHeuristic = nval;
+                bestTarget = tg;
+            }
+        }
+
+        if(bestTarget == null) return;
+
+        if(gc.canAttack(this.id, bestTarget.id())) {
+            gc.attack(this.id, bestTarget.id());
+            System.out.println("Mage attacked with a heuristic value of " + bestHeuristic);
+        } else {
+            System.out.println("MAGE SOMETHING BORKED!");
+        }
+    }
+
+    public int assessValue(Team us, Unit target, int dmg) {
+        VecUnit splash = gc.senseNearbyUnits(target.location().mapLocation(), 2L);
+        // everything in splash takes damage
+        int enemiesKilled = 0;
+        int friendliesKilled = 0;
+        int enemyDamage = 0;
+        int friendlyDamage = 0;
+        for(int i = 0; i < splash.size(); i ++) {
+            Unit u = splash.get(i);
+            if(u.team() == us) {
+                friendlyDamage += dmg;
+                if(u.health() <= dmg)
+                    friendliesKilled ++;
+            } else {
+                enemyDamage += dmg;
+                if(u.health() <= dmg)
+                    enemiesKilled ++;
+            }
+        }
+        return heuristic(enemiesKilled, friendliesKilled, enemyDamage, friendlyDamage);
+    }
+
+    // higher heuristic is better
+    public int heuristic(int enemiesKilled, int friendliesKilled, int enemyDamage, int friendlyDamage) {
+        return (200*enemiesKilled) + (-300*friendliesKilled) + (2*enemyDamage) - (3*friendlyDamage);
     }
 
     public void handleMovement(Unit unit) {
@@ -70,9 +135,13 @@ public class MageHandler extends UnitHandler {
                     return;
                 }
             }
+            for(Direction dir : closerDirs)
+                if(Utils.tryMoveWiggle(gc, this.id, dir) > 0)
+                    return;
+            for(Direction dir : sameDirs)
+                if(Utils.tryMoveWiggle(gc, this.id, dir) > 0)
+                    return;
         }
-
-
     }
 
     public Direction getRandomDirection(MapLocation mapLocation, MapLocation targetLocation, PathMaster pm) {

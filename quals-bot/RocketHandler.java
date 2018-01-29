@@ -7,10 +7,10 @@ public class RocketHandler extends UnitHandler {
 	public static final double[] KNIGHT_CREW = new double[] {0, 0, 1, 0, 0};
 	public static final double[] TANKY_CREW = new double[] {0, 0.5, 0.5, 0, 0};
 	public static final double[] FIRST_CONTACT_CREW = new double[] {0.5, 0.5, 0, 0, 0};
-	public static final double[] ARTISTIC_CREW = new double[] {0, 0, 0, 0.5, 0.5}; //send in the wierder, more niche troops
-	public static final double[] META_CREW_1 = new double[] {0, 0.5, 0, 0, 0.5};
-	public static final double[] META_CREW_2 = new double[] {0, 0, 0.5, 0, 0.5};
-	public static final double[] META_CREW_3 = new double[] {0, 0, 0, 0.5, 0.5};
+	public static final double[] MAGE_HEALER_CREW = new double[] {0, 0, 0, 0.5, 0.5}; 
+	public static final double[] RANGER_HEALER_CREW_1 = new double[] {0, 0.5, 0, 0, 0.5};
+	public static final double[] RANGER_HEALER_CREW_2 = new double[] {0, 0.75, 0, 0, 0.25};
+	public static final double[] RANGER_HEALER_CREW_3 = new double[] {0, 0.25, 0, 0, 0.75};
 	
 	public static final int TAKEOFF_COUNTDOWN = 3; 
 	
@@ -22,6 +22,7 @@ public class RocketHandler extends UnitHandler {
 	public Direction[][] warningMatrix;
 	public MapLocation myLocation;
 	public PlanetMap map;
+	public int builtRound = Integer.MAX_VALUE;
 	
 	/**
 	 * generate a rocket handler for a rocket
@@ -68,6 +69,8 @@ public class RocketHandler extends UnitHandler {
     @Override
     public void takeTurn(Unit unit) {
     	if(unit.structureIsBuilt() != 0) {
+    		if(this.builtRound == Integer.MAX_VALUE) 
+    			this.builtRound = (int)gc.round();
     		this.load();
             this.setDestination(llh.optimalLandingLocation());
     		// System.out.println("Dest: " + this.getDestination());
@@ -148,11 +151,14 @@ public class RocketHandler extends UnitHandler {
                 // System.out.println(ut + ": " + targetManifest.get(ut));
             // }
         // }
-        if(gc.round() >= 745) return true; 
-
-    	if(this.isLoaded() && this.llh.optimalLaunchingTime() == gc.round()) return true;
-    	else if(gc.unit(this.id).health() <= 150) return true;
-    	//TODO: expand list of cases to include damage nearby, etc. 
+        if(gc.round() >= 730) 
+        	return true; 
+        else if(this.isLoaded() && this.llh.optimalLaunchingTime() == gc.round()) 
+    		return true;
+        else if(gc.unit(this.id).health() <= 190) //as soon as 1 sprinkle of dmg 
+    		return true;
+        else if(gc.round() >= this.builtRound + 150)
+        	return true;
     	else return false;
     }
     
