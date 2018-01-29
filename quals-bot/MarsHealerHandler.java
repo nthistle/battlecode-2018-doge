@@ -28,7 +28,6 @@ public class MarsHealerHandler extends UnitHandler {
         marsParent = (MarsController)parent;
         bug = new Bug(gc, id, marsParent.map);
         enemy = marsParent.enemyTeam;
-        myLocation = gc.unit(id).location().mapLocation();
         threatMap = new EnumMap<Direction, Integer>(Direction.class);
         for(Direction dir : Direction.values()) {
             threatMap.put(dir, 0);
@@ -41,6 +40,8 @@ public class MarsHealerHandler extends UnitHandler {
     
     @Override
     public void takeTurn(Unit unit) {
+        
+        myLocation = gc.unit(id).location().mapLocation();
 
         Location location = unit.location();
 
