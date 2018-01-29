@@ -543,7 +543,11 @@ public class MiningMaster {
 	public void generate() {
 		generateIntialKarboniteLocations();
 		//printKarboniteMap();
-		applyMatrix();
+		try {
+			applyMatrix();
+		} catch (ArrayIndexOutOfBoundsException e) {
+			System.out.println("Gaussian blur got an error");
+		}
 		//printKarboniteModifiedMap();
 		generateMaximas();
 		//printKarboniteMapWithClusters();
