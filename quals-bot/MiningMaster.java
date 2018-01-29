@@ -15,10 +15,12 @@ import java.util.TreeMap;
 
 public class MiningMaster {
 
+	protected int[][] onlyForMaximas;
 	protected int[][] initialKarboniteLocations;
 	protected int[][] initialKarboniteLocationsOriginal;
 	protected List<Cluster> clusters;
 	protected int totalValue;
+	public static final int[][] gaussian = new int[][] {{1, 2, 1}, {2, 5, 2}, {1, 2, 1}};
 	public static final int KARBONITE_THRESHOLD = 5;
 	public static final int KARBONITE_THRESHOLD_CLUSTER = 2;
 	public static final int MAX_CLUSTERS_VISIT = 3;
@@ -48,10 +50,95 @@ public class MiningMaster {
         System.out.println("We intially have " + this.teamStartingPositions.size() + " workers on the field.");
 	}
 
+	public void applyMatrix() {
+		for(int j = initialKarboniteLocations[0].length - 1; j > -1 ; j--) {
+			for(int i = 0; i < initialKarboniteLocations.length; i++) {
+				String a = "";
+				if(j == initialKarboniteLocations[0].length - 1 && i == 0) {
+					a = "TL";
+					int newKarbValue = 0;
+					int[][] directions = new int[][] {{0,0},{1,0},{0,-1},{1,-1}};
+					for(int[] x : directions) {
+						newKarbValue += initialKarboniteLocationsOriginal[i+x[0]][j+x[1]] * this.gaussian[1+x[0]][1+x[1]];
+					}
+					onlyForMaximas[i][j] = newKarbValue;
+				} else if(j == 0 && i == 0) {
+					a = "BL";
+					int newKarbValue = 0;
+					int[][] directions = new int[][] {{0,0},{1,0},{0,1},{1,1}};
+					for(int[] x : directions) {
+						newKarbValue += initialKarboniteLocationsOriginal[i+x[0]][j+x[1]] * this.gaussian[1+x[0]][1+x[1]];
+					}
+					onlyForMaximas[i][j] = newKarbValue;
+				} else if(j == 0 && i == initialKarboniteLocations[0].length - 1) {
+					a = "BR";
+					int newKarbValue = 0;
+					int[][] directions = new int[][] {{0,0},{-1,0},{0,1},{-1,1}};
+					for(int[] x : directions) {
+						newKarbValue += initialKarboniteLocationsOriginal[i+x[0]][j+x[1]] * this.gaussian[1+x[0]][1+x[1]];
+					}
+					onlyForMaximas[i][j] = newKarbValue;
+				} else if(j == initialKarboniteLocations[0].length - 1 && i == initialKarboniteLocations[0].length - 1) {
+					a = "TR";
+					int newKarbValue = 0;
+					int[][] directions = new int[][] {{0,0},{-1,0},{0,-1},{-1,-1}};
+					for(int[] x : directions) {
+						int b = initialKarboniteLocationsOriginal[i+x[0]][j+x[1]];
+						b *= this.gaussian[1+x[0]][1+x[1]];
+						newKarbValue += b;
+					}
+					onlyForMaximas[i][j] = newKarbValue;
+				} else if(i == 0) {
+					a = "L";
+					int newKarbValue = 0;
+					int[][] directions = new int[][] {{0,0},{1,0},{0,1},{1,1},{0,-1},{1,-1}};
+					for(int[] x : directions) {
+						newKarbValue += initialKarboniteLocationsOriginal[i+x[0]][j+x[1]] * this.gaussian[1+x[0]][1+x[1]];
+					}
+					onlyForMaximas[i][j] = newKarbValue;
+				} else if(j == 0) {
+					a = "B";
+					int newKarbValue = 0;
+					int[][] directions = new int[][] {{0,0},{-1,0},{1,0},{0,1},{-1,1},{1,1}};
+					for(int[] x : directions) {
+						newKarbValue += initialKarboniteLocationsOriginal[i+x[0]][j+x[1]] * this.gaussian[1+x[0]][1+x[1]];
+					}
+					onlyForMaximas[i][j] = newKarbValue;
+				} else if(j == initialKarboniteLocations[0].length - 1) {
+					a = "T";
+					int newKarbValue = 0;
+					int[][] directions = new int[][] {{0,0},{-1,0},{0,-1},{-1,-1},{1,0},{1,-1}};
+					for(int[] x : directions) {
+						newKarbValue += initialKarboniteLocationsOriginal[i+x[0]][j+x[1]] * this.gaussian[1+x[0]][1+x[1]];
+					}
+					onlyForMaximas[i][j] = newKarbValue;
+				} else if(i == initialKarboniteLocations[0].length - 1) {
+					a = "R";
+					int newKarbValue = 0;
+					int[][] directions = new int[][] {{0,0},{-1,0},{0,1},{-1,1},{0,-1},{-1,-1}};
+					for(int[] x : directions) {
+						newKarbValue += initialKarboniteLocationsOriginal[i+x[0]][j+x[1]] * this.gaussian[1+x[0]][1+x[1]];
+					}
+					onlyForMaximas[i][j] = newKarbValue;
+				} else {
+					a = "regular";
+					int newKarbValue = 0;
+					int[][] directions = new int[][] {{0,0},{-1,0},{0,1},{0,-1},{-1,-1},{1,1},{-1,1},{1,-1},{1,0}};
+					for(int[] x : directions) {
+						newKarbValue += initialKarboniteLocationsOriginal[i+x[0]][j+x[1]] * this.gaussian[1+x[0]][1+x[1]];
+					}
+					onlyForMaximas[i][j] = newKarbValue;
+				}
+			}
+		}
+			
+	}
+
 	private void generateIntialKarboniteLocations() {
 		PlanetMap initialMap = this.parentController.gc.startingMap(this.parentController.getPlanet());
 		this.initialKarboniteLocations = new int[(int) initialMap.getWidth()][(int) initialMap.getHeight()];
 		this.initialKarboniteLocationsOriginal = new int[(int) initialMap.getWidth()][(int) initialMap.getHeight()];
+		this.onlyForMaximas = new int[(int) initialMap.getWidth()][(int) initialMap.getHeight()];
 		this.clusterMap = new Cluster[initialKarboniteLocations.length][initialKarboniteLocations[0].length];
 		for(int i = 0; i < this.initialKarboniteLocations.length; i++) {
 			for(int j = 0; j < this.initialKarboniteLocations[0].length; j++) {
@@ -59,6 +146,7 @@ public class MiningMaster {
 				if(base > 0) {
 					this.initialKarboniteLocations[i][j] = base;
 					this.initialKarboniteLocationsOriginal[i][j] = base;
+					this.onlyForMaximas[i][j] = base;
 				}
 			}
 		}
@@ -97,22 +185,22 @@ public class MiningMaster {
 	private void generateMaximas() {
 		this.clusters = new ArrayList<Cluster>();
 		int[][] initialDirections = {new int[] {0, 1}, new int[] {0, -1}, new int[] {1, 0}, new int[] {1, 1}, new int[] {1, -1}, new int[] {-1, 0}, new int[] {-1, -1}, new int[] {-1, 1}};
-		for(int i = 0; i < initialKarboniteLocations.length; i++) {
-			for(int j = 0; j < initialKarboniteLocations[0].length; j++) {
-				if(initialKarboniteLocations[i][j]<KARBONITE_THRESHOLD) continue;
+		for(int i = 0; i < onlyForMaximas.length; i++) {
+			for(int j = 0; j < onlyForMaximas[0].length; j++) {
+				if(onlyForMaximas[i][j]<KARBONITE_THRESHOLD) continue;
 				boolean isMaxima = true;
 				for(int[] a : initialDirections) {
 					//if we are within boundary but one of the neighbors are greater than us, we are not a maxima
-					if(i+a[0] < initialKarboniteLocations.length && i+a[0] >= 0 && j+a[1] < initialKarboniteLocations[0].length && j+a[1] >= 0 && initialKarboniteLocations[i][j] < initialKarboniteLocations[i+a[0]][j+a[1]])
+					if(i+a[0] < onlyForMaximas.length && i+a[0] >= 0 && j+a[1] < onlyForMaximas[0].length && j+a[1] >= 0 && onlyForMaximas[i][j] < onlyForMaximas[i+a[0]][j+a[1]])
 						isMaxima = false;
 				}
 				if(isMaxima) {
 					//lets decrement all the neighbors of this maxima
 					this.clusters.add(new Cluster(this, new Point(i, j)));
 					for(int[] a : initialDirections) {
-						if(i+a[0] < initialKarboniteLocations.length && i+a[0] >= 0 && j+a[1] < initialKarboniteLocations[0].length && j+a[1] >= 0) {
-							if(this.initialKarboniteLocations[i+a[0]][j+a[1]] != 0) {
-								this.initialKarboniteLocations[i+a[0]][j+a[1]] -= 1;
+						if(i+a[0] < onlyForMaximas.length && i+a[0] >= 0 && j+a[1] < onlyForMaximas[0].length && j+a[1] >= 0) {
+							if(this.onlyForMaximas[i+a[0]][j+a[1]] != 0) {
+								this.onlyForMaximas[i+a[0]][j+a[1]] -= 1;
 							}
 						}
 					}
@@ -130,6 +218,26 @@ public class MiningMaster {
 			
 				String a = initialKarboniteLocationsOriginal[i][j] + "";
 				if(initialKarboniteLocationsOriginal[i][j]>9)
+					System.out.print(a + "   ");
+				else
+					System.out.print(a + "    ");
+				//for(int z = 0; z < 3-a.length(); z++) {
+				//	a = " " + a; 
+				//}
+				//System.out.print(a + " ");
+			}
+			System.out.println();
+		}
+	}
+
+	public void printKarboniteModifiedMap() {
+
+		for(int j = initialKarboniteLocations[0].length - 1; j > -1 ; j--) {
+
+			for(int i = 0; i < initialKarboniteLocations.length; i++) {
+			
+				String a = initialKarboniteLocations[i][j] + "";
+				if(initialKarboniteLocations[i][j]>9)
 					System.out.print(a + "   ");
 				else
 					System.out.print(a + "    ");
@@ -395,6 +503,8 @@ public class MiningMaster {
 	public void generate() {
 		generateIntialKarboniteLocations();
 		//printKarboniteMap();
+		applyMatrix();
+		//printKarboniteModifiedMap();
 		generateMaximas();
 		//printKarboniteMapWithClusters();
 		
@@ -410,6 +520,12 @@ public class MiningMaster {
 		//printKarboniteMapWithClusters();
 
 		System.out.println("We have " + this.clusters.size() + " clusters of karbonite on the map");
+
+		/*
+		for(int i = 0; i < this.clusters.size(); i++) {
+			System.out.println("Cluster with maxima " + this.clusters.get(i).clusterMaxima + " has members " + Arrays.toString(this.clusters.get(i).members.toArray()));
+		}
+		*/
 
 		Collections.sort(this.clusters, Comparators.clusterComparator);
 
