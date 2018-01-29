@@ -56,7 +56,7 @@ public class RocketHandler extends UnitHandler {
         this.map = ((EarthController)parent).map;
 
         // System.out.println("Caching path field for " + this.dest + " (" + this.dest.getX() + "," + this.dest.getY() + ")");
-        this.parent.pm.getAndCachePathField(this.dest);
+        this.parent.pm.getAndCachePathField(this.myLocation);
         // this path field gets un-cached on takeoff
         // AstronautHandlers will reassign themselves naturally if they see it uncached (i.e. it grabs another unit of the
         // same type instead of the one that was going to it)
@@ -172,8 +172,8 @@ public class RocketHandler extends UnitHandler {
      * @return true if fully stocked, false if not
      */
     public boolean isLoaded() {
-    	// System.out.println("Wanted troops: " + this.wantedTroops);
-    	// System.out.println("Wanted troops size: " + this.wantedTroops.size());
+    	System.out.println("Wanted troops: " + this.wantedTroops);
+    	System.out.println("Wanted troops size: " + this.wantedTroops.size());
         for(UnitType key : this.targetManifest.keySet()) {
             if(this.targetManifest.get(key) != 0) return false;
         }

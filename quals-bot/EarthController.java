@@ -234,7 +234,7 @@ public class EarthController extends PlanetController
         }
     }
 
-    public static int ROCKET_LOADING_THRESH_DIST = 12;
+    public static int ROCKET_LOADING_THRESH_DIST = 25;
 
     public void addRocketRequestedUnits(RocketHandler rh, Unit rocket) {
         System.out.println("Rocket is adding requested units!...");
@@ -243,7 +243,7 @@ public class EarthController extends PlanetController
         Unit unit;
         ArrayList<FactoryHandler> sameRegion = new ArrayList<FactoryHandler>();
         int targetRegion = this.pm.getRegion(rocket.location().mapLocation());
-        for(int i = 0; i < units.size(); i ++) {
+        for(int i = 0; i < units.size(); i++) {
             unit = units.get(i);
             if(unit.unitType()!=UnitType.Factory) continue;
             if(this.pm.getRegion(unit.location().mapLocation()) == targetRegion) {
