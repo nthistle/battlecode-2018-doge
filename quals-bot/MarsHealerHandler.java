@@ -51,7 +51,7 @@ public class MarsHealerHandler extends UnitHandler {
 
         MapLocation mapLocation = location.mapLocation();
 
-        if (location.isOnPlanet(Planet.Earth)) {           
+        if (location.isOnPlanet(Planet.Mars)) {           
             return;
         }
 
