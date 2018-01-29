@@ -56,7 +56,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 			int deet = data.get(i);
 			if(deet == 0) return;
 			int status = deet / 10000;
-			int x = (deet / 100 + 10000) % 10000;
+			int x = (deet / 100) % 100;
 			int y = deet % 100;
 			System.out.println("Status: " + status + ", X: " + x + ", Y: " + y);
 			if(status == 1) { //new friendly location
@@ -115,9 +115,17 @@ public class LaunchingLogicHandler extends UnitHandler  {
 	
 	public double[] nextManifest() {
 		this.rocketsLoaded++;
-		if(this.rocketsLoaded <= Math.max(3, this.zoneMap.size() / 10)) return RocketHandler.FIRST_CONTACT_CREW;
-		else if(this.rocketsLoaded % 4 == 0) return RocketHandler.FIRST_CONTACT_CREW;
-		else return RocketHandler.RANGER_CREW;
+		if(myMarsTroops[0] < 8) 
+			return RocketHandler.FIRST_CONTACT_CREW; //low workers
+		else if(myMarsTroops[2] > 2 * enemyMarsTroops[2]) 
+			return RocketHandler.MAGE_HEALER_CREW; //send in mages
+		else if(myMarsTroops[2] > 1.5 * myMarsTroops[4])
+			return RocketHandler.RANGER_HEALER_CREW_3;
+		else if(myMarsTroops[2] < myMarsTroops[4]) 
+			return RocketHandler.RANGER_HEALER_CREW_2;
+		else
+			return RocketHandler.RANGER_HEALER_CREW_1;
+			
 	}
 	
 	public void addUsedMapLocation(MapLocation ml) {
