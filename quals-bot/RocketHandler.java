@@ -172,10 +172,10 @@ public class RocketHandler extends UnitHandler {
      * @return true if fully stocked, false if not
      */
     public boolean isLoaded() {
-    	System.out.println("Wanted troops: " + this.wantedTroops);
-    	System.out.println("Wanted troops size: " + this.wantedTroops.size());
-        for(UnitType key : this.targetManifest.keySet()) {
-            if(this.targetManifest.get(key) != 0) return false;
+    	System.out.println("Wanted troops: " + this.stillNeeded);
+    	System.out.println("Wanted troops size: " + this.stillNeeded.size());
+        for(UnitType key : this.stillNeeded.keySet()) {
+            if(this.stillNeeded.get(key) != 0) return false;
         }
         return true;
     }
@@ -205,7 +205,8 @@ public class RocketHandler extends UnitHandler {
         Unit adj;
     	for(int i = 0; i < adjacent.size(); i++) {
             adj = adjacent.get(i);
-    		if(this.targetManifest.keySet().contains(adj.unitType()) && this.targetManifest.get(adj.unitType()) > 0) {
+    		if(this.stillNeeded.keySet().contains(adj.unitType()) 
+    				&& this.stillNeeded.get(adj.unitType()) > 0) {
                 if(parent.myHandler.get(adj.id()) instanceof WorkerHandler) {
                     continue;
                 }
@@ -217,7 +218,7 @@ public class RocketHandler extends UnitHandler {
   //   			System.out.println("Loading " + adjacent.get(i).id());
     			if(this.loadTroop(adj.id())) {
                     // once we're loaded, decrease from the manifest
-                    this.targetManifest.put(adj.unitType(), this.targetManifest.get(adj.unitType()) - 1);
+                    this.stillNeeded.put(adj.unitType(), this.stillNeeded.get(adj.unitType()) - 1);
     			}
     		}
     	}
