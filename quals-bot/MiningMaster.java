@@ -21,8 +21,8 @@ public class MiningMaster {
 	protected List<Cluster> clusters;
 	protected int totalValue;
 	public static final int[][] gaussian = new int[][] {{1, 2, 1}, {2, 5, 2}, {1, 2, 1}};
-	public static final int KARBONITE_THRESHOLD = 5;
-	public static final int KARBONITE_THRESHOLD_CLUSTER = 2;
+	public static final int KARBONITE_THRESHOLD = 5 * 5;
+	public static final int KARBONITE_THRESHOLD_CLUSTER = 2 * 5;
 	public static final int MAX_CLUSTERS_VISIT = 3;
 	public static final int MAX_MINERS_AT_CLUSTER = 3;
 	public static final int MIN_CLUSTER_VALUE = 15;
