@@ -149,6 +149,8 @@ public class EarthController extends PlanetController
 
             takeTurnByType(myHandler, units, UnitType.Ranger);
 
+            takeTurnByType(myHandler, units, UnitType.Mage);
+
             takeTurnByType(myHandler, units, UnitType.Knight);
             
             takeTurnByType(myHandler, units, UnitType.Healer);
@@ -314,10 +316,17 @@ public class EarthController extends PlanetController
         // if(gc.round() < 150 && d < 0.1 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Worker) - eworkerCount < 6) {
         //     return UnitType.Worker;
         // }
+        
+        // if (d < 0.05 && getRobotCount(UnitType.Ranger) > 5 && getRobotCount(UnitType.Healer) > 1 && getRobotCount(UnitType.Mage) < 5) {
+        //     return UnitType.Mage;
+        // }
         if (getRobotCount(UnitType.Ranger) > 3 && getRobotCount(UnitType.Healer) < 2) {
             return UnitType.Healer;
         }
         if (getRobotCount(UnitType.Ranger) < (int)(0.5 * getRobotCount(UnitType.Healer))) {
+            return UnitType.Ranger;
+        }
+        if (getRobotCount(UnitType.Ranger) < (int)(2 * getRobotCount(UnitType.Healer))) {
             return UnitType.Ranger;
         }
         if (d < 0.3 && getRobotCount(UnitType.Ranger) > 3) return UnitType.Healer;
