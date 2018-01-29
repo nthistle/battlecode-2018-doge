@@ -12,7 +12,7 @@ public class PathMaster
 	protected int cacheCount;
 	protected int[][] labels;
 	protected int[] labelSize; 
-	private int generateCount = 1;
+	private int generateCount = 0;
 	
 	public PathMaster(PlanetMap basemap) {
 		this.basemap = basemap;
@@ -94,9 +94,17 @@ public class PathMaster
 		return cachedPf;
 	}
 
-	public void clearPFCache(MapLocation target) {
-		if(null != this.limitedCache.remove(new Point(target.getX(), target.getY())))
+	public boolean clearPFCache(int x, int y) {
+		// System.out.println("removing from " + x + "," + y + ", " + this.limitedCache.get(new Point(x, y)));
+		if(this.limitedCache.remove(new Point(x, y)) != null) {
 			this.generateCount--;
+			return true;
+		}
+		return false;
+	}
+
+	public boolean clearPFCache(MapLocation target) {
+		return clearPFCache(target.getX(), target.getY());
 	}
 
 	public PathField getPathField(MapLocation target) {
