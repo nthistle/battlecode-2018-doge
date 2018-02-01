@@ -138,6 +138,9 @@ public class EarthController extends PlanetController
 
             llh.takeTurn();
 
+            // rockets need to act first since loading a unit counts as movement
+            takeTurnByType(myHandler, units, UnitType.Rocket);
+
             // Workers should move early, since they'll be finishing building other units
             // and will be harvesting more Karbonite for us earlier in the turn
             takeTurnByType(myHandler, units, UnitType.Worker);
@@ -154,8 +157,6 @@ public class EarthController extends PlanetController
             takeTurnByType(myHandler, units, UnitType.Knight);
             
             takeTurnByType(myHandler, units, UnitType.Healer);
-
-            takeTurnByType(myHandler, units, UnitType.Rocket);
 
             gc.nextTurn();
         }
