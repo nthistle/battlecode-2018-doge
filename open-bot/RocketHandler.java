@@ -198,7 +198,7 @@ public class RocketHandler extends UnitHandler {
      * @return true if fully stocked, false if not
      */
     public boolean isLoaded() {
-    	System.out.println("Wanted troops: " + this.targetManifest);
+    	// System.out.println("Wanted troops: " + this.targetManifest);
     	//System.out.println("Wanted troops size: " + this.stillNeeded.size());
         for(UnitType key : this.targetManifest.keySet()) {
             if(this.targetManifest.get(key) != 0) return false;
@@ -216,7 +216,7 @@ public class RocketHandler extends UnitHandler {
     	else {
     		gc.load(this.id, unitID);
             numLoaded ++;
-			System.out.println(numLoaded);
+			// System.out.println(numLoaded);
             if(numLoaded >= FORCE_TAKEOFF_THRESH) {
                 forceTakeoffTimer = FORCE_TAKEOFF_TIMER;
             }
@@ -236,7 +236,7 @@ public class RocketHandler extends UnitHandler {
         Unit adj;
     	for(int i = 0; i < adjacent.size(); i++) {
             adj = adjacent.get(i);
-			System.out.println(parent.myHandler.get(adj.id()));
+			// System.out.println(parent.myHandler.get(adj.id()));
     		if(this.targetManifest.keySet().contains(adj.unitType()) 
     				&& this.targetManifest.get(adj.unitType()) > 0 || gc.round() >= 650) {
                 if(parent.myHandler.get(adj.id()) instanceof WorkerHandler) {
@@ -249,7 +249,7 @@ public class RocketHandler extends UnitHandler {
                 }
     			if(this.loadTroop(adj.id())) {
                     // once we're loaded, decrease from the manifest
-					System.out.println("Loading " + adjacent.get(i).id());
+					// System.out.println("Loading " + adjacent.get(i).id());
                     this.targetManifest.put(adj.unitType(), this.targetManifest.get(adj.unitType()) - 1);
     			}
     		}
