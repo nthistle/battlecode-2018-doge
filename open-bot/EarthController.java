@@ -46,6 +46,8 @@ public class EarthController extends PlanetController
     public int eworkerCount = 0;
     public int queuedWorkers = 0;
 
+    public boolean isBlitzGame = false;
+
     public void control() {
 
         System.out.println("Earth Controller initiated");
@@ -61,6 +63,8 @@ public class EarthController extends PlanetController
         initializeTMTargets();
 
         queueResearch();
+
+        checkIsBlitz();
         
         rocketWarning = new Direction[(int)this.map.getWidth()][(int)this.map.getHeight()];
         
@@ -151,6 +155,10 @@ public class EarthController extends PlanetController
 
             gc.nextTurn();
         }
+    }
+
+    public void checkIsBlitz() {
+        
     }
 
     public void initialAssign() {
