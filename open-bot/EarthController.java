@@ -31,9 +31,7 @@ public class EarthController extends PlanetController
     
     public Map<UnitType, Integer> robotCount = new EnumMap<UnitType, Integer>(UnitType.class);    
     
-    public Direction[][] rocketWarning; 
-
-    // public Queue<Integer> attackQueue = new LinkedList<Integer>();
+    public Direction[][] rocketWarning;     
 
     public int amLoadingRocket = 0;
 
@@ -364,8 +362,7 @@ public class EarthController extends PlanetController
             isSavingForFactory = false;
         }
     }
-
-    // For now, only does Rangers/Workers/Rockets, and only takes us to Round 625
+    
     private void queueResearch() {                
         if (mm.totalValue() >= 300) {
             gc.queueResearch(UnitType.Worker); // Worker I (25)
@@ -381,10 +378,10 @@ public class EarthController extends PlanetController
         gc.queueResearch(UnitType.Rocket); // Rocket I (50)
         // completed by round 200
 
-        gc.queueResearch(UnitType.Healer); // Rocket I (25)
+        gc.queueResearch(UnitType.Healer); // Healer I (25)
         // completed by round 225
 
-        gc.queueResearch(UnitType.Healer); // Rocket I (100)
+        gc.queueResearch(UnitType.Healer); // Healer II (100)
         // completed by round 325
 
         gc.queueResearch(UnitType.Rocket); // Rocket II (100)
@@ -407,8 +404,7 @@ public class EarthController extends PlanetController
         VecUnit startingUnits = gc.startingMap(gc.planet()).getInitial_units();
         for(int i = 0; i < startingUnits.size(); i ++) {
             if(startingUnits.get(i).team() == enemyTeam) {
-                MapLocation temp = startingUnits.get(i).location().mapLocation();
-                tm.initial.add(temp.toJson());
+                MapLocation temp = startingUnits.get(i).location().mapLocation();                
                 tm.addTarget(temp);
             }
         }
@@ -419,7 +415,7 @@ public class EarthController extends PlanetController
     }
 
     public void incrementEWorkerCount() {
-        this.eworkerCount ++;
+        this.eworkerCount++;
     }
 
     public int getEWorkerCount() {
@@ -532,10 +528,8 @@ public class EarthController extends PlanetController
             case Worker:
                 if(this.getEWorkerCount() < 3 || mm.totalValue() < 300) {
                     newHandler = new WorkerHandler(this, gc, unit.id(), rng);
-                } else {
-                    //newHandler = new MiningWorkerHandler(this, gc, unit.id(), rng, this.mm);
+                } else {                    
                     if(unit.unitType() == UnitType.Worker) {
-                        System.out.println("Just requested a brand-new miner");
                         mm.convertToMiner(unit.id());
                         return;
                     }
