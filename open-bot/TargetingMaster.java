@@ -1,11 +1,11 @@
 import bc.*;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 public class TargetingMaster
 {
 	private PlanetController pc;
 	private GameController gc;
-	public LinkedList<MapLocation> targets;	
+	public ArrayList<MapLocation> targets;	
 	public int numTargetsAllowed = 15;
 	public int cooldown = 0;
 	public int MAX_COOLDOWN = 10;
@@ -26,10 +26,12 @@ public class TargetingMaster
 		if(cooldown > 0) cooldown --;
 		if(numTargetsAllowed > 0 && cooldown == 0) {
 			// we can add a new target
+			VecUnit vu = gc.units();
+			ArrayList<MapLocation> valid = new ArrayList<MapLocation>();
 		}
 	}
 
-	public LinkedList<MapLocation> getTargets() {
+	public ArrayList<MapLocation> getTargets() {
 		return this.targets;
 	}
 
