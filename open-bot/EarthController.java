@@ -147,6 +147,8 @@ public class EarthController extends PlanetController
             
             takeTurnByType(myHandler, units, UnitType.Healer);
 
+            ctm.updateTM();
+
             gc.nextTurn();
         }
     }

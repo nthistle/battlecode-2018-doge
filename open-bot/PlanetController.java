@@ -17,6 +17,7 @@ public abstract class PlanetController
 
     public final PathMaster pm;
     public final TargetingMaster tm;
+    public final CombatTargetMaster ctm;
 
     public Map<Integer, UnitHandler> myHandler;
 
@@ -26,6 +27,7 @@ public abstract class PlanetController
         
         this.pm = new PathMaster(gc.startingMap(gc.planet()));
         this.tm = new TargetingMaster(gc);
+        this.ctm = new CombatTargetMaster(this, gc);
     }
     
     /**

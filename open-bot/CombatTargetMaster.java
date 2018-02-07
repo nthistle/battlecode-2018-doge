@@ -28,6 +28,16 @@ public class CombatTargetMaster
 			// we can add a new target
 			VecUnit vu = gc.units();
 			ArrayList<MapLocation> valid = new ArrayList<MapLocation>();
+			for(int i = 0; i < vu.size(); i ++ ) {
+				if(vu.get(i).team() != gc.team()) {
+					valid.add(vu.get(i).location().mapLocation());
+				}
+			}
+			if(valid.size() > 0) {
+				this.addTarget(valid.get(pc.rng.nextInt(valid.size())));
+			} else {
+				cooldown = 3;
+			}
 		}
 	}
 
