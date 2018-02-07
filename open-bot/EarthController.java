@@ -109,16 +109,7 @@ public class EarthController extends PlanetController
             }
 
             noEnemies = true;
-
-            // for(int i = 0; i < allUnits.size(); i ++) {
-            //     // this is probably going to clog targetingmaster to high hell but who cares rn
-            //     Unit uu = allUnits.get(i);
-            //     if(uu.team() == enemyTeam && !uu.location().isInGarrison() && !uu.location().isInSpace() && uu.location().isOnPlanet(Planet.Earth)) {
-            //         tm.addTarget(uu.location().mapLocation());
-            //         break;
-            //     }
-            // }
-
+            
             for(int i = 0; i < units.size(); i ++) {
                 Unit unit = units.get(i);
                 
