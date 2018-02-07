@@ -81,7 +81,7 @@ public class RocketHandler extends UnitHandler {
     			this.builtRound = (int)gc.round();
 			}
 			if(gc.round() >= 600 && !emRun) {
-				VecUnit nearby = gc.senseNearbyUnitsByTeam(myLocation, 1000, gc.team());
+				VecUnit nearby = gc.senseNearbyUnitsByTeam(myLocation, 4000, gc.team());
 				Unit eh;
 				int requested = (int)(unit.structureMaxCapacity());
 				for(int i = 0; i < nearby.size(); i++) {
