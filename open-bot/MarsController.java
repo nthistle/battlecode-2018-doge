@@ -25,6 +25,8 @@ public class MarsController extends PlanetController
     
     public CommunicationsManager comms;
     
+	public MiningMaster mm;
+
     public void control() {
     
         System.out.println("Mars Controller initiated");
@@ -35,6 +37,9 @@ public class MarsController extends PlanetController
         
         comms = new CommunicationsManager(this, gc, rng);
 
+		mm = new MiningMaster(this);
+		mm.generate();
+
         while (true) {
         
             System.out.println("Round #" + gc.round() + ", (" + gc.getTimeLeftMs() + " ms left)");
@@ -44,6 +49,11 @@ public class MarsController extends PlanetController
                 gc.nextTurn();
                 continue;
             }
+
+			if(gc.round() > 0 && gc.round() % 50 == 0) {
+				mm.update();
+				System.out.println("Succesfully updated MiningMaster");
+			}
 
             System.runFinalization();
             System.gc();            
@@ -112,7 +122,7 @@ public class MarsController extends PlanetController
                 newHandler = new MarsRangerHandler(this, gc, unit.id(), rng);
                 break;
             case Worker:
-                newHandler = new MarsWorkerHandler(this, gc, unit.id(), rng);
+                newHandler = new MarsWorkerHandler(this, gc, unit.id(), rng, this.mm);
                 break;
             case Rocket:
             	newHandler = new MarsRocketHandler(this, gc, unit.id(), rng);
