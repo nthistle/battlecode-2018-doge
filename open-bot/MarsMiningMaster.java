@@ -13,7 +13,7 @@ import java.util.Comparator;
 import java.util.TreeMap;
 
 
-public class MiningMaster {
+public class MarsMiningMaster extends MiningMaster {
 
 	protected int[][] onlyForMaximas;
 	protected int[][] initialKarboniteLocations;
@@ -24,7 +24,7 @@ public class MiningMaster {
 	public static final int KARBONITE_THRESHOLD = 5 * 5;
 	public static final int KARBONITE_THRESHOLD_CLUSTER = 2 * 5;
 	public static final int MAX_CLUSTERS_VISIT = 3;
-	public static final int MAX_MINERS_AT_CLUSTER = 3;
+	public static final int MAX_MINERS_AT_CLUSTER = 10;
 	public static final int MIN_CLUSTER_VALUE = 15;
 	public static final int MAX_PATHFIELDS = 10;
 
@@ -37,7 +37,8 @@ public class MiningMaster {
 	protected List<MapLocation> teamStartingPositions;
 	//
 
-	public MiningMaster(PlanetController pc) {
+	public MarsMiningMaster(PlanetController pc) {
+		super(pc);
 		this.parentController = pc;
 		generateVariables();
 	}
@@ -143,6 +144,7 @@ public class MiningMaster {
 		this.initialKarboniteLocationsOriginal = new int[(int) initialMap.getWidth()][(int) initialMap.getHeight()];
 		this.onlyForMaximas = new int[(int) initialMap.getWidth()][(int) initialMap.getHeight()];
 		this.clusterMap = new Cluster[initialKarboniteLocations.length][initialKarboniteLocations[0].length];
+		AsteroidPattern asPat = this.parentController.gc.asteroidPattern();
 		for(int i = 0; i < this.initialKarboniteLocations.length; i++) {
 			for(int j = 0; j < this.initialKarboniteLocations[0].length; j++) {
 				int base =((int) initialMap.initialKarboniteAt(new MapLocation(this.parentController.getPlanet(), i, j)));
@@ -153,7 +155,15 @@ public class MiningMaster {
 				}
 			}
 		}
-
+		for(int k = 0; k < 1000; k++) {
+			if(asPat.hasAsteroid(k)) {
+				AsteroidStrike strike = asPat.asteroid(k);
+				int i = (int)strike.getLocation().getX(), j = (int)strike.getLocation().getY();
+				this.initialKarboniteLocations[i][j] += strike.getKarbonite();
+				this.initialKarboniteLocationsOriginal[i][j] += strike.getKarbonite();
+				this.onlyForMaximas[i][j] += strike.getKarbonite();
+			}
+		}
 	}
 
 

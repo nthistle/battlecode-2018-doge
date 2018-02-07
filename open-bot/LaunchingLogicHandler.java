@@ -140,7 +140,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		}
 		for(int i = 0; i < this.marsMap.getHeight(); i++) {
 			for(int j = 0; j < this.marsMap.getWidth(); j++) {
-				rocketDistances[i][j] += (y-i) * (y-i) + (x-j) * (x-j);
+				rocketDistances[i][j] += 5 * (y-i) * (y-i) + 5 * (x-j) * (x-j);
 			}
 		}
 		rocketsLoaded++;
@@ -160,7 +160,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		}
 		for(int i = 0; i < this.marsMap.getHeight(); i++) {
 			for(int j = 0; j < this.marsMap.getWidth(); j++) {
-				rocketDistances[i][j] -= (y-i) * (y-i) + (x-j) * (x-j);
+				rocketDistances[i][j] -= 10 * (y-i) * (y-i) + 10 * (x-j) * (x-j);
 			}
 		}
 		rocketsLoaded--;
@@ -180,7 +180,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		}
 		for(int i = 0; i < this.marsMap.getHeight(); i++) {
 			for(int j = 0; j < this.marsMap.getWidth(); j++) {
-				rocketDistances[i][j] -= 4 * (y-i) * (y-i) + 4 * (x-j) * (x-j);
+				rocketDistances[i][j] += 4 * (y-i) * (y-i) + 4 * (x-j) * (x-j);
 			}
 		}
 		enemyUsedZones.set(label[y][x]-1, enemyUsedZones.get(label[y][x]-1) + 1);
@@ -199,7 +199,7 @@ public class LaunchingLogicHandler extends UnitHandler  {
 		}
 		for(int i = 0; i < this.marsMap.getHeight(); i++) {
 			for(int j = 0; j < this.marsMap.getWidth(); j++) {
-				rocketDistances[i][j] += 4 * (y-i) * (y-i) + 4 * (x-j) * (x-j);
+				rocketDistances[i][j] -= 4 * (y-i) * (y-i) + 4 * (x-j) * (x-j);
 			}
 		}
 		enemyUsedZones.set(label[y][x]-1, enemyUsedZones.get(label[y][x]-1) - 1);
