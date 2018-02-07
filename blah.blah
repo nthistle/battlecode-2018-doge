@@ -1,9 +1,0 @@
-Using default tag: latest
-latest: Pulling from battlecode/battlecode-2018
-Digest: sha256:8a447c2ce051d4c8542e86ac581cb8cd166556a98a11365eafdf7c0ac879758d
-Status: Image is up to date for battlecode/battlecode-2018:latest
-Total reclaimed space: 0B
-=== STARTING THE MANAGER ===
-=== random garbage incoming: ===
-nohup: appending output to nohup.out
-^C
