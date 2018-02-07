@@ -4,8 +4,7 @@ import java.util.ArrayList;
 public class TargetingMaster
 {
 	private GameController gc;
-	public ArrayList<MapLocation> targets;
-	public ArrayList<String> initial = new ArrayList<String>();
+	public ArrayList<MapLocation> targets;	
 
 	public TargetingMaster(GameController gc) {
 		this.gc = gc;
@@ -19,9 +18,9 @@ public class TargetingMaster
 
 	public MapLocation getTarget(MapLocation requestLocation) {
 		MapLocation closestTarget = null;
-		long closestDistance = Long.MAX_VALUE;
+		int closestDistance = Integer.MAX_VALUE;
 		for (MapLocation tryLocation : targets) {
-			long distance = requestLocation.distanceSquaredTo(tryLocation);
+			int distance = (int)requestLocation.distanceSquaredTo(tryLocation);
 			if (closestTarget == null || distance < closestDistance) {
 				closestTarget = tryLocation;
 				closestDistance = distance;
