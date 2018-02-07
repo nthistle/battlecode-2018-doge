@@ -49,7 +49,6 @@ public class HealerHandler extends UnitHandler {
 			return;
         }
 
-
         if (location.isOnPlanet(Planet.Mars)) {            
             return;
         }
