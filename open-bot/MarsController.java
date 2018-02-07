@@ -41,54 +41,56 @@ public class MarsController extends PlanetController
         comms = new CommunicationsManager(this, gc, rng);
 
         while (true) {
+            try { // Pokemon Exception Handling
         
-            int roundNumber = (int) gc.round();
+                int roundNumber = (int) gc.round();
 
-            System.out.println("Round #" + roundNumber + ", (" + gc.getTimeLeftMs() + " ms left)");
+                System.out.println("Round #" + roundNumber + ", (" + gc.getTimeLeftMs() + " ms left)");
 
-            if(asPat.hasAsteroid(roundNumber)) {
-                AsteroidStrike strike = asPat.asteroid(roundNumber);
-                int i = (int)strike.getLocation().getX(), j = (int)strike.getLocation().getY();
-                karboniteLocations.add(new Point(i, j));
-            }
-
-            if(gc.getTimeLeftMs() < 1000) {
-                System.out.println("TIME POOL LOW! SKIPPING TURN!");
-                gc.nextTurn();
-                continue;
-            }
-
-            System.runFinalization();
-            System.gc();            
-            
-            VecUnit allUnits = gc.units();
-            VecUnit units = gc.myUnits();
-            
-            //System.out.println(units);
-            
-            comms.update();
-
-            refreshTargets(allUnits);
-
-            for(int i = 0; i < units.size(); i ++) {
-                Unit unit = units.get(i);
-                
-                if(!myHandler.containsKey(unit.id())) {
-                    assignHandler(myHandler, unit);
+                if(asPat.hasAsteroid(roundNumber)) {
+                    AsteroidStrike strike = asPat.asteroid(roundNumber);
+                    int i = (int)strike.getLocation().getX(), j = (int)strike.getLocation().getY();
+                    karboniteLocations.add(new Point(i, j));
                 }
-            }
 
-            takeTurnByType(myHandler, units, UnitType.Rocket);
+                if(gc.getTimeLeftMs() < 1000) {
+                    System.out.println("TIME POOL LOW! SKIPPING TURN!");
+                    gc.nextTurn();
+                    continue;
+                }
 
-            takeTurnByType(myHandler, units, UnitType.Ranger);
+                System.runFinalization();
+                System.gc();            
+                
+                VecUnit allUnits = gc.units();
+                VecUnit units = gc.myUnits();
+                
+                //System.out.println(units);
+                
+                comms.update();
 
-            takeTurnByType(myHandler, units, UnitType.Worker);
+                refreshTargets(allUnits);
 
-            takeTurnByType(myHandler, units, UnitType.Healer);
-            
-            // takeTurnByType(myHandler, units, UnitType.Mage);
-            
-            gc.nextTurn();
+                for(int i = 0; i < units.size(); i ++) {
+                    Unit unit = units.get(i);
+                    
+                    if(!myHandler.containsKey(unit.id())) {
+                        assignHandler(myHandler, unit);
+                    }
+                }
+
+                takeTurnByType(myHandler, units, UnitType.Rocket);
+
+                takeTurnByType(myHandler, units, UnitType.Ranger);
+
+                takeTurnByType(myHandler, units, UnitType.Worker);
+
+                takeTurnByType(myHandler, units, UnitType.Healer);
+                
+                // takeTurnByType(myHandler, units, UnitType.Mage);
+                
+                gc.nextTurn();
+            } catch(Exception e) {} // gotta catch 'em all
         }
     }
 

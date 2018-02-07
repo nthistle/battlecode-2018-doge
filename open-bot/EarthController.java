@@ -77,83 +77,86 @@ public class EarthController extends PlanetController
         initialAssign();
 
         while (true) {
+            try { // Pokemon Exception Handling
                     
-            System.out.println("Round #" + gc.round() + ", (" + gc.getTimeLeftMs() + " ms left)");
+                System.out.println("Round #" + gc.round() + ", (" + gc.getTimeLeftMs() + " ms left)");
 
-            if(gc.getTimeLeftMs() < 1000) {
-                System.out.println("TIME POOL LOW! SKIPPING TURN!");
-                gc.nextTurn();
-                continue;
-            }
-
-            //update miningmaster every 50 rounds
-            if(gc.round() > 0 && gc.round() % 50 == 0) {
-                mm.update();
-                System.out.println("Successfully updated MiningMaster");
-                // mm.printKarboniteMap();
-            }
-            //end
-
-            System.runFinalization();
-            System.gc();
-
-            VecUnit allUnits = gc.units();
-            VecUnit units = gc.myUnits();
-
-            HashSet<Integer> aliveIDs = new HashSet<Integer>();
-            for(int i = 0; i < units.size(); i ++) {
-                aliveIDs.add(units.get(i).id());
-            }
-
-            for(int id : new HashSet<Integer>(myHandler.keySet())) {
-                if(!aliveIDs.contains(id)) { // unit has died
-                    myHandler.get(id).handleDeath();
-                    myHandler.remove(id);
+                if(gc.getTimeLeftMs() < 1000) {
+                    System.out.println("TIME POOL LOW! SKIPPING TURN!");
+                    gc.nextTurn();
+                    continue;
                 }
-            }
 
-            noEnemies = true;
-            
-            for(int i = 0; i < units.size(); i ++) {
-                Unit unit = units.get(i);
+                //update miningmaster every 50 rounds
+                if(gc.round() > 0 && gc.round() % 50 == 0) {
+                    mm.update();
+                    System.out.println("Successfully updated MiningMaster");
+                    // mm.printKarboniteMap();
+                }
+                //end
+
+                System.runFinalization();
+                System.gc();
+
+                VecUnit allUnits = gc.units();
+                VecUnit units = gc.myUnits();
+
+                HashSet<Integer> aliveIDs = new HashSet<Integer>();
+                for(int i = 0; i < units.size(); i ++) {
+                    aliveIDs.add(units.get(i).id());
+                }
+
+                for(int id : new HashSet<Integer>(myHandler.keySet())) {
+                    if(!aliveIDs.contains(id)) { // unit has died
+                        myHandler.get(id).handleDeath();
+                        myHandler.remove(id);
+                    }
+                }
+
+                noEnemies = true;
                 
-                if(!myHandler.containsKey(unit.id())) {
-                    assignHandler(myHandler, unit);
+                for(int i = 0; i < units.size(); i ++) {
+                    Unit unit = units.get(i);
+                    
+                    if(!myHandler.containsKey(unit.id())) {
+                        assignHandler(myHandler, unit);
+                    }
                 }
-            }
 
-            refreshRobotCount(units);
+                refreshRobotCount(units);
 
-            refreshTargets(allUnits);
+                refreshTargets(allUnits);
 
-            rocketStatus();
-            factoryStatus();
+                rocketStatus();
+                factoryStatus();
 
-            llh.takeTurn();
+                llh.takeTurn();
 
-            // rockets need to act first since loading a unit counts as movement
-            takeTurnByType(myHandler, units, UnitType.Rocket);
+                // rockets need to act first since loading a unit counts as movement
+                takeTurnByType(myHandler, units, UnitType.Rocket);
 
-            // Workers should move early, since they'll be finishing building other units
-            // and will be harvesting more Karbonite for us earlier in the turn
-            takeTurnByType(myHandler, units, UnitType.Worker);
+                // Workers should move early, since they'll be finishing building other units
+                // and will be harvesting more Karbonite for us earlier in the turn
+                takeTurnByType(myHandler, units, UnitType.Worker);
 
-            // Update the Factory build queues
-            updateFactoryBuildQueues(myHandler, units);
+                // Update the Factory build queues
+                updateFactoryBuildQueues(myHandler, units);
 
-            takeTurnByType(myHandler, units, UnitType.Factory);
+                takeTurnByType(myHandler, units, UnitType.Factory);
 
-            takeTurnByType(myHandler, units, UnitType.Ranger);
+                takeTurnByType(myHandler, units, UnitType.Ranger);
 
-            takeTurnByType(myHandler, units, UnitType.Mage);
+                takeTurnByType(myHandler, units, UnitType.Mage);
 
-            takeTurnByType(myHandler, units, UnitType.Knight);
-            
-            takeTurnByType(myHandler, units, UnitType.Healer);
+                takeTurnByType(myHandler, units, UnitType.Knight);
+                
+                takeTurnByType(myHandler, units, UnitType.Healer);
 
-            ctm.updateTM();
+                ctm.updateTM();
 
-            gc.nextTurn();
+                gc.nextTurn();
+
+            } catch(Exception e) {} // gotta catch 'em all
         }
     }
 
