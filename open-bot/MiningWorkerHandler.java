@@ -2,6 +2,7 @@ import bc.*;
 
 import java.util.Random;
 import java.awt.Point;
+import java.util.List;
 
 public class MiningWorkerHandler extends UnitHandler {
 
@@ -21,6 +22,9 @@ public class MiningWorkerHandler extends UnitHandler {
 
     public void reassignAllMiners(MapLocation location) {
         // System.out.println(location);
+
+        System.out.println("Reassigning miners from cluster");
+
         Point oldCluster = this.m.clusterMap[location.getX()][location.getY()].clusterMaxima;
         this.target = null;
         boolean hello = m.assignTarget(this);
@@ -52,6 +56,36 @@ public class MiningWorkerHandler extends UnitHandler {
         }
     }
 
+    public void updateKarbonite(Unit a) {
+        MapLocation myLocation = a.location().mapLocation();
+        Point loc = new Point(myLocation.getX(), myLocation.getY());
+        long visionRange = a.visionRange();
+        if(this.target != null && myLocation.isWithinRange(visionRange, this.target)) {
+            Cluster c = m.clusterMap[this.target.getX()][this.target.getY()];
+            if(c.lastRoundChecked == -1 || this.gc.round() - c.lastRoundChecked >= 3) {
+                //System.out.println("Updating karbonite locations using vision: " + String.valueOf(visionRange));
+                List<Point> members = c.members;
+                for(int i = 0; i < members.size(); i++) {
+                    Point pt = members.get(i);
+                    if(Cluster.distanceSquaredTo(loc, pt) <= visionRange) {
+                        //we can only check squares that we can see
+                        int money = (int) gc.karboniteAt(new MapLocation(this.parent.getPlanet(), pt.x, pt.y));
+                        if(money != this.m.initialKarboniteLocationsOriginal[pt.x][pt.y]) {
+                            //System.out.println("The value was not what we expected...updating");
+                        }
+                        boolean hello1 = this.m.updateIndividual(pt, money);
+                        if(hello1) {
+                            //the cluster is finished, leave
+                            //System.out.println(c.clusterMaxima + " is finished!!!!!!");
+                            reassignAllMiners(new MapLocation(this.parent.getPlanet(), pt.x, pt.y));
+                        }
+                    }
+                }
+                c.lastRoundChecked = (int) this.gc.round();
+            }
+        }
+    }
+
     public void setTarget(MapLocation a, PathMaster pm) {
         this.target = a;
         if(this.target != null && pm.getCachedPathField(target.getX(), target.getY()) != null) {
@@ -74,8 +108,18 @@ public class MiningWorkerHandler extends UnitHandler {
 
         //TODO change if necessary
         if(!hasTarget()) {
-            m.assignTarget(this);
+            boolean cc = m.assignTarget(this);
+            if(!cc) {
+                ((EarthController)(this.parent)).myHandler.put(unit.id(), new WorkerHandler(this.parent, this.gc, unit.id(), this.rng));
+                System.out.println("Converted 1 miner to a worker E");
+            }
+
         }
+
+        updateKarbonite(unit);
+
+        if(this.target == null)
+            return;
 
         MapLocation mapLocation = unit.location().mapLocation();
         if(this.target != null) {

@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.EnumMap;
+import java.awt.Point;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Iterator;
@@ -24,8 +25,10 @@ public class MarsController extends PlanetController
     public Team enemyTeam;
     
     public CommunicationsManager comms;
-    
-	public MiningMaster mm;
+
+    public List<Point> karboniteLocations = new ArrayList<Point>();
+
+    public AsteroidPattern asPat = this.gc.asteroidPattern();
 
     public void control() {
     
@@ -37,23 +40,23 @@ public class MarsController extends PlanetController
         
         comms = new CommunicationsManager(this, gc, rng);
 
-		mm = new MiningMaster(this);
-		mm.generate();
-
         while (true) {
         
-            System.out.println("Round #" + gc.round() + ", (" + gc.getTimeLeftMs() + " ms left)");
+            int roundNumber = (int) gc.round();
+
+            System.out.println("Round #" + roundNumber + ", (" + gc.getTimeLeftMs() + " ms left)");
+
+            if(asPat.hasAsteroid(roundNumber)) {
+                AsteroidStrike strike = asPat.asteroid(roundNumber);
+                int i = (int)strike.getLocation().getX(), j = (int)strike.getLocation().getY();
+                karboniteLocations.add(new Point(i, j));
+            }
 
             if(gc.getTimeLeftMs() < 1000) {
                 System.out.println("TIME POOL LOW! SKIPPING TURN!");
                 gc.nextTurn();
                 continue;
             }
-
-			if(gc.round() > 0 && gc.round() % 50 == 0) {
-				mm.update();
-				System.out.println("Succesfully updated MiningMaster");
-			}
 
             System.runFinalization();
             System.gc();            
@@ -101,7 +104,19 @@ public class MarsController extends PlanetController
 
     private void globalValues() {
         enemyTeam = Utils.getOtherTeam(gc.team());
-        map = gc.startingMap(Planet.Mars);                
+        map = gc.startingMap(Planet.Mars);
+
+
+        PlanetMap initialMap = this.gc.startingMap(getPlanet());
+        for(int i = 0; i < initialMap.getWidth(); i++) {
+            for(int j = 0; j < initialMap.getHeight(); j++) {
+                int base =((int) initialMap.initialKarboniteAt(new MapLocation(getPlanet(), i, j)));
+                if(base != 0) {
+                    karboniteLocations.add(new Point(i, j));
+                }
+            }
+        }
+                
     }
 
     public void takeTurnByType(Map<Integer,UnitHandler> myHandler, VecUnit units, UnitType unitType) {
@@ -122,7 +137,7 @@ public class MarsController extends PlanetController
                 newHandler = new MarsRangerHandler(this, gc, unit.id(), rng);
                 break;
             case Worker:
-                newHandler = new MarsWorkerHandler(this, gc, unit.id(), rng, this.mm);
+                newHandler = new MarsWorkerHandler(this, gc, unit.id(), rng);
                 break;
             case Rocket:
             	newHandler = new MarsRocketHandler(this, gc, unit.id(), rng);
