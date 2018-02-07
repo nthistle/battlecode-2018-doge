@@ -9,11 +9,6 @@ import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Random;
 
-// TODO:
-// smarter factory placement -> adjacencies and avoid putting on money
-// rotation around structure while building
-// Mars
-
 public class WorkerHandler extends UnitHandler {
 
     private final int TARGET_REFRESH_RATE = 15;
@@ -143,8 +138,7 @@ public class WorkerHandler extends UnitHandler {
                 && ((earthParent.getEWorkerCount() < 3) 
                 || (earthParent.getEWorkerCount() == 3 && nearbyWorkerCount < 3) 
                 || (earthParent.getEWorkerCount() == 4 && nearbyWorkerCount == 2)))
-            || (nearbyStructures.size() >= 1 && nearbyWorkerCount < 4)))) {
-            // || (earthParent.getRobotCount(UnitType.Factory) >= 4 && nearbyWorkerCount < 3))) {                         
+            || (nearbyStructures.size() >= 1 && nearbyWorkerCount < 4)))) {                         
             for (Direction d : Utils.directions()) {                
                 if (gc.canReplicate(id, d)) {
                     gc.replicate(id, d);     
@@ -164,6 +158,7 @@ public class WorkerHandler extends UnitHandler {
             Unit nearbyUnit = nearbyStructures.get(i);            
             if (gc.canBuild(id, nearbyUnit.id())) {
                 gc.build(id, nearbyUnit.id());                                
+                rotateStructure(mapLocation, nearbyUnit.location().mapLocation(), null);
                 busy = true;                
                 done = true;
                 break;
@@ -354,6 +349,50 @@ public class WorkerHandler extends UnitHandler {
         }
     }
 
+    public boolean rotateStructure(MapLocation mapLocation, MapLocation structureLocation, HashSet<String> requestLocations) {
+        if (!gc.isMoveReady(id)) {
+            return false;
+        }        
+        Direction direction = mapLocation.directionTo(structureLocation);        
+        // System.out.println(requestLocations);
+        if (bc.bcDirectionIsDiagonal(direction)) {
+            Direction left = bc.bcDirectionRotateLeft(direction);
+            Direction right = bc.bcDirectionRotateRight(direction);            
+            if ((requestLocations == null || !requestLocations.contains(mapLocation.add(left).toJson())) && canOccupyRotate(mapLocation, mapLocation.add(left), structureLocation, requestLocations) && gc.canMove(id, left)) {
+                gc.moveRobot(id, left);
+                return true;
+            }
+            if ((requestLocations == null || !requestLocations.contains(mapLocation.add(right).toJson())) && canOccupyRotate(mapLocation, mapLocation.add(right), structureLocation, requestLocations) && gc.canMove(id, right)) {
+                gc.moveRobot(id, right);
+                return true;
+            }
+        } else {
+            Direction left = bc.bcDirectionRotateLeft(direction);
+            Direction right = bc.bcDirectionRotateRight(direction);            
+            Direction leftleft = bc.bcDirectionRotateLeft(left);
+            Direction rightright = bc.bcDirectionRotateRight(right);
+            if ((requestLocations == null || !requestLocations.contains(mapLocation.add(leftleft).toJson())) && canOccupyRotate(mapLocation, mapLocation.add(leftleft), structureLocation, requestLocations) && gc.canMove(id, leftleft)) {
+                gc.moveRobot(id, leftleft);
+                return true;
+            }
+            if ((requestLocations == null || !requestLocations.contains(mapLocation.add(rightright).toJson())) && canOccupyRotate(mapLocation, mapLocation.add(rightright), structureLocation, requestLocations) && gc.canMove(id, rightright)) {
+                gc.moveRobot(id, rightright);
+                return true;
+            }
+            if ((requestLocations == null || !requestLocations.contains(mapLocation.add(left).toJson())) && canOccupyRotate(mapLocation, mapLocation.add(left), structureLocation, requestLocations) && gc.canMove(id, left)) {
+                gc.moveRobot(id, left);
+                return true;
+            }
+            if ((requestLocations == null || !requestLocations.contains(mapLocation.add(right).toJson())) && canOccupyRotate(mapLocation, mapLocation.add(right), structureLocation, requestLocations) && gc.canMove(id, right)) {
+                gc.moveRobot(id, right);
+                return true;
+            }
+
+        }        
+        // System.out.println("TEST2");
+        return false;
+    }
+
     private void move(PathMaster pm, MapLocation mapLocation, MapLocation destLocation) {
         if (!gc.isMoveReady(id)) {
             return;
@@ -499,12 +538,13 @@ public class WorkerHandler extends UnitHandler {
         return status;
     }
 
-    public boolean canOccupy(MapLocation location) {
+    private boolean canOccupy(MapLocation location) {
         PlanetMap map = earthParent.map;
         return map.onMap(location) && map.isPassableTerrainAt(location) == 1 && !(gc.hasUnitAtLocation(location) && gc.senseUnitAtLocation(location).unitType() == UnitType.Factory);        
     }
 
-    public boolean canOccupyMove(MapLocation location, HashSet<MapLocation> visited) {
+
+    private boolean canOccupyMove(MapLocation location, HashSet<MapLocation> visited) {
         if (visited.contains(location)) {            
             return true;
         }
@@ -516,7 +556,41 @@ public class WorkerHandler extends UnitHandler {
         return status;
     }
 
-    public boolean canOccupyBuild(MapLocation location, HashSet<MapLocation> visited) {
+    private boolean canOccupyRotate(MapLocation mapLocation, MapLocation location, MapLocation structureLocation, HashSet<String> requestLocations) {
+        PlanetMap map = earthParent.map;
+        if (!map.onMap(location) || map.isPassableTerrainAt(location) == 0 || (gc.hasUnitAtLocation(location) && (gc.senseUnitAtLocation(location).team() != gc.team() || gc.senseUnitAtLocation(location).unitType() != UnitType.Worker))) {
+            return false;
+        }        
+        for (Direction d : Utils.directionList) {
+            MapLocation tryLocation = location.add(d);
+            if (!map.onMap(tryLocation) || map.isPassableTerrainAt(tryLocation) == 0 || tryLocation.equals(structureLocation)) {
+                continue;
+            }
+            if (!tryLocation.isAdjacentTo(structureLocation) && gc.hasUnitAtLocation(tryLocation) && gc.senseUnitAtLocation(tryLocation).unitType() == UnitType.Worker) {
+                return false;
+            }
+        }
+        if (!gc.hasUnitAtLocation(location)) {
+            return true;
+        } else {
+            UnitHandler tryWorker = earthParent.myHandler.get(gc.senseUnitAtLocation(location).id());
+            if (tryWorker instanceof MiningWorkerHandler) {
+                return false;
+            }
+            WorkerHandler worker = (WorkerHandler)tryWorker;
+            Unit workerUnit = gc.unit(worker.id);
+            if (requestLocations == null) {
+                requestLocations = new HashSet<String>();                
+            }
+            requestLocations.add(mapLocation.toJson());
+            if (worker.rotateStructure(workerUnit.location().mapLocation(), structureLocation, requestLocations)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean canOccupyBuild(MapLocation location, HashSet<MapLocation> visited) {
         if (visited.contains(location)) {
             return true;
         }
