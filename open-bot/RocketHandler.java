@@ -14,7 +14,7 @@ public class RocketHandler extends UnitHandler {
 	
 	public static final int TAKEOFF_COUNTDOWN = 3; 
     
-    public static final int FORCE_TAKEOFF_THRESH = 3;
+    public static final int FORCE_TAKEOFF_THRESH = 12;
     public static final int FORCE_TAKEOFF_TIMER = 20;
 
     public int numLoaded = 0;
@@ -29,10 +29,11 @@ public class RocketHandler extends UnitHandler {
 	public PlanetMap map;
 	public int builtRound = Integer.MAX_VALUE;
     public int forceTakeoffTimer = -1;
+	public boolean emRun = false;
 	
 	/**
 	 * generate a rocket handler for a rocket
-	 * 
+	  will take care of part of your workload* 
 	 * @param llh a reference to the LaunchingLogicHandler for EarthController
 	 * @param manifest one of the final static double arrays that describes a crew manifest for a rocket
 	 */
@@ -52,7 +53,7 @@ public class RocketHandler extends UnitHandler {
         for(UnitType key : this.targetManifest.keySet()) {
             this.stillNeeded.put(key, this.targetManifest.get(key));
         }
-        //basically, the above transforms one of the static final double troop frequency tables into an actual manifest
+        //basically, the above transforms one of the static final double troop frequenicy tables into an actual manifest
         //when all the terms in the manifest go to zero, the rocket is ready to fire up and blast off!
         
         this.dest = gc.unit(this.id).location().mapLocation();
@@ -76,8 +77,24 @@ public class RocketHandler extends UnitHandler {
     public void takeTurn(Unit unit) {
         if(forceTakeoffTimer>0) forceTakeoffTimer--;
     	if(unit.structureIsBuilt() != 0) {
-    		if(this.builtRound == Integer.MAX_VALUE) 
+    		if(this.builtRound == Integer.MAX_VALUE) {
     			this.builtRound = (int)gc.round();
+			}
+			if(gc.round() >= 600 && !emRun) {
+				VecUnit nearby = gc.senseNearbyUnitsByTeam(myLocation, 10000, gc.team());
+				Unit eh;
+				int requested = (int)(unit.structureMaxCapacity());
+				for(int i = 0; i < nearby.size(); i++) {
+					eh = nearby.get(i);
+					UnitHandler ehHandler = parent.myHandler.get(eh.id());
+					if(ehHandler == null || ehHandler instanceof MiningWorkerHandler || ehHandler instanceof RangerHandler || ehHandler instanceof HealerHandler) {
+						parent.myHandler.put(eh.id(), new AstronautHandler(this.parent, this.gc, eh.id(), this.rng, this.myLocation));
+					}
+					requested--;
+					if(requested <= 0) break;
+				}
+				emRun = true;
+			}
     		this.load();
             this.setDestination(llh.optimalLandingLocation());
     		// System.out.println("Dest: " + this.getDestination());
@@ -181,10 +198,10 @@ public class RocketHandler extends UnitHandler {
      * @return true if fully stocked, false if not
      */
     public boolean isLoaded() {
-    	System.out.println("Wanted troops: " + this.stillNeeded);
-    	System.out.println("Wanted troops size: " + this.stillNeeded.size());
-        for(UnitType key : this.stillNeeded.keySet()) {
-            if(this.stillNeeded.get(key) != 0) return false;
+    	System.out.println("Wanted troops: " + this.targetManifest);
+    	//System.out.println("Wanted troops size: " + this.stillNeeded.size());
+        for(UnitType key : this.targetManifest.keySet()) {
+            if(this.targetManifest.get(key) != 0) return false;
         }
         return true;
     }
@@ -199,6 +216,7 @@ public class RocketHandler extends UnitHandler {
     	else {
     		gc.load(this.id, unitID);
             numLoaded ++;
+			System.out.println(numLoaded);
             if(numLoaded >= FORCE_TAKEOFF_THRESH) {
                 forceTakeoffTimer = FORCE_TAKEOFF_TIMER;
             }
@@ -218,8 +236,9 @@ public class RocketHandler extends UnitHandler {
         Unit adj;
     	for(int i = 0; i < adjacent.size(); i++) {
             adj = adjacent.get(i);
-    		if(this.stillNeeded.keySet().contains(adj.unitType()) 
-    				&& this.stillNeeded.get(adj.unitType()) > 0) {
+			System.out.println(parent.myHandler.get(adj.id()));
+    		if(this.targetManifest.keySet().contains(adj.unitType()) 
+    				&& this.targetManifest.get(adj.unitType()) > 0 || gc.round() >= 650) {
                 if(parent.myHandler.get(adj.id()) instanceof WorkerHandler) {
                     continue;
                 }
@@ -228,10 +247,10 @@ public class RocketHandler extends UnitHandler {
                     if(jaunt != null)
                         jaunt.minersAt--;
                 }
-  //   			System.out.println("Loading " + adjacent.get(i).id());
     			if(this.loadTroop(adj.id())) {
                     // once we're loaded, decrease from the manifest
-                    this.stillNeeded.put(adj.unitType(), this.stillNeeded.get(adj.unitType()) - 1);
+					System.out.println("Loading " + adjacent.get(i).id());
+                    this.targetManifest.put(adj.unitType(), this.targetManifest.get(adj.unitType()) - 1);
     			}
     		}
     	}

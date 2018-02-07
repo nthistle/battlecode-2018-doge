@@ -18,7 +18,10 @@ public class AstronautHandler extends UnitHandler {
     
     @Override
     public void takeTurn(Unit unit) {
-        if(timer > 0) timer --;
+        if(timer > 0) {
+			timer --;
+			return;
+		}
     	if(timer == 0 || !this.parent.pm.isCached(this.myRocketTarget)) { // if we aren't wanted, or out rocket took off already
             // System.out.println("oh no, " + this.myRocketTarget + ", (" + this.myRocketTarget.getX() + "," + this.myRocketTarget.getY() = ")");
     		// means that our rocket took off without us, so let's just reassign ourselves
@@ -29,7 +32,10 @@ public class AstronautHandler extends UnitHandler {
     	if(!gc.isMoveReady(this.id))
     		return;
         int myDist = this.parent.pm.getCachedPathField(this.myRocketTarget).getDistanceAtPoint(unit.location().mapLocation());
-        if(myDist == 1 && timer < 0) timer = 3; // we give the rocket 3 turns to load us, then assume we are unwanted
+        if(myDist == 1 && timer < 0) {
+			timer = 10;
+			return; // we give the rocket 3 turns to load us, then assume we are unwanted
+		}
         // TODO probably leave this in, but in the future instead have this check and ask the rocket if it still wants us
         // (make it pass the rockethandler)
     	Direction[] validDirs = this.parent.pm.getCachedPathField(this.myRocketTarget).getDirectionsAtPoint(unit.location().mapLocation());

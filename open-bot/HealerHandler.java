@@ -44,8 +44,9 @@ public class HealerHandler extends UnitHandler {
 
         Location location = unit.location();
 
-        if (!location.isOnMap()) {            
-            return;
+        if (!location.isOnMap() || location.isInGarrison() || location.isInSpace()) {            
+            System.out.println("HEH!");
+			return;
         }
 
         if (location.isOnPlanet(Planet.Mars)) {            
@@ -208,8 +209,8 @@ public class HealerHandler extends UnitHandler {
         if (!gc.unit(this.id).location().isOnMap()) {
             return null;
         }
-    	MapLocation myLocation = gc.unit(this.id).location().mapLocation();
-        VecUnit canHealFriends = gc.senseNearbyUnitsByTeam(unit.location().mapLocation(), unit.attackRange(), gc.team());
+    	MapLocation myLocation = unit.location().mapLocation();
+        VecUnit canHealFriends = gc.senseNearbyUnitsByTeam(myLocation, unit.attackRange(), gc.team());
         for(int i = 0; i < canHealFriends.size(); i ++) {
     	// for(Unit friend : canHealFriends) {
             Unit friend = canHealFriends.get(i);
