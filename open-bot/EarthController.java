@@ -47,6 +47,7 @@ public class EarthController extends PlanetController
     public int queuedWorkers = 0;
 
     public boolean isBlitzGame = false;
+    public boolean firstKnight = false;
 
     public void control() {
 
@@ -161,7 +162,7 @@ public class EarthController extends PlanetController
     }
 
     public void checkIsBlitz() {
-        
+
     }
 
     public void initialAssign() {
@@ -310,6 +311,10 @@ public class EarthController extends PlanetController
     }
 
     private UnitType getRandomBasePhaseUnit() {
+        if(!firstKnight) { 
+            firstKnight = true;
+            return UnitType.Knight;
+        }
         double d;
         // d = rng.nextDouble();
         // if(d < 0.35 && gc.round() > 150 && getRobotCount(UnitType.Ranger) > 10) {
