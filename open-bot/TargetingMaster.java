@@ -3,46 +3,38 @@ import java.util.ArrayList;
 
 public class TargetingMaster
 {
-	private PlanetController pc;
 	private GameController gc;
 	public ArrayList<MapLocation> targets;	
-	public int numTargetsAllowed = 15;
-	public int cooldown = 0;
-	public int MAX_COOLDOWN = 10;
 
-	public TargetingMaster(PlanetController pc, GameController gc) {
-		this.pc = pc;
+	public TargetingMaster(GameController gc) {
 		this.gc = gc;
 		this.targets = new ArrayList<MapLocation>();
-		VecUnit vu = gc.startingMap(gc.planet()).getInitial_units();
-		for(int i = 0; i < vu.size(); i ++) {
-			if(vu.get(i).team() != gc.team()) {
-				addTarget(vu.get(i).location().mapLocation());
+	}
+
+	public MapLocation getTarget(int numFrom) {
+		if(numFrom >= this.targets.size()) return null;
+		return this.targets.get(this.targets.size()-numFrom-1);
+	}
+
+	public MapLocation getTarget(MapLocation requestLocation) {
+		MapLocation closestTarget = null;
+		int closestDistance = Integer.MAX_VALUE;
+		for (MapLocation tryLocation : targets) {
+			int distance = (int)requestLocation.distanceSquaredTo(tryLocation);
+			if (closestTarget == null || distance < closestDistance) {
+				closestTarget = tryLocation;
+				closestDistance = distance;
 			}
 		}
-	}
-
-	public void updateTM() {
-		if(cooldown > 0) cooldown --;
-		if(numTargetsAllowed > 0 && cooldown == 0) {
-			// we can add a new target
-			VecUnit vu = gc.units();
-			ArrayList<MapLocation> valid = new ArrayList<MapLocation>();
-		}
-	}
-
-	public ArrayList<MapLocation> getTargets() {
-		return this.targets;
+		return closestTarget;
 	}
 
 	public void removeTarget(MapLocation toBeRemoved) {
 		targets.remove(toBeRemoved);
 	}
 
-	public void clearTarget(int targetIndex) {		
-		pc.pm.clearPFCache(this.targets.get(targetIndex));
-		this.targets.remove(targetIndex);
-		numTargetsAllowed ++;
+	public void popTarget(int numFrom) {		
+		this.targets.remove(this.targets.size()-numFrom-1);
 	}
 
 	public int getNumTargets() {
@@ -51,7 +43,5 @@ public class TargetingMaster
 
 	public void addTarget(MapLocation ml) {
 		this.targets.add(ml);
-		pc.pm.getPathFieldWithCache(ml);
-		numTargetsAllowed --;
 	}
 }
