@@ -18,6 +18,8 @@ public class Cluster {
 	//don't hate me for this
 	public int id = new Random().nextInt(10);
 
+	public int lastRoundChecked = -1;
+
 	public Cluster(MiningMaster m, Point a) {
 		this.clusterMaxima = a;
 		this.members = new ArrayList<Point>();
