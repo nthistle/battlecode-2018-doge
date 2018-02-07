@@ -39,7 +39,7 @@ public class MarsRocketHandler extends UnitHandler {
     public boolean unload() {
     	boolean ret = true;
     	VecUnitID garrison = gc.unit(this.id).structureGarrison();
-    	System.out.println(garrison);
+    	// System.out.println(garrison);
     	if(garrison.size() <= 0) return true;
     	else {
     		for(int i = 0; i < garrison.size(); i++) {
