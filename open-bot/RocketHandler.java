@@ -81,7 +81,7 @@ public class RocketHandler extends UnitHandler {
     			this.builtRound = (int)gc.round();
 			}
 			if(gc.round() >= 600 && !emRun) {
-				VecUnit nearby = gc.senseNearbyUnitsByTeam(myLocation, 10000, gc.team());
+				VecUnit nearby = gc.senseNearbyUnitsByTeam(myLocation, 1000, gc.team());
 				Unit eh;
 				int requested = (int)(unit.structureMaxCapacity());
 				for(int i = 0; i < nearby.size(); i++) {
@@ -238,7 +238,7 @@ public class RocketHandler extends UnitHandler {
             adj = adjacent.get(i);
 			System.out.println(parent.myHandler.get(adj.id()));
     		if(this.targetManifest.keySet().contains(adj.unitType()) 
-    				&& this.targetManifest.get(adj.unitType()) > 0 || gc.round() >= 650) {
+    				&& this.targetManifest.get(adj.unitType()) > 0 || gc.round() >= 600) {
                 if(parent.myHandler.get(adj.id()) instanceof WorkerHandler) {
                     continue;
                 }
