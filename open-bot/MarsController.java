@@ -51,7 +51,7 @@ public class MarsController extends PlanetController
             VecUnit allUnits = gc.units();
             VecUnit units = gc.myUnits();
             
-            System.out.println(units);
+            //System.out.println(units);
             
             comms.update();
 

@@ -14,7 +14,7 @@ public class RocketHandler extends UnitHandler {
 	
 	public static final int TAKEOFF_COUNTDOWN = 3; 
     
-    public static final int FORCE_TAKEOFF_THRESH = 3;
+    public static final int FORCE_TAKEOFF_THRESH = 6;
     public static final int FORCE_TAKEOFF_TIMER = 20;
 
     public int numLoaded = 0;
@@ -32,7 +32,7 @@ public class RocketHandler extends UnitHandler {
 	
 	/**
 	 * generate a rocket handler for a rocket
-	 * 
+	  will take care of part of your workload* 
 	 * @param llh a reference to the LaunchingLogicHandler for EarthController
 	 * @param manifest one of the final static double arrays that describes a crew manifest for a rocket
 	 */
@@ -166,8 +166,8 @@ public class RocketHandler extends UnitHandler {
     		return true;
         else if(gc.unit(this.id).health() <= 190) //as soon as 1 sprinkle of dmg 
     		return true;
-        else if(gc.round() >= this.builtRound + 150)
-        	return true;
+        //else if(gc.round() >= this.builtRound + 150)
+        //	return true;
     	else return false;
     }
     
@@ -182,7 +182,7 @@ public class RocketHandler extends UnitHandler {
      */
     public boolean isLoaded() {
     	System.out.println("Wanted troops: " + this.stillNeeded);
-    	System.out.println("Wanted troops size: " + this.stillNeeded.size());
+    	//System.out.println("Wanted troops size: " + this.stillNeeded.size());
         for(UnitType key : this.stillNeeded.keySet()) {
             if(this.stillNeeded.get(key) != 0) return false;
         }
@@ -199,6 +199,7 @@ public class RocketHandler extends UnitHandler {
     	else {
     		gc.load(this.id, unitID);
             numLoaded ++;
+			System.out.println(numLoaded);
             if(numLoaded >= FORCE_TAKEOFF_THRESH) {
                 forceTakeoffTimer = FORCE_TAKEOFF_TIMER;
             }
@@ -218,8 +219,9 @@ public class RocketHandler extends UnitHandler {
         Unit adj;
     	for(int i = 0; i < adjacent.size(); i++) {
             adj = adjacent.get(i);
+			System.out.println(adj);
     		if(this.stillNeeded.keySet().contains(adj.unitType()) 
-    				&& this.stillNeeded.get(adj.unitType()) > 0) {
+    				&& this.stillNeeded.get(adj.unitType()) > 0 && parent.myHandler.get(adj.id()) instanceof AstronautHandler) {
                 if(parent.myHandler.get(adj.id()) instanceof WorkerHandler) {
                     continue;
                 }
@@ -228,9 +230,9 @@ public class RocketHandler extends UnitHandler {
                     if(jaunt != null)
                         jaunt.minersAt--;
                 }
-  //   			System.out.println("Loading " + adjacent.get(i).id());
     			if(this.loadTroop(adj.id())) {
                     // once we're loaded, decrease from the manifest
+					System.out.println("Loading " + adjacent.get(i).id());
                     this.stillNeeded.put(adj.unitType(), this.stillNeeded.get(adj.unitType()) - 1);
     			}
     		}
