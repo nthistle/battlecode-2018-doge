@@ -206,6 +206,9 @@ public class HealerHandler extends UnitHandler {
     private Unit getMostHurt(Unit unit) {
     	long minHealth = Long.MAX_VALUE;
     	Unit ret = null;
+        if (!gc.unit(this.id).location().isOnMap()) {
+            return null;
+        }
     	MapLocation myLocation = unit.location().mapLocation();
         VecUnit canHealFriends = gc.senseNearbyUnitsByTeam(myLocation, unit.attackRange(), gc.team());
         for(int i = 0; i < canHealFriends.size(); i ++) {
