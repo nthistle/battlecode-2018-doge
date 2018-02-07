@@ -3,7 +3,7 @@ import java.util.Random;
 
 public class Player {
 
-    private static final String playerName = "Qualifiers Bot";
+    private static final String playerName = "Open Tournament Bot";
     public static final int seed = 1; // -1 for no seed
     
     public static void main(String[] args) {
